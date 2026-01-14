@@ -12,4 +12,4 @@
 
 ## Resources
 
-...
+- HTTP 1.0 RFC: https://datatracker.ietf.org/doc/html/rfc1945
