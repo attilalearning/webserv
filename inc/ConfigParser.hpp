@@ -6,7 +6,7 @@
 /*   By: mosokina <mosokina@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/20 12:12:31 by mosokina          #+#    #+#             */
-/*   Updated: 2026/01/20 13:10:26 by mosokina         ###   ########.fr       */
+/*   Updated: 2026/01/21 00:48:22 by mosokina         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,14 +32,9 @@ class Config {
 		std::vector<ServerConfig> _servers;
 		std::vector<std::string> _tokens;
 		void _tokenize(const std::string &configPath);
+		void _validateBraces();
 		void _parseServer(size_t& i);
+		void _parseLocation(size_t& i);
 };
-
-#endif
-
-	// Helper methods for the parsing process
-	// void tokenize(const std::string& path);
-	// void parseServer(size_t& i);
-	// void parseLocation(size_t& i, ServerConfig& server);
 
 #endif
