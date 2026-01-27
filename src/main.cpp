@@ -6,19 +6,18 @@
 /*   By: mosokina <mosokina@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/14 19:02:21 by aistok            #+#    #+#             */
-/*   Updated: 2026/01/23 15:15:32 by mosokina         ###   ########.fr       */
+/*   Updated: 2026/01/27 01:03:14 by mosokina         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-
 #include <iostream>
+
 #include "../inc/WebServ.hpp"
 #include "../inc/ConfigStructs.hpp"
-#include "../inc/ConfigParser.hpp"
 #include "../inc/Server.hpp"
 
 
-/*JUST FOR TESTING 2ND PART*/
+/*JUST FOR TESTING (getMockConfig() should be replaced by ConfigParser)*/
 std::vector<ServerConfig> getMockConfig() {
 	std::vector<ServerConfig> configs;
 
@@ -58,65 +57,87 @@ std::vector<ServerConfig> getMockConfig() {
 	return configs;
 }
 
+// FOR TESTING (runTemporaryTest() should be replaced by run() with poll() approach):
+void runTemporaryTest(WebServ& ws) {
+	if (ws.getServers().empty()) {
+		std::cerr << "Error: No servers initialized to test." << std::endl;
+		return;
+	}
+
+	Server* firstServer = ws.getServers()[0];
+	int listenFd = firstServer->getListenFd();
+	
+	// Safety check: Did the socket actually open?
+	if (listenFd == -1) {
+		std::cerr << "Error: Listen FD is invalid (-1). Check bind errors." << std::endl;
+		return;
+	}
+
+	std::cout << "--- [STARTING TEMPORARY TEST] ---" << std::endl;
+	std::cout << "Waiting for telnet on the first configured port..." << std::endl;
+	
+	struct sockaddr_in clientAddr;
+	socklen_t clientLen = sizeof(clientAddr);
+
+	while (true) {
+		int clientFd = accept(listenFd, (struct sockaddr *)&clientAddr, &clientLen);
+
+		if (clientFd == -1) {
+			// Since it's O_NONBLOCK, we sleep to prevent 100% CPU usage
+			usleep(10000); 
+			continue;
+		}
+
+		std::cout << "Connection accepted! FD: " << clientFd << std::endl;
+
+		// 1. Send the greeting
+		std::string msg = "Hello World! Type something and hit Enter:\n";
+		send(clientFd, msg.c_str(), msg.length(), 0);
+
+		// 2. Read user input
+		char buffer[1024] = {0};
+		int bytesRead = recv(clientFd, buffer, 1023, 0); // 1023 to save space for null
+
+		if (bytesRead > 0) {
+			buffer[bytesRead] = '\0'; // Null-terminate for safe printing
+			std::cout << "Received from client: " << buffer << std::endl;
+		}
+
+		// 3. Close the connection
+		close(clientFd);
+		std::cout << "Connection closed. Ready for next test..." << std::endl;
+	}
+}
+
+
+/*How to Test: 
+1 - Run it: ./webserv
+2 - Open a new terminal and type: telnet localhost 8080 (or whatever port you used).
+3 - Type anything and press Enter.
+4 - Result: we can see "Hello World!" in the telnet window, 
+and the server terminal should log the connection and disconnection.*/
+
 int main(int argc, char **argv)
 {
 	if (argc > 2){
 		std::cerr << "Usage: ./webserv [config_file]" << std::endl;
 		return 1;
 	}
-	
 	std::string configPath = (argc == 2) ? argv[1] : "../default.conf";
+	try	{
 
-	try
-	{
-		Config parser;
-		parser.parse(configPath);
-		std::vector<ServerConfig> configs = parser.getMockConfig();
-		
+		//FOR TESTING (getMockConfig() should be replaced by ConfigParser)
+		std::vector<ServerConfig> configs = getMockConfig(); 
+
 		WebServ ws;
-		
 		ws.setup(configs);
 
-
-		// TEMPORARY TEST in main.cpp
-		std::cout << "Waiting for telnet on port " << configs[0].port << "..." << std::endl;
-
-		// Very basic accept loop just to see if it works:
-		int listenFd = ws.getServers()[0]->getListenFd();
-		struct sockaddr_in client_addr;
-		socklen_t client_len = sizeof(client_addr);
-
-		while (true) {
-			int client_fd = accept(listenFd, (struct sockaddr *)&client_addr, &client_len);
-			if (client_fd != -1) {
-				std::cout << "Connection accepted! FD: " << client_fd << std::endl;
-				close(client_fd); // Hang up immediately for now
-			}
-		}
-
 		// ws.run();
-	}
-	catch(const std::exception& e)
-	{
+		// FOR TESTING (runTemporaryTest() should be replaced by run() with poll() approach):
+		runTemporaryTest(ws);
+	} catch(const std::exception& e) {
 		std::cerr  << "Error: " << e.what() << '\n';
 		return 1;
 	}
 	return (0);
-}
-
-
-// TEMPORARY TEST in main.cpp
-std::cout << "Waiting for telnet on port " << configs[0].port << "..." << std::endl;
-
-// Very basic accept loop just to see if it works:
-int listen_fd = ws.getServers()[0]->getListenFd();
-struct sockaddr_in client_addr;
-socklen_t client_len = sizeof(client_addr);
-
-while (true) {
-    int client_fd = accept(listen_fd, (struct sockaddr *)&client_addr, &client_len);
-    if (client_fd != -1) {
-        std::cout << "Connection accepted! FD: " << client_fd << std::endl;
-        close(client_fd); // Hang up immediately for now
-    }
 }

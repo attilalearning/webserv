@@ -6,31 +6,14 @@
 /*   By: mosokina <mosokina@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/23 14:48:56 by mosokina          #+#    #+#             */
-/*   Updated: 2026/01/23 15:24:12 by mosokina         ###   ########.fr       */
+/*   Updated: 2026/01/27 00:42:17 by mosokina         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../inc/Server.hpp"
+
 Server::Server(const ServerConfig config) : _config(config), _listenFd(-1){
 	std::memset(&_address, 0, sizeof(_address));
-}
-
-Server::Server(const Server& other) : _config(other._config){
-	// Crucial: The new copy starts with no active socket
-	_listenFd = -1; 
-	std::memset(&_address, 0, sizeof(_address));
-}
-
-Server& Server::operator=(const Server& other) {
-	if (this != &other) {
-		if (_listenFd != -1) {
-			close(_listenFd);
-		}
-		_config = other._config;
-		_listenFd = -1; //we don't copy fd
-		std::memset(&_address, 0, sizeof(_address));
-	}
-	return *this;
 }
 
 Server::~Server() {
@@ -41,16 +24,9 @@ Server::~Server() {
 	}
 }
 
-void Server::setupServer(){
-	//_config.port to call bind()
-	//_config.host to call socket setup
-}
-
 int Server::getListenFd() const{
 	return _listenFd;
 }
-
-
 
 void Server::setupServer() {
 	// 1. Create the socket (IPv4, TCP)
@@ -77,7 +53,7 @@ void Server::setupServer() {
 
 	// 5. Bind socket to the address/port
 	if (bind(_listenFd, (struct sockaddr *)&_address, sizeof(_address)) == -1) {
-		throw std::runtime_error("Failed to bind to port " + _config.port);
+		throw std::runtime_error("Failed to bind to port " + toString(_config.port));
 	}
 
 	// 6. Start listening for incoming connections
