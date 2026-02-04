@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Utils.hpp                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mosokina <mosokina@student.42.fr>          +#+  +:+       +#+        */
+/*   By: mosokina <mosokina@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/26 23:56:58 by mosokina          #+#    #+#             */
-/*   Updated: 2026/01/27 00:49:29 by mosokina         ###   ########.fr       */
+/*   Updated: 2026/02/04 11:04:24 by mosokina         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,7 +17,8 @@
 #include <string>
 
 template <typename T>
-std::string toString(const T& value) {
+std::string toString(const T &value)
+{
 	std::ostringstream oss;
 	oss << value;
 	return oss.str();

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   WebServ.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mosokina <mosokina@student.42.fr>          +#+  +:+       +#+        */
+/*   By: mosokina <mosokina@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/14 19:03:57 by aistok            #+#    #+#             */
-/*   Updated: 2026/01/27 00:53:31 by mosokina         ###   ########.fr       */
+/*   Updated: 2026/02/04 11:03:49 by mosokina         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,24 +23,29 @@ WebServ::WebServ()
 
 WebServ::~WebServ()
 {
-	for (size_t i = 0; i < _servers.size(); ++i) {
-	delete _servers[i]; // This triggers the Server destructor and closes the FD
+	for (size_t i = 0; i < _servers.size(); ++i)
+	{
+		delete _servers[i]; // This triggers the Server destructor and closes the FD
 	}
 	std::cout << _name << ": bye!" << std::endl;
 }
 
-std::vector<Server*> WebServ::getServers() const{
+std::vector<Server *> WebServ::getServers() const
+{
 	return _servers;
 }
 
-void WebServ::setup(std::vector<ServerConfig>& configs){
-	for (size_t i = 0; i < configs.size(); ++i) {
+void WebServ::setup(std::vector<ServerConfig> &configs)
+{
+	for (size_t i = 0; i < configs.size(); ++i)
+	{
 		Server *newServer = NULL;
-		try{
+		try
+		{
 			newServer = new Server(configs[i]);
 			newServer->setupServer(); // Creates the socket, bind, listen
 			_servers.push_back(newServer);
-			
+
 			// // // Add the listening socket to our master poll vector
 			// struct pollfd pfd;
 			// pfd.fd = newServer->getListenFd();
@@ -49,15 +54,18 @@ void WebServ::setup(std::vector<ServerConfig>& configs){
 
 			// _pollFds.push_back(pfd);
 			// _fdToServerMap[pfd.fd] = newServer;
-		} catch (const std::exception& e){
+		}
+		catch (const std::exception &e)
+		{
 			delete newServer;
 			std::cerr << "Failed to setup server: " << e.what() << std::endl;
 		}
 	}
 }
 
-void WebServ::run(void){
-	//to be added later;
+void WebServ::run(void)
+{
+	// to be added later;
 }
 
 /* protected section -------------------------- */
@@ -67,4 +75,3 @@ void WebServ::run(void){
 /* private section ---------------------------- */
 
 const std::string WebServ::_name = "WebServ";
-

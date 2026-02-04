@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   main.cpp                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mosokina <mosokina@student.42.fr>          +#+  +:+       +#+        */
+/*   By: mosokina <mosokina@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/14 19:02:21 by aistok            #+#    #+#             */
-/*   Updated: 2026/01/27 01:03:14 by mosokina         ###   ########.fr       */
+/*   Updated: 2026/02/04 11:03:25 by mosokina         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,9 +16,9 @@
 #include "../inc/ConfigStructs.hpp"
 #include "../inc/Server.hpp"
 
-
 /*JUST FOR TESTING (getMockConfig() should be replaced by ConfigParser)*/
-std::vector<ServerConfig> getMockConfig() {
+std::vector<ServerConfig> getMockConfig()
+{
 	std::vector<ServerConfig> configs;
 
 	// --- SERVER 1 (Port 8080) ---
@@ -58,33 +58,38 @@ std::vector<ServerConfig> getMockConfig() {
 }
 
 // FOR TESTING (runTemporaryTest() should be replaced by run() with poll() approach):
-void runTemporaryTest(WebServ& ws) {
-	if (ws.getServers().empty()) {
+void runTemporaryTest(WebServ &ws)
+{
+	if (ws.getServers().empty())
+	{
 		std::cerr << "Error: No servers initialized to test." << std::endl;
 		return;
 	}
 
-	Server* firstServer = ws.getServers()[0];
+	Server *firstServer = ws.getServers()[0];
 	int listenFd = firstServer->getListenFd();
-	
+
 	// Safety check: Did the socket actually open?
-	if (listenFd == -1) {
+	if (listenFd == -1)
+	{
 		std::cerr << "Error: Listen FD is invalid (-1). Check bind errors." << std::endl;
 		return;
 	}
 
 	std::cout << "--- [STARTING TEMPORARY TEST] ---" << std::endl;
 	std::cout << "Waiting for telnet on the first configured port..." << std::endl;
-	
+
 	struct sockaddr_in clientAddr;
 	socklen_t clientLen = sizeof(clientAddr);
 
-	while (true) {
+	while (true)
+	{
 		int clientFd = accept(listenFd, (struct sockaddr *)&clientAddr, &clientLen);
 
-		if (clientFd == -1) {
+		if (clientFd == -1)
+		{
 			// Since it's O_NONBLOCK, we sleep to prevent 100% CPU usage
-			usleep(10000); 
+			usleep(10000);
 			continue;
 		}
 
@@ -98,7 +103,8 @@ void runTemporaryTest(WebServ& ws) {
 		char buffer[1024] = {0};
 		int bytesRead = recv(clientFd, buffer, 1023, 0); // 1023 to save space for null
 
-		if (bytesRead > 0) {
+		if (bytesRead > 0)
+		{
 			buffer[bytesRead] = '\0'; // Null-terminate for safe printing
 			std::cout << "Received from client: " << buffer << std::endl;
 		}
@@ -109,25 +115,26 @@ void runTemporaryTest(WebServ& ws) {
 	}
 }
 
-
-/*How to Test: 
+/*How to Test:
 1 - Run it: ./webserv
 2 - Open a new terminal and type: telnet localhost 8080 (or whatever port you used).
 3 - Type anything and press Enter.
-4 - Result: we can see "Hello World!" in the telnet window, 
+4 - Result: we can see "Hello World!" in the telnet window,
 and the server terminal should log the connection and disconnection.*/
 
 int main(int argc, char **argv)
 {
-	if (argc > 2){
+	if (argc > 2)
+	{
 		std::cerr << "Usage: ./webserv [config_file]" << std::endl;
 		return 1;
 	}
 	std::string configPath = (argc == 2) ? argv[1] : "../default.conf";
-	try	{
+	try
+	{
 
-		//FOR TESTING (getMockConfig() should be replaced by ConfigParser)
-		std::vector<ServerConfig> configs = getMockConfig(); 
+		// FOR TESTING (getMockConfig() should be replaced by ConfigParser)
+		std::vector<ServerConfig> configs = getMockConfig();
 
 		WebServ ws;
 		ws.setup(configs);
@@ -135,8 +142,10 @@ int main(int argc, char **argv)
 		// ws.run();
 		// FOR TESTING (runTemporaryTest() should be replaced by run() with poll() approach):
 		runTemporaryTest(ws);
-	} catch(const std::exception& e) {
-		std::cerr  << "Error: " << e.what() << '\n';
+	}
+	catch (const std::exception &e)
+	{
+		std::cerr << "Error: " << e.what() << '\n';
 		return 1;
 	}
 	return (0);

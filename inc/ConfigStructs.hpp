@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ConfigStructs.hpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mosokina <mosokina@student.42.fr>          +#+  +:+       +#+        */
+/*   By: mosokina <mosokina@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/20 12:16:52 by mosokina          #+#    #+#             */
-/*   Updated: 2026/01/20 13:03:52 by mosokina         ###   ########.fr       */
+/*   Updated: 2026/02/04 11:04:05 by mosokina         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,15 +22,16 @@ route: The URL prefix (e.g., /images).
 
 allow_methods: A whitelist. If a user tries to DELETE on a GET-only route, return 405 Method Not Allowed.
 
-root: The base directory. If the URL is /test.txt and root is /var/www, 
+root: The base directory. If the URL is /test.txt and root is /var/www,
 the server looks for /var/www/test.txt.
 
-autoindex: If the URL is a directory (like /images/) and there is no index.html, 
+autoindex: If the URL is a directory (like /images/) and there is no index.html,
 do you show a list of files or return a 403 Forbidden?
 
 cgi_ext: Which file extensions should trigger the CGI logic instead of just serving the file as text.*/
 
-struct Location {
+struct Location
+{
 	std::string path;
 	std::vector<std::string> methods;
 	std::string root;
@@ -49,11 +50,12 @@ server_name: Used if you want to host multiple websites on the same port (Virtua
 
 error_page: A mapping of status codes (e.g., 404, 500) to internal file paths.
 
-client_max_body_size: A safety check. If a POST request comes in with a Content-Length larger than this, 
+client_max_body_size: A safety check. If a POST request comes in with a Content-Length larger than this,
 the server should immediately return 413 Payload Too Large.
 */
 
-struct ServerConfig {
+struct ServerConfig
+{
 	int port;
 	std::string host;
 	std::vector<std::string> server_names;
