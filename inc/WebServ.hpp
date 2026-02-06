@@ -6,7 +6,7 @@
 /*   By: mosokina <mosokina@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/14 19:03:57 by aistok            #+#    #+#             */
-/*   Updated: 2026/02/04 11:04:33 by mosokina         ###   ########.fr       */
+/*   Updated: 2026/02/06 13:15:52 by mosokina         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,9 +17,13 @@
 #include <vector>
 #include <map>
 #include <poll.h> // For struct pollfd
+#include <csignal>
 
 #include "ConfigStructs.hpp"
 #include "Server.hpp"
+
+
+extern volatile sig_atomic_t g_server_running;
 
 /* Why Pointers <Server *>:
  1. Memory Stability: std::vector reallocates memory as it grows. Using
@@ -50,9 +54,12 @@ private:
 	WebServ(const WebServ &other);
 	WebServ &operator=(const WebServ &other);
 
+	bool _isListener(int fd);
+
+
 	std::vector<Server *> _servers; // all server instances
-	// std::vector<struct pollfd> _pollFds; // poll array for the whole program
-	// std::map<int, Server*> _fdToServerMap; // helps quickly find which server owns which FD
+	std::vector<struct pollfd> _pollFds; // poll array for the whole program
+	std::map<int, Server*> _fdToServerMap; // helps quickly find which server owns which FD
 	static const std::string _name;
 };
 

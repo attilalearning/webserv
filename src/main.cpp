@@ -6,11 +6,12 @@
 /*   By: mosokina <mosokina@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/14 19:02:21 by aistok            #+#    #+#             */
-/*   Updated: 2026/02/04 11:03:25 by mosokina         ###   ########.fr       */
+/*   Updated: 2026/02/06 13:03:20 by mosokina         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include <iostream>
+#include <csignal>
 
 #include "../inc/WebServ.hpp"
 #include "../inc/ConfigStructs.hpp"
@@ -122,8 +123,19 @@ void runTemporaryTest(WebServ &ws)
 4 - Result: we can see "Hello World!" in the telnet window,
 and the server terminal should log the connection and disconnection.*/
 
+
+volatile sig_atomic_t g_server_running = 1;
+void handleSigint(int sig)
+{
+	void()sig;
+	g_server_running = 0;
+}
+
 int main(int argc, char **argv)
 {
+	signal(SIGPIPE, SIG_IGN); // Prevents crash on broken pipe
+	signal(SIGINT, handle_sigint); // Handles Ctrl+C
+	
 	if (argc > 2)
 	{
 		std::cerr << "Usage: ./webserv [config_file]" << std::endl;
@@ -142,6 +154,7 @@ int main(int argc, char **argv)
 		// ws.run();
 		// FOR TESTING (runTemporaryTest() should be replaced by run() with poll() approach):
 		runTemporaryTest(ws);
+		std::cout << "\nServer shutting down cleanly..." << std::endl;
 	}
 	catch (const std::exception &e)
 	{
