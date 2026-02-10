@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   WebServ.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mosokina <mosokina@student.42london.com    +#+  +:+       +#+        */
+/*   By: mosokina <mosokina@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/14 19:03:57 by aistok            #+#    #+#             */
-/*   Updated: 2026/02/06 13:15:52 by mosokina         ###   ########.fr       */
+/*   Updated: 2026/02/10 00:39:26 by mosokina         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,9 +18,12 @@
 #include <map>
 #include <poll.h> // For struct pollfd
 #include <csignal>
+#include <cerrno>
+#include <cstring>
 
 #include "ConfigStructs.hpp"
 #include "Server.hpp"
+#include "Connection.hpp"
 
 
 extern volatile sig_atomic_t g_server_running;
@@ -46,21 +49,23 @@ public:
 	void setup(std::vector<ServerConfig> &configs);
 	void run();
 
-protected:
-	//...
-
 private:
 	// Rule of Three: Private and Unimplemented
 	WebServ(const WebServ &other);
 	WebServ &operator=(const WebServ &other);
 
+	void _addNewFdtoPool(int newFd, short events);
+
+
 	bool _isListener(int fd);
+	void _acceptNewConnection(int listenFd);
+	void _closeConnection(size_t index);
 
 
 	std::vector<Server *> _servers; // all server instances
 	std::vector<struct pollfd> _pollFds; // poll array for the whole program
 	std::map<int, Server*> _fdToServerMap; // helps quickly find which server owns which FD
-	static const std::string _name;
+	std::map<int, Connection*> _fdToConnMap;
 };
 
 #endif // WEBSERV_HPP

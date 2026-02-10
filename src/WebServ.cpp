@@ -3,38 +3,30 @@
 /*                                                        :::      ::::::::   */
 /*   WebServ.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mosokina <mosokina@student.42london.com    +#+  +:+       +#+        */
+/*   By: mosokina <mosokina@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/14 19:03:57 by aistok            #+#    #+#             */
-/*   Updated: 2026/02/06 15:27:54 by mosokina         ###   ########.fr       */
+/*   Updated: 2026/02/10 00:55:33 by mosokina         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include <iostream>
-
-#include "../inc/WebServ.hpp"
+#include "WebServ.hpp"
 
 /* public section ----------------------------- */
 
 WebServ::WebServ()
-{
-	std::cout << "This is gooooing to be the " << _name << "!" << std::endl;
-}
+{}
 
 WebServ::~WebServ()
 {
-	for (size_t i = 0; i < _pollFds.size(); ++i)
-	{
-		if (_pollFds[i].fd >= 0)
-		{
-			close(_pollFds[i].fd);
-		}
-	}
 	for (size_t i = 0; i < _servers.size(); ++i)
 	{
 		delete _servers[i]; // This triggers the Server destructor and closes the FD
 	}
-	// Clear any dynamically allocated client objects
+	_servers.clear();
+	_pollFds.clear();
+	// TODO - Clear any dynamically allocated client objects
 	std::cout << "All sockets closed. Cleanup complete." << std::endl;
 }
 
@@ -52,16 +44,11 @@ void WebServ::setup(std::vector<ServerConfig> &configs)
 		{
 			newServer = new Server(configs[i]);
 			newServer->setupServer(); // Creates the socket, bind, listen
+			int listenFd = newServer->getListenFd();
+
 			_servers.push_back(newServer);
-
-			// Add the listening socket to our master poll vector
-			struct pollfd pollFd;
-			// pollFd.fd = newServer->getListenFd();
-			pollFd.events = POLLIN;
-			pollFd.revents = 0;
-
-			_pollFds.push_back(pollFd);
-			_fdToServerMap[_pollFds.back().fd] = newServer;
+			_addNewFdtoPool(listenFd, POLLIN);
+			_fdToServerMap[listenFd] = newServer;
 		}
 		catch (const std::exception &e)
 		{
@@ -70,19 +57,6 @@ void WebServ::setup(std::vector<ServerConfig> &configs)
 		}
 	}
 }
-
-void WebServ::run(void)
-{
-	// to be added later;
-}
-
-/* protected section -------------------------- */
-
-//...
-
-/* private section ---------------------------- */
-
-const std::string WebServ::_name = "WebServ";
 
 /*The Rule: If revents != 0, something happened. You must check for:
 1 - Errors (POLLERR, POLLHUP, POLLNVAL) first.
@@ -94,49 +68,58 @@ void WebServ::run(void)
 	while (g_server_running)
 	{
 		int ret = poll(_pollFds.data(), _pollFds.size(), 1000); // 1000ms timeout
-		if (ret < 0)
+		if (ret == 0) continue; // Timeout
+		else if (ret < 0)
 		{ 
-			// Only throw if it's NOT a signal interruption.
-			if (errno == EINTR)
-				continue;
+			if (errno == EINTR) continue;
 			if (g_server_running == 0) break;
-			
 			throw std::runtime_error(std::string("Poll failed: ") + std::strerror(errno));
 		}
-		if (ret == 0) continue; // Timeout
-		for (size_t i = 0; i < _pollFds.size(); ++i)
+		else
 		{
-			if (_pollFds[i].revents == 0)
-				continue;
+			for (size_t i = 0; i < _pollFds.size(); ++i)
+			{
+				if (_pollFds[i].revents == 0) continue;
+				int currectFd = _pollFds[i].fd;
 
-			// Handle Errors (Disconnects)
-			if (_pollFds[i].revents & (POLLERR | POLLHUP | POLLNVAL))
-			{
-				// TO-DO: close(_pollFds[i].fd); 
-				// TO-DO: Remove from _pollFds vector (careful with 'i' decrement!)				continue;
-				continue;
-			}
-			// Handle Incoming Data (Ready to Read)
-			if (_pollFds[i].revents & POLLIN)
-			{
-				if (_isListener(_pollFds[i].fd))
+            	// 1. HANDLE ERRORS OR DISCONNECTS
+				if (_pollFds[i].revents & (POLLERR | POLLHUP | POLLNVAL))
 				{
-					this->_acceptNewConnection(_pollFds[i].fd);
-
-				// else
+					_closeConnection(i);
+                	--i; // Check the new element shifted into this index
+				}
+				// 2. HANDLE READS
+				else if (_pollFds[i].revents & POLLIN)
+				{
+					if (_isListener(_pollFds[i].fd))
+						this->_acceptNewConnection(_pollFds[i].fd);
+					// else
+					// 	this->_readRequest(i, _pollFds);
+				}
+				// 3. HANDLE WRITES
+				// else if (_pollFds[i].revents & POLLOUT)
 				// {
-				// 	this->_readRequest(i, _pollFds);
+				// 	this->_sendResponse(i, _pollFds);
 				// }
 			}
-
-			// // Handle Outgoing Data (Ready to Write)
-			// if (_pollFds[i].revents & POLLOUT)
-			// {
-			// 	this->_sendResponse(i, _pollFds);
-			// }
-			}
 		}
+
 	}
+}
+
+/* private section ---------------------------- */
+void WebServ::_addNewFdtoPool(int newFd, short events) // short for data type used for the bitmask of events
+{
+	// Sanity check: Ensure the FD is valid
+	if (newFd < 0) return;
+
+	struct pollfd pfd;
+	pfd.fd = newFd;
+	pfd.events = events;
+	pfd.revents = 0;
+	_pollFds.push_back(pfd);
+
+	std::cout << "[Poll] Added FD " << newFd << " to monitoring pool." << std::endl; //log
 }
 
 bool WebServ::_isListener(int fd)
@@ -149,31 +132,54 @@ void WebServ::_acceptNewConnection(int listenFd)
 	struct sockaddr_in clientAddr;
 	socklen_t clientLen = sizeof(clientAddr);
 
-	int clientFd = accept(listenFd, (struct sockaddr *)&clientAddr, &clientLen);
-	if (clientFd < 0)
-		return; // Handle error (e.g., EAGAIN)
-
-
-		
-	// Make it non-blocking
-	if (fcntl(clientFd, F_SETFL, O_NONBLOCK) < 0) {
-			close(clientFd);
+	int connFd = accept(listenFd, (struct sockaddr *)&clientAddr, &clientLen);
+	if (connFd < 0)
+	{
+		std::cerr << "Accept failed on fd " << listenFd << std::endl;
+		return;
+	}
+	if (fcntl(connFd, F_SETFL, O_NONBLOCK) < 0) // non-blocking
+	{
+			close(connFd);
 			return;
-		}
-	// Add the client socket to our master poll vector
-	struct pollfd pollFd;
-	pollFd.fd = clientFd;
-	pollFd.events = POLLIN | POLLOUT; //??
-	pollFd.revents = 0;
-	_pollFds.push_back(pollFd);
+	}
+	_addNewFdtoPool(connFd, POLLIN);
+	try
+	{
+		_fdToConnMap[connFd] = new Connection(connFd, clientAddr); //can throw exception
+		std::cout << "[WebServ] New connection accepted on FD: " << connFd << std::endl; // log
+	} 
+	catch (const std::exception &e)
+	{
+		close(connFd);
+		_pollFds.pop_back();
+		std::cerr << "Memory allocation failed for new connection" << std::endl;
+	}
 
-	//JUST FOR TESTS:
-	std::cout << "Connection accepted! FD: " << clientFd << std::endl;
-	std::string msg = "Hello World! TEST MESSAGE\n";
-	send(clientFd, msg.c_str(), msg.length(), 0);
-	
-	// // Create a Client object to track this specific connection
-	// _clients[clientFd] = Client(clientFd, clientAddr);
+	// //JUST FOR TESTS:
+	// std::cout << "Connection accepted! FD: " << connFd << std::endl;
+	// std::string msg = "Hello World! TEST MESSAGE\n";
+	// send(connFd, msg.c_str(), msg.length(), 0);
+}
+
+void WebServ::_closeConnection(size_t index)
+{
+	int fd = _pollFds[index].fd;
+
+	//1. CLEAN UP CONNECTION
+	if (_fdToConnMap.count(fd))
+	{
+		delete _fdToConnMap[fd];
+		_fdToConnMap.erase(fd);
+	}
+	//2. CLOSE FD
+	if (fd != -1)
+        close(fd);
+	//3. REMOVE FROM FD POOL (USING SWAP/POP, O(1) efficiency)
+	_pollFds[index] = _pollFds.back();
+	_pollFds.pop_back();
+
+	std::cout << "Closed connection on FD: " << fd << std::endl;
 }
 
 // // void WebServ::_readRequest(size_t indexClientFd)

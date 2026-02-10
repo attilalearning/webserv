@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mosokina <mosokina@student.42london.com    +#+  +:+       +#+        */
+/*   By: mosokina <mosokina@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/23 14:46:16 by mosokina          #+#    #+#             */
-/*   Updated: 2026/02/04 11:04:15 by mosokina         ###   ########.fr       */
+/*   Updated: 2026/02/09 14:06:54 by mosokina         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,6 +21,8 @@
 #include <unistd.h>		// close
 #include <iostream>
 #include <stdexcept>
+#include <cerrno>
+#include <cstring>
 
 #include "ConfigStructs.hpp"
 #include "Utils.hpp"
@@ -35,6 +37,7 @@ public:
 	int getListenFd() const;
 
 private:
+
 	// Rule of Three: Private and Unimplemented to prevent copying
 	Server(const Server &other);
 	Server &operator=(const Server &other);
