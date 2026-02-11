@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mosokina <mosokina@student.42.fr>          +#+  +:+       +#+        */
+/*   By: mosokina <mosokina@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/23 14:48:56 by mosokina          #+#    #+#             */
-/*   Updated: 2026/02/10 00:14:01 by mosokina         ###   ########.fr       */
+/*   Updated: 2026/02/11 12:48:34 by mosokina         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -79,7 +79,7 @@ struct sockaddr_in Server::_getSocketAddress(const std::string &host, int port)
 
 	std::string portStr = toString(port);
 
-	const char* hostPtr = (host.empty() || host == "0.0.0.0") ? NULL : host.c_str();
+	const char *hostPtr = (host.empty() || host == "0.0.0.0") ? NULL : host.c_str();
 	int status = getaddrinfo(hostPtr, portStr.c_str(), &hints, &result);
 	if (status != 0)
 	{

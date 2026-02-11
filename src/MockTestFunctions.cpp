@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   MockTestFunctions.cpp                              :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: mosokina <mosokina@student.42london.com    +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2026/02/11 12:49:30 by mosokina          #+#    #+#             */
+/*   Updated: 2026/02/11 12:49:31 by mosokina         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "../inc/MockTestFnctions.hpp"
 
 // FOR TESTING (runTemporaryTest() should be replaced by run() with poll() approach):
@@ -57,7 +69,6 @@ void runTemporaryTest(WebServ &ws)
 		std::cout << "Connection closed. Ready for next test..." << std::endl;
 	}
 }
-
 
 /*JUST FOR TESTING (getMockConfig() should be replaced by ConfigParser)*/
 std::vector<ServerConfig> getMockConfig()

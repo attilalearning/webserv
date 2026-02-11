@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   main.cpp                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mosokina <mosokina@student.42.fr>          +#+  +:+       +#+        */
+/*   By: mosokina <mosokina@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/14 19:02:21 by aistok            #+#    #+#             */
-/*   Updated: 2026/02/10 00:10:24 by mosokina         ###   ########.fr       */
+/*   Updated: 2026/02/11 12:48:27 by mosokina         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,14 +17,12 @@
 #include "ConfigStructs.hpp"
 #include "Server.hpp"
 
-
 #include "MockTestFnctions.hpp"
 
 /*How to Test:
 1 - Run it: ./webserv
 2 - Open a new terminal and type: telnet localhost 8080 (or whatever port you used).
 3 - TO BE ADDED.*/
-
 
 volatile sig_atomic_t g_server_running = 1;
 void handleSigint(int sig)
@@ -35,9 +33,9 @@ void handleSigint(int sig)
 
 int main(int argc, char **argv)
 {
-	signal(SIGPIPE, SIG_IGN); // Prevents crash on broken pipe
+	signal(SIGPIPE, SIG_IGN);	  // Prevents crash on broken pipe
 	signal(SIGINT, handleSigint); // Handles Ctrl+C
-	
+
 	if (argc > 2)
 	{
 		std::cerr << "Usage: ./webserv [config_file]" << std::endl;

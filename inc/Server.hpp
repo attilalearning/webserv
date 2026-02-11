@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mosokina <mosokina@student.42.fr>          +#+  +:+       +#+        */
+/*   By: mosokina <mosokina@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/23 14:46:16 by mosokina          #+#    #+#             */
-/*   Updated: 2026/02/09 14:06:54 by mosokina         ###   ########.fr       */
+/*   Updated: 2026/02/11 12:48:48 by mosokina         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,7 +37,6 @@ public:
 	int getListenFd() const;
 
 private:
-
 	// Rule of Three: Private and Unimplemented to prevent copying
 	Server(const Server &other);
 	Server &operator=(const Server &other);

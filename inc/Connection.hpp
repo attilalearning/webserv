@@ -1,14 +1,27 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   Connection.hpp                                     :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: mosokina <mosokina@student.42london.com    +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2026/02/11 12:49:22 by mosokina          #+#    #+#             */
+/*   Updated: 2026/02/11 12:49:23 by mosokina         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #ifndef CONNECTION_HPP
 #define CONNECTION_HPP
 
 #include <string>
 #include <iostream>
-#include <unistd.h>		// close
+#include <unistd.h> // close
 #include "Server.hpp"
 
-class Connection {
+class Connection
+{
 public:
-	Connection(int fd, sockaddr_in clientAddr, Server* server);
+	Connection(int fd, sockaddr_in clientAddr, Server *server);
 	~Connection();
 
 private:
@@ -21,14 +34,13 @@ private:
 
 	int _connectFd;
 	sockaddr_in _clientAddr;
-	Server* _server;
+	Server *_server;
 	// std::string _clientIP;
 	// time_t _lastActivity; // Great for timeout logic!
 
 	// Parsed data
-	// HttpRequest     _request; 
+	// HttpRequest     _request;
 	// HttpResponse    _response;
-
 };
 
 #endif
