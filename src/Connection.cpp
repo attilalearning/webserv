@@ -1,6 +1,8 @@
 #include "Connection.hpp"
 
-Connection::Connection(int fd, sockaddr_in clientAddr) : _connectFd(fd), _clientAddr(clientAddr) {}
+Connection::Connection(int fd, sockaddr_in clientAddr, Server* server):
+_connectFd(fd), _clientAddr(clientAddr), _server(server)
+{}
 
 Connection::~Connection()
 {
@@ -9,6 +11,6 @@ Connection::~Connection()
 		std::cout << "Closing fd " << _connectFd << std::endl;
 		close(_connectFd);
 		_connectFd = -1;
+
 	}
 }
-

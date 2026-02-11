@@ -6,7 +6,7 @@
 /*   By: mosokina <mosokina@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/14 19:03:57 by aistok            #+#    #+#             */
-/*   Updated: 2026/02/10 00:39:26 by mosokina         ###   ########.fr       */
+/*   Updated: 2026/02/11 01:10:53 by mosokina         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -60,6 +60,7 @@ private:
 	bool _isListener(int fd);
 	void _acceptNewConnection(int listenFd);
 	void _closeConnection(size_t index);
+	bool _readRequest(size_t index); // return status of connection (opened/closed)
 
 
 	std::vector<Server *> _servers; // all server instances

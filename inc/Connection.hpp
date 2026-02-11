@@ -4,30 +4,30 @@
 #include <string>
 #include <iostream>
 #include <unistd.h>		// close
+#include "Server.hpp"
 
 class Connection {
 public:
-	Connection(int fd, sockaddr_in clientAddr);
+	Connection(int fd, sockaddr_in clientAddr, Server* server);
 	~Connection();
-
-	void setupConnection(); // bind(), socket setup
-	int getConnectFd() const;
 
 private:
 	// Rule of Three: Private and Unimplemented to prevent copying
 	Connection(const Connection &other);
 	Connection &operator=(const Connection &other);
 
+	// void _appendRequest(char *buffer, int bytesRead); // TO-DO
+	// bool _isRequestComplete(); // TO-DO
+
 	int _connectFd;
 	sockaddr_in _clientAddr;
-	// std::string _clientIp;
+	Server* _server;
+	// std::string _clientIP;
 	// time_t _lastActivity; // Great for timeout logic!
 
 	// Parsed data
 	// HttpRequest     _request; 
 	// HttpResponse    _response;
-	Connection(const Connection& other); // Non-copyable
-	Connection& operator=(const Connection& other);
 
 };
 
