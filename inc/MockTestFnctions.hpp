@@ -6,7 +6,7 @@
 /*   By: mosokina <mosokina@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/11 12:49:26 by mosokina          #+#    #+#             */
-/*   Updated: 2026/02/11 12:49:27 by mosokina         ###   ########.fr       */
+/*   Updated: 2026/02/11 13:38:19 by mosokina         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,9 +16,9 @@
 #include <iostream>
 #include <csignal>
 
-#include "../inc/WebServ.hpp"
-#include "../inc/ConfigStructs.hpp"
-#include "../inc/Server.hpp"
+#include "WebServ.hpp"
+#include "ConfigStructs.hpp"
+#include "Server.hpp"
 
 std::vector<ServerConfig> getMockConfig();
 void runTemporaryTest(WebServ &ws);

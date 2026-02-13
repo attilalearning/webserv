@@ -6,7 +6,7 @@
 /*   By: mosokina <mosokina@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/23 14:48:56 by mosokina          #+#    #+#             */
-/*   Updated: 2026/02/11 12:48:34 by mosokina         ###   ########.fr       */
+/*   Updated: 2026/02/13 15:24:48 by mosokina         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -54,13 +54,13 @@ void Server::setupServer()
 	// 4. Prepare address structure
 	_address = _getSocketAddress(_config.host, _config.port);
 	// 5. Bind socket to the address/port
-	if (bind(_listenFd, (struct sockaddr *)&_address, sizeof(_address)) == -1)
+	if (bind(_listenFd, (sockaddr *)&_address, sizeof(_address)) == -1)
 	{
 		// throw std::runtime_error("Failed to bind to port " + toString(_config.port));
 		throw std::runtime_error("Failed to bind to port " + toString(_config.port) + ": " + std::strerror(errno));
 	}
 	// 6. Start listening for incoming connections
-	if (listen(_listenFd, 128) == -1)
+	if (listen(_listenFd, BACKLOG) == -1)
 	{
 		throw std::runtime_error("Failed to listen on socket");
 	}
@@ -68,28 +68,39 @@ void Server::setupServer()
 }
 
 // Helper function to resolve host/port to sockaddr_in
-struct sockaddr_in Server::_getSocketAddress(const std::string &host, int port)
+sockaddr_in Server::_getSocketAddress(const std::string &host, int port) const
 {
-	struct addrinfo hints;
+	addrinfo hints;
+	addrinfo *result = NULL;
+	sockaddr_in addr;
+
 	std::memset(&hints, 0, sizeof(hints));
-	struct addrinfo *result;
-	hints.ai_family = AF_INET;		 // IPv4
+	std::memset(&addr, 0, sizeof(addr));
+	hints.ai_family = AF_INET;		 // Force IPv4
 	hints.ai_socktype = SOCK_STREAM; // TCP
-	hints.ai_flags = AI_PASSIVE;
 
 	std::string portStr = toString(port);
 
 	const char *hostPtr = (host.empty() || host == "0.0.0.0") ? NULL : host.c_str();
+	if (hostPtr == NULL)
+	{
+		hints.ai_flags = AI_PASSIVE; // for binding to all interfaces
+	}
 	int status = getaddrinfo(hostPtr, portStr.c_str(), &hints, &result);
 	if (status != 0)
 	{
 		throw std::runtime_error("DNS Error: " + std::string(gai_strerror(status)));
 	}
-	if (!result)
+	if (result && result->ai_addr)
 	{
+		addr = *(sockaddr_in *)result->ai_addr;
+	}
+	else
+	{
+		if (result)
+			freeaddrinfo(result);
 		throw std::runtime_error("DNS Error: No address found for " + host);
 	}
-	struct sockaddr_in addr = *(struct sockaddr_in *)result->ai_addr;
 	freeaddrinfo(result);
 	return addr;
 }

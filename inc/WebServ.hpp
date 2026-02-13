@@ -6,7 +6,7 @@
 /*   By: mosokina <mosokina@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/14 19:03:57 by aistok            #+#    #+#             */
-/*   Updated: 2026/02/11 12:48:42 by mosokina         ###   ########.fr       */
+/*   Updated: 2026/02/13 15:26:05 by mosokina         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -60,8 +60,9 @@ private:
 	void _closeConnection(size_t index);
 	bool _readRequest(size_t index); // return status of connection (opened/closed)
 
+	static const int POLL_TIMEOUT = 1000;	// Wait up to 1 sec for events
 	std::vector<Server *> _servers;			// all server instances
-	std::vector<struct pollfd> _pollFds;	// poll array for the whole program
+	std::vector<pollfd> _pollFds;			// poll array for the whole program
 	std::map<int, Server *> _fdToServerMap; // helps quickly find which server owns which FD
 	std::map<int, Connection *> _fdToConnMap;
 };

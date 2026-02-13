@@ -6,13 +6,13 @@
 /*   By: mosokina <mosokina@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/11 12:49:10 by mosokina          #+#    #+#             */
-/*   Updated: 2026/02/11 12:49:11 by mosokina         ###   ########.fr       */
+/*   Updated: 2026/02/13 15:15:21 by mosokina         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Connection.hpp"
 
-Connection::Connection(int fd, sockaddr_in clientAddr, Server *server) : _connectFd(fd), _clientAddr(clientAddr), _server(server)
+Connection::Connection(int fd, const sockaddr_in &clientAddr, Server *server) : _connectFd(fd), _clientAddr(clientAddr), _server(server)
 {
 }
 

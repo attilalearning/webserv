@@ -6,7 +6,7 @@
 /*   By: mosokina <mosokina@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/11 12:49:30 by mosokina          #+#    #+#             */
-/*   Updated: 2026/02/11 12:49:31 by mosokina         ###   ########.fr       */
+/*   Updated: 2026/02/13 15:14:49 by mosokina         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,12 +34,12 @@ void runTemporaryTest(WebServ &ws)
 	std::cout << "--- [STARTING TEMPORARY TEST] ---" << std::endl;
 	std::cout << "Waiting for telnet on the first configured port..." << std::endl;
 
-	struct sockaddr_in clientAddr;
+	sockaddr_in clientAddr;
 	socklen_t clientLen = sizeof(clientAddr);
 
 	while (true)
 	{
-		int clientFd = accept(listenFd, (struct sockaddr *)&clientAddr, &clientLen);
+		int clientFd = accept(listenFd, (sockaddr *)&clientAddr, &clientLen);
 
 		if (clientFd == -1)
 		{

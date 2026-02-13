@@ -6,7 +6,7 @@
 /*   By: mosokina <mosokina@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/14 19:03:57 by aistok            #+#    #+#             */
-/*   Updated: 2026/02/11 12:48:37 by mosokina         ###   ########.fr       */
+/*   Updated: 2026/02/13 15:26:24 by mosokina         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -72,15 +72,15 @@ void WebServ::run(void)
 {
 	while (g_server_running)
 	{
-		int ret = poll(&_pollFds[0], _pollFds.size(), 1000); // 1000ms timeout
+		int ret = poll(&_pollFds[0], _pollFds.size(), POLL_TIMEOUT);
 		if (ret == 0)
 			continue; // Timeout
 		// Handle Poll Errors
 		if (ret < 0)
 		{
 			if (errno == EINTR)
-				continue; // System call interrupted
-			if (g_server_running == 0)
+				continue;			   // Interrupted by other system calls than Ctrl + C
+			if (g_server_running == 0) // Interrupted by Ctrl + C
 				break;
 			throw std::runtime_error(std::string("Poll failed: ") + std::strerror(errno));
 		}
@@ -135,7 +135,7 @@ void WebServ::_addNewFdtoPool(int newFd, short events) // short - data type for 
 	if (newFd < 0)
 		return;
 
-	struct pollfd pfd;
+	pollfd pfd;
 	pfd.fd = newFd;
 	pfd.events = events;
 	pfd.revents = 0;
@@ -151,10 +151,10 @@ bool WebServ::_isListener(int fd)
 
 void WebServ::_acceptNewConnection(int listenFd)
 {
-	struct sockaddr_in clientAddr;
+	sockaddr_in clientAddr;
 	socklen_t clientLen = sizeof(clientAddr);
 	// 1. ACCEPT CONNECTION
-	int connFd = accept(listenFd, (struct sockaddr *)&clientAddr, &clientLen);
+	int connFd = accept(listenFd, (sockaddr *)&clientAddr, &clientLen);
 	if (connFd < 0)
 	{
 		std::cerr << "Accept failed on fd " << listenFd << std::endl;

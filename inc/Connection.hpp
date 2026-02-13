@@ -6,7 +6,7 @@
 /*   By: mosokina <mosokina@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/11 12:49:22 by mosokina          #+#    #+#             */
-/*   Updated: 2026/02/11 12:49:23 by mosokina         ###   ########.fr       */
+/*   Updated: 2026/02/13 15:24:31 by mosokina         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,7 +21,7 @@
 class Connection
 {
 public:
-	Connection(int fd, sockaddr_in clientAddr, Server *server);
+	Connection(int fd, const sockaddr_in &clientAddr, Server *server); // check later -  const for Server)
 	~Connection();
 
 private:
