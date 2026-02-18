@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   WebServ.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mosokina <mosokina@student.42london.com    +#+  +:+       +#+        */
+/*   By: mosokina <mosokina@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/14 19:03:57 by aistok            #+#    #+#             */
-/*   Updated: 2026/02/13 15:26:24 by mosokina         ###   ########.fr       */
+/*   Updated: 2026/02/16 20:29:39 by mosokina         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,14 +21,21 @@ WebServ::WebServ()
 
 WebServ::~WebServ()
 {
+	// 1. Servers (Static)
 	for (size_t i = 0; i < _servers.size(); ++i)
 	{
-		delete _servers[i]; // This triggers the Server destructor and closes the FD
+		delete _servers[i]; // Triggers ~Server() -> close(_listenFd)
 	}
 	_servers.clear();
+	// 2. Connections (Dynamic)
+	std::map<int, Connection *>::iterator it;
+	for (it = _fdToConnMap.begin(); it != _fdToConnMap.end(); ++it)
+	{
+		delete it->second; // Triggers ~Connection() -> close(_connectFd)
+	}
+	_fdToConnMap.clear();
 	_pollFds.clear();
-	// TODO - Clear any dynamically allocated client objects
-	std::cout << "All sockets closed. Cleanup complete." << std::endl;
+	std::cout << "[WebServ] All sockets closed. Cleanup complete." << std::endl;
 }
 
 std::vector<Server *> WebServ::getServers() const
@@ -50,11 +57,14 @@ void WebServ::setup(std::vector<ServerConfig> &configs)
 			_servers.push_back(newServer);
 			_addNewFdtoPool(listenFd, POLLIN);
 			_fdToServerMap[listenFd] = newServer;
+			std::cout << "[WebServ] New Server setted up on FD: " << listenFd << std::endl; // log
+
 		}
 		catch (const std::exception &e)
 		{
-			delete newServer;
-			std::cerr << "Failed to setup server: " << e.what() << std::endl;
+			std::cerr << "Failed to setup server " << configs[i].host << ":" << configs[i].port  << ": "<< e.what() << std::endl;
+			if (newServer)
+				delete newServer;
 		}
 	}
 }
@@ -109,7 +119,8 @@ void WebServ::run(void)
 				// this->_sendResponse(i);
 
 				// JUST FOR TEST:
-				std::string msg = "Hello World!\n";
+				// std::string msg = "Hello World!\n";
+				std::string msg = "HTTP/1.1 200 OK\r\nContent-Length: 13\r\n\r\nHello World!\n";
 				send(_pollFds[i].fd, msg.c_str(), msg.length(), 0);
 				_pollFds[i].events &= ~POLLOUT;
 			}
@@ -156,12 +167,12 @@ void WebServ::_acceptNewConnection(int listenFd)
 	// 1. ACCEPT CONNECTION
 	int connFd = accept(listenFd, (sockaddr *)&clientAddr, &clientLen);
 	if (connFd < 0)
-	{
+	{	
 		std::cerr << "Accept failed on fd " << listenFd << std::endl;
 		return;
 	}
 	// 2. SET NON-BLOCKING
-	if (fcntl(connFd, F_SETFL, O_NONBLOCK) < 0)
+	if (fcntl(connFd, F_SETFL, O_NONBLOCK) == -1)
 	{
 		close(connFd);
 		return;
@@ -174,15 +185,15 @@ void WebServ::_acceptNewConnection(int listenFd)
 		newConn = new Connection(connFd, clientAddr, server); // can throw exception
 		_addNewFdtoPool(connFd, POLLIN);
 		_fdToConnMap[connFd] = newConn;
-		std::cout << "[WebServ] New connection accepted on FD: " << connFd << std::endl; // log
+		std::cout << "[WebServ] New connection accepted on FD: " << connFd << " (Listener FD " << listenFd << ")" << std::endl; // log
 	}
 	catch (const std::exception &e)
 	{
 		std::cerr << "Failed to create connection: " << e.what() << std::endl;
 		if (newConn)
 			delete newConn;
-		close(connFd);
-		std::cerr << "Memory allocation failed for new connection" << std::endl;
+		else
+			close(connFd);
 	}
 }
 
@@ -193,13 +204,10 @@ void WebServ::_closeConnection(size_t index)
 	// 1. CLEAN UP CONNECTION
 	if (_fdToConnMap.count(fd))
 	{
-		delete _fdToConnMap[fd];
+		delete _fdToConnMap[fd]; //trigger closing fd
 		_fdToConnMap.erase(fd);
 	}
-	// 2. CLOSE FD
-	if (fd != -1)
-		close(fd);
-	// 3. REMOVE FROM FD POOL (USING SWAP/POP, O(1) efficiency)
+	// 2. REMOVE FROM FD POOL (USING SWAP/POP, O(1) efficiency)
 	_pollFds[index] = _pollFds.back();
 	_pollFds.pop_back();
 
@@ -208,7 +216,7 @@ void WebServ::_closeConnection(size_t index)
 
 bool WebServ::_readRequest(size_t index)
 {
-	char buffer[1024] = {0}; // CHANGE TO BUFFER_SIZE??
+	char buffer[BUFFER_SIZE] = {0};
 	int fd = _pollFds[index].fd;
 	// int bytesRead = recv(fd, buffer, sizeof(buffer), 0);
 	int bytesRead = recv(fd, buffer, sizeof(buffer) - 1, 0); // JUST FOR TEST
@@ -224,22 +232,23 @@ bool WebServ::_readRequest(size_t index)
 			// // Optional: Check if request is complete immediately
 			// if (_fdToConnMap[fd]->_isRequestComplete())
 			_pollFds[index].events |= POLLOUT; // Enable writing
-
 			// JUST FOR TESTS:
 			buffer[bytesRead] = '\0'; // Explicitly null-terminate
 			std::cout << "Received from client: " << buffer << std::endl;
 		}
 		return true;
 	}
-	// CASE B: Client Closed Connection (FIN) OR Error (-1)
+	// CASE B: Soft Error (Try again later)
+	else if (bytesRead == -1 && (errno == EAGAIN || errno == EWOULDBLOCK || errno == EINTR)) //EINTR - signals case
+		return true;
+	// CASE C: Client Closed Connection (FIN) OR Error (-1)
 	else
 	{
 		if (bytesRead == 0)
 			std::cout << "[WebServ] Client closed connection on FD: " << fd << std::endl;
+			
 		else
-			std::cout << "[WebServ] Recv returned -1 on FD: " << fd << ". Closing." << std::endl;
-		;
-
+			std::cout << "[WebServ] Fatal recv error on FD: " << fd << ". Closing." << std::endl;
 		_closeConnection(index);
 		return false;
 	}

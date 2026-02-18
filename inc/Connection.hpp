@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Connection.hpp                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mosokina <mosokina@student.42london.com    +#+  +:+       +#+        */
+/*   By: mosokina <mosokina@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/11 12:49:22 by mosokina          #+#    #+#             */
-/*   Updated: 2026/02/13 15:24:31 by mosokina         ###   ########.fr       */
+/*   Updated: 2026/02/16 17:49:47 by mosokina         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,7 +34,8 @@ private:
 
 	int _connectFd;
 	sockaddr_in _clientAddr;
-	Server *_server;
+	Server *_server; // for getting  client_max_body_size from the server config
+	std::string _rawRequest; // as a buffer to accumulate data from multiple recv() calls
 	// std::string _clientIP;
 	// time_t _lastActivity; // Great for timeout logic!
 
