@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mosokina <mosokina@student.42london.com    +#+  +:+       +#+        */
+/*   By: mosokina <mosokina@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/23 14:48:56 by mosokina          #+#    #+#             */
-/*   Updated: 2026/02/13 15:24:48 by mosokina         ###   ########.fr       */
+/*   Updated: 2026/02/21 23:23:15 by mosokina         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,11 +44,15 @@ void Server::setupServer()
 	int opt = 1;
 	if (setsockopt(_listenFd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) == -1)
 	{
+		close(_listenFd);
+		_listenFd = -1;
 		throw std::runtime_error("Failed to set setsockopt");
 	}
 	// 3. Set to Non-Blocking (Crucial for WebServ requirements)
-	if (fcntl(_listenFd, F_SETFL, O_NONBLOCK) == -1)
+	if (setNonBlocking(_listenFd) == false)
 	{
+		close(_listenFd);
+		_listenFd = -1;
 		throw std::runtime_error("Failed to set non-blocking mode");
 	}
 	// 4. Prepare address structure

@@ -6,7 +6,7 @@
 /*   By: mosokina <mosokina@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/14 19:03:57 by aistok            #+#    #+#             */
-/*   Updated: 2026/02/16 20:29:39 by mosokina         ###   ########.fr       */
+/*   Updated: 2026/02/21 23:57:58 by mosokina         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -108,7 +108,7 @@ void WebServ::run(void)
 				if (_isListener(_pollFds[i].fd))
 					this->_acceptNewConnection(_pollFds[i].fd);
 				else if (this->_readRequest(i) == false) // if close connection
-					i--;
+					i--; // <--- THIS is what makes the Swap & Pop safe!
 			}
 
 			// 2. HANDLE WRITES
@@ -168,20 +168,30 @@ void WebServ::_acceptNewConnection(int listenFd)
 	int connFd = accept(listenFd, (sockaddr *)&clientAddr, &clientLen);
 	if (connFd < 0)
 	{	
+		if (errno == EAGAIN || errno == EWOULDBLOCK || errno == EINTR)
+			 return;
 		std::cerr << "Accept failed on fd " << listenFd << std::endl;
 		return;
 	}
 	// 2. SET NON-BLOCKING
-	if (fcntl(connFd, F_SETFL, O_NONBLOCK) == -1)
+	if (setNonBlocking(connFd)  == false)
 	{
 		close(connFd);
+		connFd = -1;
 		return;
 	}
 	// 3. CREAT CONNECTION OBJECT
 	Connection *newConn = NULL;
 	try
 	{
-		Server *server = _fdToServerMap[listenFd];
+		std::map<int, Server *>::iterator it = _fdToServerMap.find(listenFd);
+		if (it == _fdToServerMap.end())
+		{
+			std::cerr << "[WebServ] Critical Error: Listener FD " << listenFd << " not associated with any Server." << std::endl;
+    		close(connFd);
+    		return;
+		}
+		Server *server = it->second;
 		newConn = new Connection(connFd, clientAddr, server); // can throw exception
 		_addNewFdtoPool(connFd, POLLIN);
 		_fdToConnMap[connFd] = newConn;
@@ -189,11 +199,8 @@ void WebServ::_acceptNewConnection(int listenFd)
 	}
 	catch (const std::exception &e)
 	{
-		std::cerr << "Failed to create connection: " << e.what() << std::endl;
-		if (newConn)
-			delete newConn;
-		else
-			close(connFd);
+		std::cerr << "[WebServ] Failed to create connection: " << e.what() << std::endl;
+		close(connFd);
 	}
 }
 
@@ -219,23 +226,31 @@ bool WebServ::_readRequest(size_t index)
 	char buffer[BUFFER_SIZE] = {0};
 	int fd = _pollFds[index].fd;
 	// int bytesRead = recv(fd, buffer, sizeof(buffer), 0);
+
+	std::map<int, Connection *>::iterator it = _fdToConnMap.find(fd);
+	if (it == _fdToConnMap.end())
+	{
+		std::cerr << "[WebServ] Critical: No connection object for FD " << fd << std::endl;
+		_closeConnection(index);
+		return false;
+	}
+	Connection *conn = it->second;
+	(void)conn;
+
 	int bytesRead = recv(fd, buffer, sizeof(buffer) - 1, 0); // JUST FOR TEST
 
 	// CASE A: Data Received
 	if (bytesRead > 0)
 	{
-		// Locate the connection object
-		if (_fdToConnMap.count(fd))
-		{
-			// // Append data to your Connection object's internal buffer
-			// _fdToConnMap[fd]->_appendRequest(buffer, bytesRead);
-			// // Optional: Check if request is complete immediately
-			// if (_fdToConnMap[fd]->_isRequestComplete())
-			_pollFds[index].events |= POLLOUT; // Enable writing
-			// JUST FOR TESTS:
-			buffer[bytesRead] = '\0'; // Explicitly null-terminate
-			std::cout << "Received from client: " << buffer << std::endl;
-		}
+		// JUST FOR TESTS:
+		buffer[bytesRead] = '\0';
+		std::cout << "Received " << bytesRead << " bytes from FD " << fd << std::endl;
+		
+		// conn->_appendRequest(buffer, bytesRead); 
+		// Only flip to POLLOUT after full parcing, valid request
+		//if (conn->_isRequestComplete())
+		// For now, we leave it for testing:
+		_pollFds[index].events |= POLLOUT; 
 		return true;
 	}
 	// CASE B: Soft Error (Try again later)
@@ -248,7 +263,7 @@ bool WebServ::_readRequest(size_t index)
 			std::cout << "[WebServ] Client closed connection on FD: " << fd << std::endl;
 			
 		else
-			std::cout << "[WebServ] Fatal recv error on FD: " << fd << ". Closing." << std::endl;
+			std::cerr << "[WebServ] Fatal recv error on FD: " << fd << ". Closing." << std::endl;
 		_closeConnection(index);
 		return false;
 	}
