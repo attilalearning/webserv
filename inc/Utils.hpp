@@ -24,7 +24,19 @@ std::string toString(const T &value)
 	return oss.str();
 }
 
+template <typename T>
+bool toNumber(const std::string &str, T &out)
+{
+	std::istringstream iss(str);
+	iss >> out;
+
+	return !iss.fail() && iss.eof();
+}
+
 bool setNonBlocking(int fd);
 
+std::string toUpperCase(std::string &str);
+std::string &capitaliseFirstLetter(std::string &str);
+std::string &trimString(std::string &str, std::string stripChars);
 
 #endif
