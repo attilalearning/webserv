@@ -6,7 +6,7 @@
 /*   By: mosokina <mosokina@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/14 19:03:57 by aistok            #+#    #+#             */
-/*   Updated: 2026/02/21 23:57:58 by mosokina         ###   ########.fr       */
+/*   Updated: 2026/02/22 00:20:58 by mosokina         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -51,7 +51,7 @@ void WebServ::setup(std::vector<ServerConfig> &configs)
 		try
 		{
 			newServer = new Server(configs[i]);
-			newServer->setupServer(); // Creates the socket, bind, listen
+			newServer->initSocket(); // Creates the socket, bind, listen
 			int listenFd = newServer->getListenFd();
 
 			_servers.push_back(newServer);

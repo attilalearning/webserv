@@ -6,7 +6,7 @@
 /*   By: mosokina <mosokina@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/23 14:48:56 by mosokina          #+#    #+#             */
-/*   Updated: 2026/02/21 23:23:15 by mosokina         ###   ########.fr       */
+/*   Updated: 2026/02/22 00:25:48 by mosokina         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,7 +32,7 @@ int Server::getListenFd() const
 	return _listenFd;
 }
 
-void Server::setupServer()
+void Server::initSocket()
 {
 	// 1. Create the socket (IPv4, TCP)
 	_listenFd = socket(AF_INET, SOCK_STREAM, 0);
@@ -60,12 +60,15 @@ void Server::setupServer()
 	// 5. Bind socket to the address/port
 	if (bind(_listenFd, (sockaddr *)&_address, sizeof(_address)) == -1)
 	{
-		// throw std::runtime_error("Failed to bind to port " + toString(_config.port));
+		close(_listenFd);
+		_listenFd = -1;		
 		throw std::runtime_error("Failed to bind to port " + toString(_config.port) + ": " + std::strerror(errno));
 	}
 	// 6. Start listening for incoming connections
 	if (listen(_listenFd, BACKLOG) == -1)
 	{
+		close(_listenFd);
+		_listenFd = -1;
 		throw std::runtime_error("Failed to listen on socket");
 	}
 	std::cout << "[Server] Listening on " << _config.host << ":" << _config.port << std::endl;
