@@ -6,20 +6,21 @@
 /*   By: aistok <aistok@student.42london.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/16 16:34:38 by aistok            #+#    #+#             */
-/*   Updated: 2026/02/23 20:27:19 by aistok           ###   ########.fr       */
+/*   Updated: 2026/02/23 23:34:49 by aistok           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "HTTP_Response.hpp"
+#include <sstream>
 
 HTTP_Response::HTTP_Response()
-	: bodyLen(0), body(""), status(HTTP_Status::UNSET), version(HTTP_Version::v1_1)
+	: bodyLen(0), body(""), _status(HTTP_Status::UNSET), _version(HTTP_Version::v1_1)
 {
 	// done
 }
 
 HTTP_Response::HTTP_Response(const HTTP_StatusPair &status)
-	: bodyLen(0), body(""), status(status), version(HTTP_Version::v1_1)
+	: bodyLen(0), body(""), _status(status), _version(HTTP_Version::v1_1)
 {
 	// done
 }
@@ -27,7 +28,14 @@ HTTP_Response::HTTP_Response(const HTTP_StatusPair &status)
 // will set status message too add headers
 void HTTP_Response::setStatus(const HTTP_StatusPair &status)
 {
-	this->status = status;
+	_status = status;
+}
+
+std::string HTTP_Response::toString()
+{
+	std::ostringstream oss;
+	oss << *this;
+	return (oss.str());
 }
 
 // figure out, what functions are needed to be able to add
@@ -37,7 +45,7 @@ void HTTP_Response::setStatus(const HTTP_StatusPair &status)
 
 std::ostream &operator<<(std::ostream &os, HTTP_Response &hResp)
 {
-	os << hResp.status.code << " " << hResp.status.text << " " << hResp.version << CRLF;
+	os << hResp._status.code << " " << hResp._status.text << " " << hResp._version << CRLF;
 
 	std::map<std::string, std::string>::const_iterator it;
 	for (it = hResp.headers.begin(); it != hResp.headers.end(); ++it)
@@ -52,6 +60,6 @@ std::ostream &operator<<(std::ostream &os, HTTP_Response &hResp)
 
 	if (hResp.body.size() > 0)
 		os.write(hResp.body.c_str(), hResp.body.size());
-	
+
 	return (os);
 }

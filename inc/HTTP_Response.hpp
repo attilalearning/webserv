@@ -6,7 +6,7 @@
 /*   By: aistok <aistok@student.42london.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/16 16:34:38 by aistok            #+#    #+#             */
-/*   Updated: 2026/02/22 09:29:50 by aistok           ###   ########.fr       */
+/*   Updated: 2026/02/23 23:33:24 by aistok           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,6 +37,8 @@ public:
 	void setStatus(const HTTP_StatusPair &status); // will set status message too
 												   // add headers
 
+	std::string toString();
+
 	// figure out, what functions are needed to be able to add
 	// a body into the response, encode it if needed and
 	// add the appropriate headers for it
@@ -50,8 +52,8 @@ protected:
 	// ...
 
 private:
-	HTTP_StatusPair status;
-	std::string version;
+	HTTP_StatusPair _status;
+	std::string _version;
 };
 
 #endif // HTTP_RESPONSE_HPP
