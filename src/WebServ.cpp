@@ -6,7 +6,7 @@
 /*   By: aistok <aistok@student.42london.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/14 19:03:57 by aistok            #+#    #+#             */
-/*   Updated: 2026/02/23 23:28:31 by aistok           ###   ########.fr       */
+/*   Updated: 2026/02/24 20:19:38 by aistok           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -121,16 +121,18 @@ void WebServ::run(void)
 
 				// JUST FOR TEST:
 				// std::string msg = "Hello World!\n";
-				//std::string msg = "HTTP/1.1 200 OK\r\nContent-Length: 13\r\n\r\nHello World!\n";
-				HTTP::Response hResp(HTTP::Status::NOT_FOUND);
+//				std::string msg = "HTTP/1.1 200 OK\r\nContent-Length: 13\r\n\r\nHello World!\n";
+				HTTP::Response hResp(HTTP::Status::NOT_FOUND, "404 - Sorry, the page was not found... :(\n\r");
 				std::string data_to_send = hResp.toString();
 				std::cout << "Sending below response of " << data_to_send.size() << " bytes" << std::endl;
 				std::cout << ESC_YELLOW_HOLLOW;
 				std::cout << "----------------------------------------------------\n";
 				std::cout << hResp;
+//				std::cout << msg;
 				std::cout << "----------------------------------------------------";
 				std::cout << ESC_END << "\n\n";
 				send(_pollFds[i].fd, data_to_send.c_str(), data_to_send.size(), 0);
+//				send(_pollFds[i].fd, msg.c_str(), msg.size(), 0);
 				_pollFds[i].events &= ~POLLOUT;
 			}
 
