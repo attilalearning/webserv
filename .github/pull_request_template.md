@@ -6,7 +6,7 @@
 
 ## 🧪 Testing & Validation
 - **Compilation:** `make re` (No errors/warnings)
-- **Memory Check:** `valgrind --leak-check=full ./webserv [config]`
+- **Memory Check:** `valgrind --leak-check=full --track-fds=yes ./webserv [config]`
 - **Manual Test:** (e.g., `curl -I localhost:8080`)
 - **Edge Cases:** (e.g., tested with 0-byte file, invalid port, etc.)
 
