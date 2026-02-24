@@ -6,7 +6,7 @@
 /*   By: aistok <aistok@student.42london.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/16 16:34:38 by aistok            #+#    #+#             */
-/*   Updated: 2026/02/24 20:24:20 by aistok           ###   ########.fr       */
+/*   Updated: 2026/02/24 20:29:44 by aistok           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -57,7 +57,7 @@ void HTTP_Response::setContent(std::string text)
 
 std::ostream &operator<<(std::ostream &os, HTTP_Response &hResp)
 {
-	os << hResp._status.code << " " << hResp._status.text << " " << hResp._version << CRLF;
+	os << hResp._version << " " << hResp._status.code << " " << hResp._status.text << CRLF;
 
 	std::map<std::string, std::string>::const_iterator it;
 	for (it = hResp.headers.begin(); it != hResp.headers.end(); ++it)
