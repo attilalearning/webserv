@@ -6,11 +6,11 @@
 /*   By: aistok <aistok@student.42london.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/21 00:07:41 by aistok            #+#    #+#             */
-/*   Updated: 2026/02/21 01:38:28 by aistok           ###   ########.fr       */
+/*   Updated: 2026/02/25 05:14:37 by aistok           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "HTTP_StatusPair.hpp"
+#include "HTTP/HTTP_StatusPair.hpp"
 /*
 int HTTP_StatusPair::value() const
 {

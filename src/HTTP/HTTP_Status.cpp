@@ -6,11 +6,11 @@
 /*   By: aistok <aistok@student.42london.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/12 14:39:13 by aistok            #+#    #+#             */
-/*   Updated: 2026/02/21 22:59:57 by aistok           ###   ########.fr       */
+/*   Updated: 2026/02/25 05:14:34 by aistok           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "HTTP_Status.hpp"
+#include "HTTP/HTTP_Status.hpp"
 
 const HTTP_StatusPair HTTP_Status::_table[] = {
 	{0, "Unset"},

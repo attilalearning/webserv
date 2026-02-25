@@ -6,14 +6,14 @@
 /*   By: aistok <aistok@student.42london.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/16 16:46:32 by aistok            #+#    #+#             */
-/*   Updated: 2026/02/22 10:17:59 by aistok           ###   ########.fr       */
+/*   Updated: 2026/02/25 05:14:23 by aistok           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include <sstream> // stringbuf
 #include <istream> // istream
 
-#include "HTTP_Request.hpp"
+#include "HTTP/HTTP_Request.hpp"
 
 HTTP_Request::HTTP_Request(const char *raw, size_t len) : method(""),
 														url(""),

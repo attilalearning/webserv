@@ -6,11 +6,11 @@
 /*   By: aistok <aistok@student.42london.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/16 16:34:38 by aistok            #+#    #+#             */
-/*   Updated: 2026/02/24 20:29:44 by aistok           ###   ########.fr       */
+/*   Updated: 2026/02/25 05:14:29 by aistok           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "HTTP_Response.hpp"
+#include "HTTP/HTTP_Response.hpp"
 #include <sstream>
 
 HTTP_Response::HTTP_Response()
