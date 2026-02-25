@@ -6,7 +6,7 @@
 /*   By: aistok <aistok@student.42london.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/16 16:46:32 by aistok            #+#    #+#             */
-/*   Updated: 2026/02/25 05:14:23 by aistok           ###   ########.fr       */
+/*   Updated: 2026/02/25 07:16:52 by aistok           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -384,7 +384,7 @@ std::ostream &operator<<(std::ostream &os, HTTP_Request &hr)
 {
 	if (!hr.requestLine_completed) /* TO-DO: this is for debug only! */
 	{
-		os << "HTTP Request is INCOMPLETE!";
+		os << "HTTP REQUEST [ DEBUG ]: incomplete request - incomplete header line";
 		return (os);
 	}
 
@@ -394,7 +394,7 @@ std::ostream &operator<<(std::ostream &os, HTTP_Request &hr)
 
 	if (!hr.headers_completed) /* TO-DO: this is for debug only! */
 	{
-		os << "HTTP Request is INCOMPLETE!";
+		os << "HTTP REQUEST [ DEBUG ]: incomplete request - incomplete headers";
 		return (os);
 	}
 
@@ -411,7 +411,7 @@ std::ostream &operator<<(std::ostream &os, HTTP_Request &hr)
 
 	if (!hr.body_completed) /* TO-DO: this is for debug only! */
 	{
-		os << "HTTP Request is INCOMPLETE!";
+		os << "HTTP REQUEST [ DEBUG ]: incomplete request - incomplete body";
 		return (os);
 	}
 
