@@ -6,12 +6,13 @@
 /*   By: aistok <aistok@student.42london.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/14 19:03:57 by aistok            #+#    #+#             */
-/*   Updated: 2026/02/25 05:46:32 by aistok           ###   ########.fr       */
+/*   Updated: 2026/02/25 11:51:55 by aistok           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include <iostream>
 #include "WebServ.hpp"
+#include "ErrorPages.hpp"
 
 /* public section ----------------------------- */
 
@@ -121,7 +122,8 @@ void WebServ::run(void)
 				// JUST FOR TEST:
 				// std::string msg = "Hello World!\n";
 //				std::string msg = "HTTP/1.1 200 OK\r\nContent-Length: 13\r\n\r\nHello World!\n";
-				HTTP::Response hResp(HTTP::Status::OK, "200 - That's all good!\n\r");
+				HTTP::Response hResp(HTTP::Status::OK,
+					ErrorPages::generate(HTTP::Status::OK));
 				std::string data_to_send = hResp.toString();
 				std::cout << "Sending below response of " << data_to_send.size() << " bytes" << std::endl;
 				std::cout << "----------------------------------------------------\n";
