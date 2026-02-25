@@ -6,7 +6,7 @@
 /*   By: aistok <aistok@student.42london.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/14 19:03:57 by aistok            #+#    #+#             */
-/*   Updated: 2026/02/23 23:19:00 by aistok           ###   ########.fr       */
+/*   Updated: 2026/02/25 04:36:39 by aistok           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,6 +31,7 @@
 #include "ConfigStructs.hpp"
 #include "Server.hpp"
 #include "Connection.hpp"
+#include "HTTP/HTTP.hpp"
 
 extern volatile sig_atomic_t g_server_running;
 
