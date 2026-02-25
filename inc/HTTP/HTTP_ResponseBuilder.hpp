@@ -6,7 +6,7 @@
 /*   By: aistok <aistok@student.42london.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/20 10:48:39 by aistok            #+#    #+#             */
-/*   Updated: 2026/02/22 09:57:16 by aistok           ###   ########.fr       */
+/*   Updated: 2026/02/25 11:55:50 by aistok           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,8 +14,9 @@
 #define HTTP_RESPONSEBUILDER_HPP
 
 #include "ConfigStructs.hpp"
-#include "HTTP_Request.hpp"
-#include "HTTP_Response.hpp"
+#include "HTTP/HTTP_Request.hpp"
+#include "HTTP/HTTP_Response.hpp"
+#include "ErrorPages.hpp"
 
 /*	this class should not be instantiable
  *	and should only contain static methods

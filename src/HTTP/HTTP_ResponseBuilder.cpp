@@ -6,7 +6,7 @@
 /*   By: aistok <aistok@student.42london.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/20 10:48:39 by aistok            #+#    #+#             */
-/*   Updated: 2026/02/25 05:14:31 by aistok           ###   ########.fr       */
+/*   Updated: 2026/02/25 11:55:59 by aistok           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,7 +18,7 @@ HTTP_Response HTTP_ResponseBuilder::build(ServerConfig &sc, HTTP_Request &hReq)
 {
 	(void) sc;
 	if (hReq.parseStatus == HTTP_Request::BAD_REQUEST)
-		return (HTTP_Response()); //(build(BAD_REQUEST, sc));
+		return (HTTP_Response(HTTP_Status::BAD_REQUEST)); //(build(BAD_REQUEST, sc));
 
 	if (hReq.parseStatus == HTTP_Request::INCOMPLETE)
 	{
@@ -53,10 +53,10 @@ HTTP_Response HTTP_ResponseBuilder::build_response_for_GET(
 	}
 	catch (std::exception &e)
 	{
-		hResp.setStatus(HTTP_Status::NOT_FOUND);
 		// need to somehow load a default error page from server
 		// or from serverConfig if there is any for the server or for the location
-		return (hResp);
+		return (HTTP_Response(HTTP_Status::NOT_FOUND,
+			ErrorPages::generate(HTTP_Status::NOT_FOUND)));
 	}
 
 	std::vector<std::string>::iterator method_it = loc->methods.begin();
@@ -129,6 +129,7 @@ HTTP_Response HTTP_ResponseBuilder::build_response_for_GET(
 	 */
 
 	hResp.setStatus(HTTP_Status::OK); // ?
+	return (hResp);
 }
 
 Location &HTTP_ResponseBuilder::locationGetBestMatch(
