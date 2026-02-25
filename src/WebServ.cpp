@@ -6,7 +6,7 @@
 /*   By: aistok <aistok@student.42london.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/14 19:03:57 by aistok            #+#    #+#             */
-/*   Updated: 2026/02/25 04:36:26 by aistok           ###   ########.fr       */
+/*   Updated: 2026/02/25 05:46:32 by aistok           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -121,15 +121,15 @@ void WebServ::run(void)
 				// JUST FOR TEST:
 				// std::string msg = "Hello World!\n";
 //				std::string msg = "HTTP/1.1 200 OK\r\nContent-Length: 13\r\n\r\nHello World!\n";
-				HTTP::Response hResp(HTTP::Status::NOT_FOUND, "404 - Sorry, the page was not found... :(\n\r");
+				HTTP::Response hResp(HTTP::Status::OK, "200 - That's all good!\n\r");
 				std::string data_to_send = hResp.toString();
 				std::cout << "Sending below response of " << data_to_send.size() << " bytes" << std::endl;
-				std::cout << ESC_YELLOW_HOLLOW;
 				std::cout << "----------------------------------------------------\n";
+				std::cout << ESC_YELLOW_HOLLOW;
 				std::cout << hResp;
 //				std::cout << msg;
-				std::cout << "----------------------------------------------------";
-				std::cout << ESC_END << "\n\n";
+				std::cout << ESC_END;
+				std::cout << "----------------------------------------------------\n\n";
 				send(_pollFds[i].fd, data_to_send.c_str(), data_to_send.size(), 0);
 //				send(_pollFds[i].fd, msg.c_str(), msg.size(), 0);
 				_pollFds[i].events &= ~POLLOUT;
@@ -256,11 +256,11 @@ bool WebServ::_readRequest(size_t index)
 		buffer[bytesRead] = '\0';
 		std::cout << "Received " << bytesRead << " bytes from FD " << fd << std::endl;
 		HTTP::Request hRequest(buffer, bytesRead);
-		std::cout << ESC_VIOLET_HOLLOW;
 		std::cout << "----------------------------------------------------\n";
+		std::cout << ESC_VIOLET_HOLLOW;
 		std::cout << hRequest;
-		std::cout << "----------------------------------------------------";
-		std::cout << ESC_END << "\n\n";
+		std::cout << ESC_END;
+		std::cout << "----------------------------------------------------\n\n";
 		
 		// conn->_appendRequest(buffer, bytesRead); 
 		// Only flip to POLLOUT after full parcing, valid request
