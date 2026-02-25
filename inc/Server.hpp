@@ -3,17 +3,17 @@
 /*                                                        :::      ::::::::   */
 /*   Server.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mosokina <mosokina@student.42.fr>          +#+  +:+       +#+        */
+/*   By: mosokina <mosokina@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/23 14:46:16 by mosokina          #+#    #+#             */
-/*   Updated: 2026/02/22 00:20:58 by mosokina         ###   ########.fr       */
+/*   Updated: 2026/02/25 13:57:45 by mosokina         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef SERVER_HPP
 #define SERVER_HPP
 
-// TO-DO update based on fun used in the code!!
+// TO-DO update based on func used in the code!!
 
 #include <arpa/inet.h>	// htons
 #include <fcntl.h>		// fcntl, O_NONBLOCK
@@ -49,7 +49,7 @@ private:
 	int _listenFd;
 	sockaddr_in _address;
 
-	static const int BACKLOG = 128; // limit of connections in the socket's listen queue
+	static const int BACKLOG = 128; // limit of pending connections in the socket's listen queue
 };
 
 #endif
