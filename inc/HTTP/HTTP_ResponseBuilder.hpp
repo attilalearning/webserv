@@ -6,7 +6,7 @@
 /*   By: aistok <aistok@student.42london.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/20 10:48:39 by aistok            #+#    #+#             */
-/*   Updated: 2026/02/25 11:55:50 by aistok           ###   ########.fr       */
+/*   Updated: 2026/02/27 18:57:06 by aistok           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,19 +38,17 @@ public:
 	 */
 	static std::string serverBasePath; // ?
 
-	HTTP_Response build(
-		ServerConfig &sc, HTTP_Request &hReq);
+	static HTTP_Response build(
+		const ServerConfig &sc, HTTP_Request &hReq);
 
-	HTTP_Response build_response_for_GET(
-		std::vector<ServerConfig> configs, HTTP_Request hReq);
+	static HTTP_Response build_response_for_GET(
+		const ServerConfig &serverConfig, HTTP_Request &hRequest);
 
-	Location &locationGetBestMatch(
-		std::vector<ServerConfig> configs,
-		std::string requestedUrl,
-		std::string hostFromRequest,
-		ServerConfig **matchingServerConfig);
-	
-	bool resourceIsDir(std::vector<ServerConfig> configs, Location &location, std::string requestUrl);
+	static const Location &locationGetBestMatch(
+		const ServerConfig &serverConfig, HTTP_Request &hRequest);
+
+	static std::string translateUriToPath(
+		const Location &location, HTTP_Request &hRequest);
 };
 
 #endif // HTTP_RESPONSEBUILDER_HPP

@@ -6,7 +6,7 @@
 /*   By: aistok <aistok@student.42london.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/20 10:48:39 by aistok            #+#    #+#             */
-/*   Updated: 2026/02/25 11:55:59 by aistok           ###   ########.fr       */
+/*   Updated: 2026/02/27 18:58:20 by aistok           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,9 +14,9 @@
 
 std::string HTTP_ResponseBuilder::serverBasePath = std::string("./");
 
-HTTP_Response HTTP_ResponseBuilder::build(ServerConfig &sc, HTTP_Request &hReq)
+HTTP_Response HTTP_ResponseBuilder::build(const ServerConfig &sc, HTTP_Request &hReq)
 {
-	(void) sc;
+	(void)sc;
 	if (hReq.parseStatus == HTTP_Request::BAD_REQUEST)
 		return (HTTP_Response(HTTP_Status::BAD_REQUEST)); //(build(BAD_REQUEST, sc));
 
@@ -27,7 +27,7 @@ HTTP_Response HTTP_ResponseBuilder::build(ServerConfig &sc, HTTP_Request &hReq)
 
 	if (hReq.method == HTTP_Method::GET)
 	{
-		return (HTTP_Response()); //(build_response_for_GET(sc, hReq));
+		return (build_response_for_GET(sc, hReq));
 	}
 	else if (hReq.method == HTTP_Method::POST)
 	{
@@ -41,63 +41,78 @@ HTTP_Response HTTP_ResponseBuilder::build(ServerConfig &sc, HTTP_Request &hReq)
 }
 
 HTTP_Response HTTP_ResponseBuilder::build_response_for_GET(
-	std::vector<ServerConfig> configs, HTTP_Request hReq)
+	const ServerConfig &serverConfig,
+	HTTP_Request &hRequest)
 {
-	HTTP_Response hResp;
-	ServerConfig *choosenSC;
-	Location *loc;
+	HTTP_Response hResponse;
+	Location location;
 
 	try
 	{
-		loc = &locationGetBestMatch(configs, hReq.url, hReq.headers[HTTP_FieldName::HOST], &choosenSC);
+		location = locationGetBestMatch(serverConfig, hRequest);
 	}
 	catch (std::exception &e)
 	{
 		// need to somehow load a default error page from server
 		// or from serverConfig if there is any for the server or for the location
 		return (HTTP_Response(HTTP_Status::NOT_FOUND,
-			ErrorPages::generate(HTTP_Status::NOT_FOUND)));
+							  ErrorPages::generate(HTTP_Status::NOT_FOUND)));
 	}
 
-	std::vector<std::string>::iterator method_it = loc->methods.begin();
-	for (; method_it != loc->methods.end(); ++method_it)
+	std::vector<std::string>::iterator method_it = location.methods.begin();
+	for (; method_it != location.methods.end(); ++method_it)
 	{
 		if (*method_it == HTTP_Method::GET)
 			break;
 	}
-	if (method_it == loc->methods.end())
+	if (method_it == location.methods.end())
 	{
 		// the GET method was not found for the location
-		// response 403 forbidden needs to be returned
-		return (hResp);
+		return (HTTP_Response(HTTP_Status::FORBIDDEN,
+							  ErrorPages::generate(HTTP_Status::FORBIDDEN)));
 	}
 
-	if (resourceIsDir(configs, *loc, hReq.url))
+	std::string pathOnServer = translateUriToPath(location, hRequest);
+	PathType pathType = getPathType(pathOnServer);
+
+	if (pathType == PATH_NONE)
+		return (HTTP_Response(HTTP_Status::NOT_FOUND,
+							  ErrorPages::generate(HTTP_Status::NOT_FOUND)));
+	else if (pathType == PATH_FILE)
 	{
-		if (!loc->autoindex)
-		{
-			// 403 forbidden
-			return (hResp);
-		}
-		// read dir content of requestUrl
-		//
-		// if content not reachable because of permissions -> 403 forbidden
-		//
-		// add content to hResp.body, adjust hResp.bodyLen,
-		// add required headers, ex. content-length (OR transfer-encoding)
-		return (hResp);
+		// ...
+		// the file exists, open it and add content into the response body
+		hResponse.setStatus(HTTP_Status::OK);
+		hResponse.setContent("File exists, and will be included in here");
+		return (hResponse);
 	}
-	else
+	else if (pathType == PATH_DIRECTORY)
 	{
-		// resource is a file
-		//
-		// read file content of requestUrl
-		//
-		// if content not reachable because of permissions -> 403 forbidden
-		//
-		// add content to hResp.body, adjust hResp.bodyLen,
-		// add required headers, ex. content-length (and mime-type?)
-		return (hResp);
+		char lastChar = *(pathOnServer.rbegin());
+		if (lastChar != '/')
+		{
+			// redirect; the directory exists, but the client did not request
+			// it properly, there was a missing '/' at the end
+			hResponse.setStatus(HTTP_Status::MOVED_PERMANENTLY);
+			hResponse.headers[HTTP_FieldName::LOCATION] = hRequest.url + "/";
+			hResponse.headers[HTTP_FieldName::CONTENT_LENGTH] = ::toString(0);
+			return (hResponse);
+		}
+
+		if (!location.autoindex)
+		{
+			return (HTTP_Response(HTTP_Status::FORBIDDEN,
+								  ErrorPages::generate(HTTP_Status::FORBIDDEN)));
+			// hResponse.setStatus(HTTP_Status::FORBIDDEN);
+			// hResponse.headers[HTTP_FieldName::CONTENT_LENGTH] = ::toString(0);
+			// return (hResponse);
+		}
+
+		// go ahead and list directory content,
+		// and add it to response body
+		hResponse.setStatus(HTTP_Status::OK);
+		hResponse.setContent("For test only... directory listing goes in here");
+		return (hResponse);
 	}
 
 	/*
@@ -128,78 +143,68 @@ HTTP_Response HTTP_ResponseBuilder::build_response_for_GET(
 	 *
 	 */
 
-	hResp.setStatus(HTTP_Status::OK); // ?
-	return (hResp);
+	hResponse.setStatus(HTTP_Status::OK); // ?
+	hResponse.setContent("This should NEVER happen!?");
+	return (hResponse);
 }
 
-Location &HTTP_ResponseBuilder::locationGetBestMatch(
-	std::vector<ServerConfig> configs,
-	std::string requestedUrl,
-	std::string hostFromRequest,
-	ServerConfig **matchingServerConfig)
+const Location &HTTP_ResponseBuilder::locationGetBestMatch(
+	const ServerConfig &serverConfig,
+	HTTP_Request &hRequest)
 {
-	ServerConfig *serverConfig = NULL;
-
-	// QUESTION: shall we ever test if configs.size() == 0 ? (probably not)
-
-	std::vector<ServerConfig>::iterator it;
-	if (configs.size() > 1)
-	{
-		for (it = configs.begin(); it != configs.end(); ++it)
-		{
-			*serverConfig = *it;
-			if (serverConfig->host == hostFromRequest)
-				break; // we found the serverConfig matching hostFromRequest
-
-			std::vector<std::string>::iterator sn_it = serverConfig->server_names.begin();
-			for (; sn_it != serverConfig->server_names.end(); ++sn_it)
-			{
-				if (*sn_it == hostFromRequest)
-					break; // we found the serverConfig matching hostFromRequest
-			}
-		}
-	}
-	else
-	{
-		// if only one ServerConfig, use that one (there is no ambiguity)
-		serverConfig = &configs[0];
-	}
-
-	if (it == configs.end())
-	{
-		// hostFromRequest wasn't found in any of the servers configs
-		// just use the 1st one defined
-		serverConfig = &configs[0];
-	}
+	Location *selectedLocation = NULL;
 
 	// now, go through the locations and match the best one
-	Location *selected = NULL;
-	std::vector<Location>::iterator loc_it = serverConfig->locations.begin();
-	for (; loc_it != serverConfig->locations.end(); ++loc_it)
+	std::vector<Location>::const_iterator loc_it = serverConfig.locations.begin();
+	for (; loc_it != serverConfig.locations.end(); ++loc_it)
 	{
 		Location location = *loc_it;
-		if (location.path.find(requestedUrl) == 0)
+		if (location.path.find(hRequest.url) == 0)
 		{
-			if (!selected)
-				selected = &location;
-			else if (location.path.length() > selected->path.length())
-				selected = &location;
+			if (!selectedLocation)
+				selectedLocation = &location;
+			else if (location.path.length() > selectedLocation->path.length())
+				selectedLocation = &location;
 		}
 	}
 
-	if (!selected)
+	if (!selectedLocation)
 		throw std::runtime_error("No suitable server/location found!");
-	*matchingServerConfig = serverConfig;
-	return (*selected);
+
+	return (*selectedLocation);
 }
 
-bool HTTP_ResponseBuilder::resourceIsDir(std::vector<ServerConfig> configs, Location &location, std::string requestUrl)
+// According to the PDF:
+// if location URL /kapouet is mapped to root dir /tmp/www
+// then the request URL /kapouet/pouic/toto/pouet
+// will have to be searched in /tmp/www/pouic/toto/pouet
+//
+// the above in nginx is an alias but in webserv has to be
+// the default way.
+std::string HTTP_ResponseBuilder::translateUriToPath(
+	const Location &location, HTTP_Request &hRequest)
 {
-	(void) configs;
-	(void) location;
-	(void) requestUrl;
+	const std::string &basePath = location.root;
+	std::string result = hRequest.url;
 
-	//...
+	if (!replace(result, location.path, ""))
+	{
+		std::cout
+			<< "Error: HTTP_ResponseBuilder::translateUriToPath invalid "
+			<< "request url \"" << hRequest.url << "\"" << std::endl;
+		throw(std::runtime_error(""));
+	}
 
-	return (true);
+	char basePathLastChar = *(basePath.rbegin());
+	if (basePathLastChar == '/' && result[0] == '/')
+	{
+		result.erase(0, 1);
+		result = basePath + result;
+	}
+	else if (basePathLastChar == '/' || result[0] == '/')
+		result = basePath + result;
+	else
+		result = basePath + '/' + result;
+
+	return (result);
 }
