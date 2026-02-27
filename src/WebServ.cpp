@@ -6,7 +6,7 @@
 /*   By: aistok <aistok@student.42london.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/14 19:03:57 by aistok            #+#    #+#             */
-/*   Updated: 2026/02/27 20:51:59 by aistok           ###   ########.fr       */
+/*   Updated: 2026/02/27 22:33:03 by aistok           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -122,14 +122,18 @@ void WebServ::run(void)
 				// JUST FOR TEST:
 				// std::string msg = "Hello World!\n";
 //				std::string msg = "HTTP/1.1 200 OK\r\nContent-Length: 13\r\n\r\nHello World!\n";
-				HTTP::Response hResp(HTTP::Status::OK,
-					ErrorPages::generate(HTTP::Status::OK));
+				Connection &connection = getConnectionForFd(_pollFds[i].fd);
+				const ServerConfig &serverConfig = connection.getServer()->getConfig();
 
-				std::string data_to_send = hResp.toString();
+				HTTP::Response hResponse = HTTP_ResponseBuilder::build(serverConfig, connection.getRequest());
+
+				//HTTP::Response hResponse(HTTP::Status::FORBIDDEN,
+				//	ErrorPages::generate(HTTP::Status::FORBIDDEN));
+				std::string data_to_send = hResponse.toString();
 				std::cout << "Sending below response of " << data_to_send.size() << " bytes" << std::endl;
 				std::cout << "----------------------------------------------------\n";
 				std::cout << ESC_YELLOW_HOLLOW;
-				std::cout << hResp;
+				std::cout << hResponse;
 //				std::cout << msg;
 				std::cout << ESC_END;
 				std::cout << "----------------------------------------------------\n\n";
@@ -156,6 +160,24 @@ void WebServ::run(void)
 			}
 		}
 	}
+}
+
+Connection &WebServ::getConnectionForFd(int fd)
+{
+	if (_fdToConnMap.count(fd))
+		return *(_fdToConnMap[fd]);
+
+	throw std::runtime_error("No connection found for fd = " + fd);
+	/*
+	std::map<int, Connection *>::iterator it = _fdToConnMap.find(fd);
+	if (it == _fdToConnMap.end())
+	{
+		std::cerr << "[WebServ] Critical: No connection object for FD " << fd << std::endl;
+		//_closeConnection(index);
+		// throw exception ??
+	}
+	Connection *conn = it->second;
+	*/
 }
 
 /* private section ---------------------------- */
@@ -263,13 +285,14 @@ bool WebServ::_readRequest(size_t index)
 		conn->resetTimeout();
 		// JUST FOR TESTS:
 		buffer[bytesRead] = '\0';
-		HTTP::Request hRequest(buffer, bytesRead);
-
+		//conn->_request.parse(buffer, bytesRead); // not possible since _request is private
+		//conn->getRequest().parse(buffer, bytesRead); // maybe?
 		std::cout << "Received " << bytesRead << " bytes from FD " << fd << std::endl;
+		//HTTP::Request hRequest(buffer, bytesRead);
+		conn->getRequest().parse(buffer, bytesRead);
 		std::cout << "----------------------------------------------------\n";
 		std::cout << ESC_VIOLET_HOLLOW;
-		std::cout << hRequest;
-//		std::cout << buffer << std::endl;
+		std::cout << conn->getRequest();
 		std::cout << ESC_END;
 		std::cout << "----------------------------------------------------\n\n";
 		

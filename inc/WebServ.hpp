@@ -6,7 +6,7 @@
 /*   By: aistok <aistok@student.42london.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/14 19:03:57 by aistok            #+#    #+#             */
-/*   Updated: 2026/02/27 20:52:01 by aistok           ###   ########.fr       */
+/*   Updated: 2026/02/27 22:29:32 by aistok           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -55,6 +55,8 @@ public:
 	std::vector<Server *> getServers() const;
 	void setup(std::vector<ServerConfig> &configs);
 	void run();
+
+	Connection &getConnectionForFd(int fd);
 
 private:
 	// Rule of Three: Private and Unimplemented
