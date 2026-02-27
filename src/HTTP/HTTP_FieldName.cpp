@@ -6,7 +6,7 @@
 /*   By: aistok <aistok@student.42london.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/12 14:37:18 by aistok            #+#    #+#             */
-/*   Updated: 2026/02/25 05:01:09 by aistok           ###   ########.fr       */
+/*   Updated: 2026/02/27 14:50:51 by aistok           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -70,3 +70,4 @@ const std::string HTTP_FieldName::CONNECTION = "Connection";
 /* Used only in response headers */
 const std::string HTTP_FieldName::DATE = "Date";
 const std::string HTTP_FieldName::CONTENT_RANGE = "Content-Range";
+const std::string HTTP_FieldName::LOCATION = "Location";

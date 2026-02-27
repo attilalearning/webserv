@@ -6,7 +6,7 @@
 /*   By: aistok <aistok@student.42london.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/12 14:37:18 by aistok            #+#    #+#             */
-/*   Updated: 2026/02/21 01:17:16 by aistok           ###   ########.fr       */
+/*   Updated: 2026/02/27 14:51:25 by aistok           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -77,6 +77,7 @@ public:
 	/* Used only in response headers */
 	static const std::string DATE;
 	static const std::string CONTENT_RANGE;
+	static const std::string LOCATION;
 
 	/* the below is not needed at the moment */
 	// friend class HTTP;
