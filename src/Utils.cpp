@@ -90,11 +90,11 @@ bool replace(std::string &str, const std::string &from, const std::string &to)
 	return true;
 }
 
-PathType getPathType(const char* path)
+PathType getPathType(const std::string &pathStr)
 {
     struct stat st;
 
-    if (stat(path, &st) != 0)
+    if (stat(pathStr.c_str(), &st) != 0)
         return PATH_NONE;
 
     if (S_ISREG(st.st_mode))

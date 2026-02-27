@@ -6,7 +6,7 @@
 /*   By: aistok <aistok@student.42london.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/26 23:56:58 by mosokina          #+#    #+#             */
-/*   Updated: 2026/02/26 22:48:45 by aistok           ###   ########.fr       */
+/*   Updated: 2026/02/27 11:29:03 by aistok           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -49,6 +49,6 @@ enum PathType {
     PATH_DIRECTORY
 };
 
-PathType getPathType(const char* path);
+PathType getPathType(const std::string &pathStr);
 
 #endif
