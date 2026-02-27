@@ -3,15 +3,16 @@
 /*                                                        :::      ::::::::   */
 /*   WebServ.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mosokina <mosokina@student.42london.com    +#+  +:+       +#+        */
+/*   By: aistok <aistok@student.42london.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/14 19:03:57 by aistok            #+#    #+#             */
-/*   Updated: 2026/02/25 14:36:38 by mosokina         ###   ########.fr       */
+/*   Updated: 2026/02/27 20:51:59 by aistok           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include <iostream>
 #include "WebServ.hpp"
+#include "ErrorPages.hpp"
 
 /* public section ----------------------------- */
 
@@ -120,10 +121,24 @@ void WebServ::run(void)
 
 				// JUST FOR TEST:
 				// std::string msg = "Hello World!\n";
-				std::string msg = "HTTP/1.1 200 OK\r\nContent-Length: 13\r\n\r\nHello World!\n";
-				std::cout << "We are sending the message: " << msg << std::endl;
-				send(_pollFds[i].fd, msg.c_str(), msg.length(), 0);
+//				std::string msg = "HTTP/1.1 200 OK\r\nContent-Length: 13\r\n\r\nHello World!\n";
+				HTTP::Response hResp(HTTP::Status::OK,
+					ErrorPages::generate(HTTP::Status::OK));
+
+				std::string data_to_send = hResp.toString();
+				std::cout << "Sending below response of " << data_to_send.size() << " bytes" << std::endl;
+				std::cout << "----------------------------------------------------\n";
+				std::cout << ESC_YELLOW_HOLLOW;
+				std::cout << hResp;
+//				std::cout << msg;
+				std::cout << ESC_END;
+				std::cout << "----------------------------------------------------\n\n";
+
+				send(_pollFds[i].fd, data_to_send.c_str(), data_to_send.size(), 0);
+//				send(_pollFds[i].fd, msg.c_str(), msg.size(), 0);
+
 				_pollFds[i].events &= ~POLLOUT; //TO-DO handle not only "keep-alive" but also "close" option
+
 				int fd = _pollFds[i].fd;
 				if (_fdToConnMap.count(fd))
 					_fdToConnMap[fd]->resetTimeout();
@@ -248,9 +263,18 @@ bool WebServ::_readRequest(size_t index)
 		conn->resetTimeout();
 		// JUST FOR TESTS:
 		buffer[bytesRead] = '\0';
+		HTTP::Request hRequest(buffer, bytesRead);
+
 		std::cout << "Received " << bytesRead << " bytes from FD " << fd << std::endl;
-		std::cout << "Buffer: " << buffer << std::endl;
-		// conn->_appendRequest(buffer, bytesRead);
+		std::cout << "----------------------------------------------------\n";
+		std::cout << ESC_VIOLET_HOLLOW;
+		std::cout << hRequest;
+//		std::cout << buffer << std::endl;
+		std::cout << ESC_END;
+		std::cout << "----------------------------------------------------\n\n";
+		
+		// conn->_appendRequest(buffer, bytesRead); 
+		
 		// Only flip to POLLOUT after full parcing, valid request
 		// if (conn->_isRequestComplete())
 		// For now, we leave it for testing:
