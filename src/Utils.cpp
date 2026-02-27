@@ -81,3 +81,27 @@ std::string &trimString(std::string &str, std::string stripChars)
 	return (str);
 }
 
+bool replace(std::string &str, const std::string &from, const std::string &to)
+{
+	size_t start_pos = str.find(from);
+	if (start_pos == std::string::npos)
+		return false;
+	str.replace(start_pos, from.length(), to);
+	return true;
+}
+
+PathType getPathType(const char* path)
+{
+    struct stat st;
+
+    if (stat(path, &st) != 0)
+        return PATH_NONE;
+
+    if (S_ISREG(st.st_mode))
+        return PATH_FILE;
+
+    if (S_ISDIR(st.st_mode))
+        return PATH_DIRECTORY;
+
+    return PATH_NONE;
+}
