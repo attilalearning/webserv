@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Connection.hpp                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mosokina <mosokina@student.42.fr>          +#+  +:+       +#+        */
+/*   By: mosokina <mosokina@student.42london.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/11 12:49:22 by mosokina          #+#    #+#             */
-/*   Updated: 2026/02/16 17:49:47 by mosokina         ###   ########.fr       */
+/*   Updated: 2026/02/25 14:20:00 by mosokina         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,6 +16,8 @@
 #include <string>
 #include <iostream>
 #include <unistd.h> // close
+#include <ctime>
+
 #include "Server.hpp"
 
 class Connection
@@ -24,6 +26,8 @@ public:
 	Connection(int fd, const sockaddr_in &clientAddr, Server *server); // check later -  const for Server)
 	~Connection();
 
+	void resetTimeout();
+	bool isTimedOut(time_t now, int limit) const;
 private:
 	// Rule of Three: Private and Unimplemented to prevent copying
 	Connection(const Connection &other);
@@ -37,7 +41,7 @@ private:
 	Server *_server; // for getting  client_max_body_size from the server config
 	std::string _rawRequest; // as a buffer to accumulate data from multiple recv() calls
 	// std::string _clientIP;
-	// time_t _lastActivity; // Great for timeout logic!
+	time_t _lastActive; // Great for timeout logic!
 
 	// Parsed data
 	// HttpRequest     _request;

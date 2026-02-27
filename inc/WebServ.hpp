@@ -6,7 +6,7 @@
 /*   By: aistok <aistok@student.42london.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/14 19:03:57 by aistok            #+#    #+#             */
-/*   Updated: 2026/02/25 04:36:39 by aistok           ###   ########.fr       */
+/*   Updated: 2026/02/27 20:52:01 by aistok           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -67,9 +67,11 @@ private:
 	void _acceptNewConnection(int listenFd);
 	void _closeConnection(size_t index);
 	bool _readRequest(size_t index); // return status of connection (opened/closed)
+	void _checkConnTimeouts(); 
 
+	static const int CONNECTION_TIMEOUT = 10; //sec TO-DO change to 60 sec(most common default in ngenx) or parse from confif 
 	static const int POLL_TIMEOUT = 1000;	// Wait up to 1 sec for events
-	static const int BUFFER_SIZE = 4096;
+	static const int BUFFER_SIZE = 4096;	
 	std::vector<Server *> _servers;			// all server instances
 	std::vector<pollfd> _pollFds;			// poll array for the whole program
 	std::map<int, Server *> _fdToServerMap; // helps quickly find which server owns which FD
