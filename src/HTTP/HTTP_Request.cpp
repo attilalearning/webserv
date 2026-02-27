@@ -6,7 +6,7 @@
 /*   By: aistok <aistok@student.42london.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/16 16:46:32 by aistok            #+#    #+#             */
-/*   Updated: 2026/02/25 07:16:52 by aistok           ###   ########.fr       */
+/*   Updated: 2026/02/27 18:01:15 by aistok           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,14 +15,28 @@
 
 #include "HTTP/HTTP_Request.hpp"
 
+HTTP_Request::HTTP_Request() : method(""),
+							   url(""),
+							   version(""),
+							   requestLine_completed(false),
+							   headers_completed(false),
+							   headersRequiredCount(0),
+							   bodyLen(0),
+							   body_completed(false),
+							   parseStatus(INCOMPLETE)
+{
+	// done
+}
+
 HTTP_Request::HTTP_Request(const char *raw, size_t len) : method(""),
-														url(""),
-														version(""),
-														requestLine_completed(false),
-														headers_completed(false),
-														headersRequiredCount(0),
-														bodyLen(0),
-														body_completed(false)
+														  url(""),
+														  version(""),
+														  requestLine_completed(false),
+														  headers_completed(false),
+														  headersRequiredCount(0),
+														  bodyLen(0),
+														  body_completed(false),
+														  parseStatus(INCOMPLETE)
 {
 	parse(raw, len);
 }

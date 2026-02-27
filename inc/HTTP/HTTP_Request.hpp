@@ -6,7 +6,7 @@
 /*   By: aistok <aistok@student.42london.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/16 16:34:38 by aistok            #+#    #+#             */
-/*   Updated: 2026/02/21 01:57:51 by aistok           ###   ########.fr       */
+/*   Updated: 2026/02/27 17:58:25 by aistok           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -48,6 +48,7 @@ public:
 
 	ParseStatus parseStatus;
 
+	HTTP_Request();
 	HTTP_Request(const char *raw, size_t len);
 
 	int parse(const char *raw, size_t len);
