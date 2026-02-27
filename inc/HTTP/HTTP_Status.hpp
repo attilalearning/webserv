@@ -6,7 +6,7 @@
 /*   By: aistok <aistok@student.42london.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/12 14:37:18 by aistok            #+#    #+#             */
-/*   Updated: 2026/02/21 22:55:48 by aistok           ###   ########.fr       */
+/*   Updated: 2026/02/26 22:09:34 by aistok           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -51,6 +51,12 @@ public:
 	static const HTTP_StatusPair NOT_MODIFIED;
 	static const HTTP_StatusPair s304;
 
+	static const HTTP_StatusPair INTERNAL_REDIRECT;
+	static const HTTP_StatusPair s307; // RFC 9110 (RFC 2616)
+
+	static const HTTP_StatusPair PERMANENT_REDIRECT;
+	static const HTTP_StatusPair s308; // RFC 9110 (RFC 7538)
+
 	/* 4xx Client Errors */
 	static const HTTP_StatusPair BAD_REQUEST;
 	static const HTTP_StatusPair s400;
@@ -63,6 +69,9 @@ public:
 
 	static const HTTP_StatusPair NOT_FOUND;
 	static const HTTP_StatusPair s404;
+
+	static const HTTP_StatusPair REQUEST_TIMEOUT;
+	static const HTTP_StatusPair s408;
 
 	static const HTTP_StatusPair CONFLICT;
 	static const HTTP_StatusPair s409;

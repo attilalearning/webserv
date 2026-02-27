@@ -6,7 +6,7 @@
 /*   By: aistok <aistok@student.42london.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/12 14:39:13 by aistok            #+#    #+#             */
-/*   Updated: 2026/02/25 05:14:34 by aistok           ###   ########.fr       */
+/*   Updated: 2026/02/26 22:03:44 by aistok           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,11 +26,14 @@ const HTTP_StatusPair HTTP_Status::_table[] = {
 	{302, "Found"},
 	{303, "See Other"},
 	{304, "Not Modified"},
+	{307, "Internal Redirect"},
+	{308, "Permanent Redirect"},
 
 	{400, "Bad Request"},
 	{401, "Unauthorized"},
 	{403, "Forbidden"},
 	{404, "Not Found"},
+	{408, "Request Timeout"},
 	{409, "Conflict"},
 	{422, "Unprocessable Entity"},
 
@@ -77,39 +80,48 @@ const HTTP_StatusPair HTTP_Status::s303 = HTTP_Status::SEE_OTHER;
 const HTTP_StatusPair HTTP_Status::NOT_MODIFIED = HTTP_Status::_table[9];
 const HTTP_StatusPair HTTP_Status::s304 = HTTP_Status::NOT_MODIFIED;
 
+const HTTP_StatusPair HTTP_Status::INTERNAL_REDIRECT = HTTP_Status::_table[10];
+const HTTP_StatusPair HTTP_Status::s307 = HTTP_Status::INTERNAL_REDIRECT;
+
+const HTTP_StatusPair HTTP_Status::PERMANENT_REDIRECT = HTTP_Status::_table[11];
+const HTTP_StatusPair HTTP_Status::s308 = HTTP_Status::PERMANENT_REDIRECT;
+
 /* 4xx Client Errors */
-const HTTP_StatusPair HTTP_Status::BAD_REQUEST = HTTP_Status::_table[10];
+const HTTP_StatusPair HTTP_Status::BAD_REQUEST = HTTP_Status::_table[12];
 const HTTP_StatusPair HTTP_Status::s400 = HTTP_Status::BAD_REQUEST;
 
-const HTTP_StatusPair HTTP_Status::UNAUTHORIZED = HTTP_Status::_table[11];
+const HTTP_StatusPair HTTP_Status::UNAUTHORIZED = HTTP_Status::_table[13];
 const HTTP_StatusPair HTTP_Status::s401 = HTTP_Status::UNAUTHORIZED;
 
-const HTTP_StatusPair HTTP_Status::FORBIDDEN = HTTP_Status::_table[12];
+const HTTP_StatusPair HTTP_Status::FORBIDDEN = HTTP_Status::_table[14];
 const HTTP_StatusPair HTTP_Status::s403 = HTTP_Status::FORBIDDEN;
 
-const HTTP_StatusPair HTTP_Status::NOT_FOUND = HTTP_Status::_table[13];
+const HTTP_StatusPair HTTP_Status::NOT_FOUND = HTTP_Status::_table[15];
 const HTTP_StatusPair HTTP_Status::s404 = HTTP_Status::NOT_FOUND;
 
-const HTTP_StatusPair HTTP_Status::CONFLICT = HTTP_Status::_table[14];
+const HTTP_StatusPair HTTP_Status::REQUEST_TIMEOUT = HTTP_Status::_table[16];
+const HTTP_StatusPair HTTP_Status::s408 = HTTP_Status::REQUEST_TIMEOUT;
+
+const HTTP_StatusPair HTTP_Status::CONFLICT = HTTP_Status::_table[17];
 const HTTP_StatusPair HTTP_Status::s409 = HTTP_Status::CONFLICT;
 
-const HTTP_StatusPair HTTP_Status::UNPROCESSABLE_CONTENT = HTTP_Status::_table[15];
+const HTTP_StatusPair HTTP_Status::UNPROCESSABLE_CONTENT = HTTP_Status::_table[18];
 const HTTP_StatusPair HTTP_Status::s422 = HTTP_Status::UNPROCESSABLE_CONTENT;
 
 /* 5xx Server Errors */
-const HTTP_StatusPair HTTP_Status::INTERNAL_SERVER_ERROR = HTTP_Status::_table[16];
+const HTTP_StatusPair HTTP_Status::INTERNAL_SERVER_ERROR = HTTP_Status::_table[19];
 const HTTP_StatusPair HTTP_Status::s500 = HTTP_Status::INTERNAL_SERVER_ERROR;
 
-const HTTP_StatusPair HTTP_Status::NOT_IMPLEMENTED = HTTP_Status::_table[17];
+const HTTP_StatusPair HTTP_Status::NOT_IMPLEMENTED = HTTP_Status::_table[20];
 const HTTP_StatusPair HTTP_Status::s501 = HTTP_Status::NOT_IMPLEMENTED;
 
-const HTTP_StatusPair HTTP_Status::BAD_GATEWAY = HTTP_Status::_table[18];
+const HTTP_StatusPair HTTP_Status::BAD_GATEWAY = HTTP_Status::_table[21];
 const HTTP_StatusPair HTTP_Status::s502 = HTTP_Status::BAD_GATEWAY;
 
-const HTTP_StatusPair HTTP_Status::SERVICE_UNAVAILABLE = HTTP_Status::_table[19];
+const HTTP_StatusPair HTTP_Status::SERVICE_UNAVAILABLE = HTTP_Status::_table[22];
 const HTTP_StatusPair HTTP_Status::s503 = HTTP_Status::SERVICE_UNAVAILABLE;
 
-const HTTP_StatusPair HTTP_Status::GATEWAY_TIMEOUT = HTTP_Status::_table[20];
+const HTTP_StatusPair HTTP_Status::GATEWAY_TIMEOUT = HTTP_Status::_table[23];
 const HTTP_StatusPair HTTP_Status::s504 = HTTP_Status::GATEWAY_TIMEOUT;
 
 const HTTP_StatusPair *HTTP_Status::fromCode(int code)
