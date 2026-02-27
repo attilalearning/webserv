@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mosokina <mosokina@student.42london.com    +#+  +:+       +#+        */
+/*   By: aistok <aistok@student.42london.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/23 14:46:16 by mosokina          #+#    #+#             */
-/*   Updated: 2026/02/25 13:57:45 by mosokina         ###   ########.fr       */
+/*   Updated: 2026/02/27 22:28:46 by aistok           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,6 +37,7 @@ public:
 
 	void initSocket(); // bind(), socket setup
 	int getListenFd() const;
+	const ServerConfig &getConfig() const;
 
 private:
 	// Rule of Three: Private and Unimplemented to prevent copying
