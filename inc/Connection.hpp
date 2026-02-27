@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Connection.hpp                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mosokina <mosokina@student.42london.com    +#+  +:+       +#+        */
+/*   By: aistok <aistok@student.42london.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/11 12:49:22 by mosokina          #+#    #+#             */
-/*   Updated: 2026/02/25 14:20:00 by mosokina         ###   ########.fr       */
+/*   Updated: 2026/02/27 22:34:04 by aistok           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,6 +19,7 @@
 #include <ctime>
 
 #include "Server.hpp"
+#include "HTTP/HTTP.hpp"
 
 class Connection
 {
@@ -28,6 +29,10 @@ public:
 
 	void resetTimeout();
 	bool isTimedOut(time_t now, int limit) const;
+	HTTP::Request &getRequest();
+	HTTP::Response &getResponse();
+	Server *getServer();
+
 private:
 	// Rule of Three: Private and Unimplemented to prevent copying
 	Connection(const Connection &other);
@@ -44,8 +49,8 @@ private:
 	time_t _lastActive; // Great for timeout logic!
 
 	// Parsed data
-	// HttpRequest     _request;
-	// HttpResponse    _response;
+	HTTP::Request     _request;
+	HTTP::Response    _response;
 };
 
 #endif
