@@ -6,7 +6,7 @@
 /*   By: aistok <aistok@student.42london.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/14 19:03:57 by aistok            #+#    #+#             */
-/*   Updated: 2026/02/27 22:33:03 by aistok           ###   ########.fr       */
+/*   Updated: 2026/03/03 18:10:59 by aistok           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -125,7 +125,7 @@ void WebServ::run(void)
 				Connection &connection = getConnectionForFd(_pollFds[i].fd);
 				const ServerConfig &serverConfig = connection.getServer()->getConfig();
 
-				HTTP::Response hResponse = HTTP_ResponseBuilder::build(serverConfig, connection.getRequest());
+				HTTP::Response hResponse = HTTP::ResponseBuilder::build(serverConfig, connection.getRequest());
 
 				//HTTP::Response hResponse(HTTP::Status::FORBIDDEN,
 				//	ErrorPages::generate(HTTP::Status::FORBIDDEN));
@@ -140,6 +140,11 @@ void WebServ::run(void)
 
 				send(_pollFds[i].fd, data_to_send.c_str(), data_to_send.size(), 0);
 //				send(_pollFds[i].fd, msg.c_str(), msg.size(), 0);
+
+				// should check if response was complete and sent, and if so,
+				// and _request is no longer needed, reset it to prepare for
+				// next cycle
+				connection.getRequest().reset();
 
 				_pollFds[i].events &= ~POLLOUT; //TO-DO handle not only "keep-alive" but also "close" option
 
