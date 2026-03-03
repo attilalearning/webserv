@@ -6,7 +6,7 @@
 /*   By: aistok <aistok@student.42london.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/20 10:48:39 by aistok            #+#    #+#             */
-/*   Updated: 2026/02/27 18:58:20 by aistok           ###   ########.fr       */
+/*   Updated: 2026/03/03 21:19:49 by aistok           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -55,10 +55,28 @@ HTTP_Response HTTP_ResponseBuilder::build_response_for_GET(
 	{
 		// need to somehow load a default error page from server
 		// or from serverConfig if there is any for the server or for the location
+		std::cout << "HTTP_ResponseBuilder::build_response_for_GET - location"
+				  << std::endl
+				  << e.what() << std::endl;
 		return (HTTP_Response(HTTP_Status::NOT_FOUND,
 							  ErrorPages::generate(HTTP_Status::NOT_FOUND)));
 	}
 
+	// TO-DO ???
+	// need to consider the redirects from the config file, if there are any
+	// like:
+	// location / {
+	//      [method = GET]
+	// 		return 301 [POST] /some/url/here
+	// }
+
+	// SUGGESTION: Location should transform into a proper class, having it's own
+	// methods? Here, a bool .hasMethod(std::string method) would be useful, so
+	// that these iterator loops are ommitted
+	// NOTE: there are iterator loops in other parts of the code, which would be
+	// nice if could be incorporated into a function of a specific class?
+	// NOTE2: the .find() for vector and map could easily be replaced by
+	// .count() == 0 to ease the code even more?
 	std::vector<std::string>::iterator method_it = location.methods.begin();
 	for (; method_it != location.methods.end(); ++method_it)
 	{
@@ -97,6 +115,19 @@ HTTP_Response HTTP_ResponseBuilder::build_response_for_GET(
 			hResponse.headers[HTTP_FieldName::LOCATION] = hRequest.url + "/";
 			hResponse.headers[HTTP_FieldName::CONTENT_LENGTH] = ::toString(0);
 			return (hResponse);
+		}
+
+		if (location.index != "")
+		{
+			std::string indexOnServer = pathOnServer + location.index;
+			PathType indexType = getPathType(indexOnServer);
+
+			if (indexType == PATH_FILE)
+			{
+				hResponse.setStatus(HTTP_Status::OK);
+				hResponse.setContent("For test only... index file exists, content will go in here...");
+				return (hResponse);
+			}
 		}
 
 		if (!location.autoindex)
@@ -152,26 +183,27 @@ const Location &HTTP_ResponseBuilder::locationGetBestMatch(
 	const ServerConfig &serverConfig,
 	HTTP_Request &hRequest)
 {
-	Location *selectedLocation = NULL;
+	std::vector<Location>::const_iterator selectedLocation_it = serverConfig.locations.end();
 
 	// now, go through the locations and match the best one
 	std::vector<Location>::const_iterator loc_it = serverConfig.locations.begin();
 	for (; loc_it != serverConfig.locations.end(); ++loc_it)
 	{
-		Location location = *loc_it;
-		if (location.path.find(hRequest.url) == 0)
+		std::vector<Location>::const_iterator location_it = loc_it;
+		if (hRequest.url.find(location_it->path) == 0)
 		{
-			if (!selectedLocation)
-				selectedLocation = &location;
-			else if (location.path.length() > selectedLocation->path.length())
-				selectedLocation = &location;
+			if (selectedLocation_it == serverConfig.locations.end())
+				selectedLocation_it = loc_it;
+			else if (location_it->path.length() > selectedLocation_it->path.length())
+				selectedLocation_it = loc_it;
 		}
 	}
 
-	if (!selectedLocation)
+	if (selectedLocation_it == serverConfig.locations.end())
 		throw std::runtime_error("No suitable server/location found!");
 
-	return (*selectedLocation);
+	std::cout << "Best location match is: " << selectedLocation_it->path << std::endl;
+	return (*selectedLocation_it);
 }
 
 // According to the PDF:
