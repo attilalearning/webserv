@@ -6,7 +6,7 @@
 /*   By: aistok <aistok@student.42london.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/16 16:46:32 by aistok            #+#    #+#             */
-/*   Updated: 2026/02/27 18:01:15 by aistok           ###   ########.fr       */
+/*   Updated: 2026/03/03 20:13:36 by aistok           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,6 +39,11 @@ HTTP_Request::HTTP_Request(const char *raw, size_t len) : method(""),
 														  parseStatus(INCOMPLETE)
 {
 	parse(raw, len);
+}
+
+HTTP_Request::~HTTP_Request()
+{
+	std::cout << "HTTP Request destructor called!" << std::endl;
 }
 
 /* getline removes the '\n' from each line it reads! */
@@ -392,6 +397,25 @@ bool HTTP_Request::ready()
 {
 	return (this->parseStatus == HTTP_Request::COMPLETE ||
 			this->parseStatus == HTTP_Request::BAD_REQUEST);
+}
+
+void HTTP_Request::reset()
+{
+	method = "";
+	url = "";
+	version = "";
+	requestLine_completed = false;
+
+	headers.clear();
+
+	headers_completed = false;
+	headersRequiredCount = 0;
+
+	bodyLen = 0;
+	body = "";
+	body_completed = false;
+
+	parseStatus = INCOMPLETE;
 }
 
 std::ostream &operator<<(std::ostream &os, HTTP_Request &hr)

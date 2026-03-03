@@ -6,7 +6,7 @@
 /*   By: aistok <aistok@student.42london.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/16 16:34:38 by aistok            #+#    #+#             */
-/*   Updated: 2026/02/27 17:58:25 by aistok           ###   ########.fr       */
+/*   Updated: 2026/03/03 16:00:00 by aistok           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -51,6 +51,8 @@ public:
 	HTTP_Request();
 	HTTP_Request(const char *raw, size_t len);
 
+	~HTTP_Request();
+
 	int parse(const char *raw, size_t len);
 	int removePortion(std::string &line, std::string portion);
 
@@ -69,6 +71,7 @@ public:
 	int validNumber(std::string value);
 
 	bool ready();
+	void reset();
 
 	/* only if need access to private or protected elements */
 	// friend class HTTP;
