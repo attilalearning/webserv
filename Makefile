@@ -6,12 +6,13 @@
 #    By: aistok <aistok@student.42london.com>       +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2026/01/14 18:42:19 by aistok            #+#    #+#              #
-#    Updated: 2026/02/25 05:17:34 by aistok           ###   ########.fr        #
+#    Updated: 2026/03/03 17:11:24 by aistok           ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
 CC			=	c++
 CFLAGS		=	-Wall -Werror -Wextra -std=c++98
+DFLAGS		=	-g3 -O0
 #DFLAGS		=	-fsanitise=address
 RM			=	rm -rf
 
