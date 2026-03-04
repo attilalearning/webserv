@@ -3,15 +3,22 @@
 /*                                                        :::      ::::::::   */
 /*   WebServ.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mosokina <mosokina@student.42london.com    +#+  +:+       +#+        */
+/*   By: aistok <aistok@student.42london.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/14 19:03:57 by aistok            #+#    #+#             */
-/*   Updated: 2026/02/25 14:25:39 by mosokina         ###   ########.fr       */
+/*   Updated: 2026/02/27 22:29:32 by aistok           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef WEBSERV_HPP
 #define WEBSERV_HPP
+
+#define ESC_VIOLET_HOLLOW "\001\033[45;97m\002"
+#define ESC_YELLOW_HOLLOW "\001\033[43;97m\002"
+#define ESC_CYAN "\001\033[36m\002"
+#define ESC_GREEN "\001\033[32m\002"
+#define ESC_RED "\001\033[31m\002"
+#define ESC_END "\001\033[0m\002"
 
 #include <iostream>
 #include <vector>
@@ -24,6 +31,7 @@
 #include "ConfigStructs.hpp"
 #include "Server.hpp"
 #include "Connection.hpp"
+#include "HTTP/HTTP.hpp"
 
 extern volatile sig_atomic_t g_server_running;
 
@@ -47,6 +55,8 @@ public:
 	std::vector<Server *> getServers() const;
 	void setup(std::vector<ServerConfig> &configs);
 	void run();
+
+	Connection &getConnectionForFd(int fd);
 
 private:
 	// Rule of Three: Private and Unimplemented

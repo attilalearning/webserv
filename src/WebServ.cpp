@@ -3,15 +3,16 @@
 /*                                                        :::      ::::::::   */
 /*   WebServ.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mosokina <mosokina@student.42london.com    +#+  +:+       +#+        */
+/*   By: aistok <aistok@student.42london.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/14 19:03:57 by aistok            #+#    #+#             */
-/*   Updated: 2026/02/25 14:36:38 by mosokina         ###   ########.fr       */
+/*   Updated: 2026/03/03 18:10:59 by aistok           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include <iostream>
 #include "WebServ.hpp"
+#include "ErrorPages.hpp"
 
 /* public section ----------------------------- */
 
@@ -120,10 +121,33 @@ void WebServ::run(void)
 
 				// JUST FOR TEST:
 				// std::string msg = "Hello World!\n";
-				std::string msg = "HTTP/1.1 200 OK\r\nContent-Length: 13\r\n\r\nHello World!\n";
-				std::cout << "We are sending the message: " << msg << std::endl;
-				send(_pollFds[i].fd, msg.c_str(), msg.length(), 0);
+//				std::string msg = "HTTP/1.1 200 OK\r\nContent-Length: 13\r\n\r\nHello World!\n";
+				Connection &connection = getConnectionForFd(_pollFds[i].fd);
+				const ServerConfig &serverConfig = connection.getServer()->getConfig();
+
+				HTTP::Response hResponse = HTTP::ResponseBuilder::build(serverConfig, connection.getRequest());
+
+				//HTTP::Response hResponse(HTTP::Status::FORBIDDEN,
+				//	ErrorPages::generate(HTTP::Status::FORBIDDEN));
+				std::string data_to_send = hResponse.toString();
+				std::cout << "Sending below response of " << data_to_send.size() << " bytes" << std::endl;
+				std::cout << "----------------------------------------------------\n";
+				std::cout << ESC_YELLOW_HOLLOW;
+				std::cout << hResponse;
+//				std::cout << msg;
+				std::cout << ESC_END;
+				std::cout << "----------------------------------------------------\n\n";
+
+				send(_pollFds[i].fd, data_to_send.c_str(), data_to_send.size(), 0);
+//				send(_pollFds[i].fd, msg.c_str(), msg.size(), 0);
+
+				// should check if response was complete and sent, and if so,
+				// and _request is no longer needed, reset it to prepare for
+				// next cycle
+				connection.getRequest().reset();
+
 				_pollFds[i].events &= ~POLLOUT; //TO-DO handle not only "keep-alive" but also "close" option
+
 				int fd = _pollFds[i].fd;
 				if (_fdToConnMap.count(fd))
 					_fdToConnMap[fd]->resetTimeout();
@@ -141,6 +165,24 @@ void WebServ::run(void)
 			}
 		}
 	}
+}
+
+Connection &WebServ::getConnectionForFd(int fd)
+{
+	if (_fdToConnMap.count(fd))
+		return *(_fdToConnMap[fd]);
+
+	throw std::runtime_error("No connection found for fd = " + fd);
+	/*
+	std::map<int, Connection *>::iterator it = _fdToConnMap.find(fd);
+	if (it == _fdToConnMap.end())
+	{
+		std::cerr << "[WebServ] Critical: No connection object for FD " << fd << std::endl;
+		//_closeConnection(index);
+		// throw exception ??
+	}
+	Connection *conn = it->second;
+	*/
 }
 
 /* private section ---------------------------- */
@@ -248,9 +290,19 @@ bool WebServ::_readRequest(size_t index)
 		conn->resetTimeout();
 		// JUST FOR TESTS:
 		buffer[bytesRead] = '\0';
+		//conn->_request.parse(buffer, bytesRead); // not possible since _request is private
+		//conn->getRequest().parse(buffer, bytesRead); // maybe?
 		std::cout << "Received " << bytesRead << " bytes from FD " << fd << std::endl;
-		std::cout << "Buffer: " << buffer << std::endl;
-		// conn->_appendRequest(buffer, bytesRead);
+		//HTTP::Request hRequest(buffer, bytesRead);
+		conn->getRequest().parse(buffer, bytesRead);
+		std::cout << "----------------------------------------------------\n";
+		std::cout << ESC_VIOLET_HOLLOW;
+		std::cout << conn->getRequest();
+		std::cout << ESC_END;
+		std::cout << "----------------------------------------------------\n\n";
+		
+		// conn->_appendRequest(buffer, bytesRead); 
+		
 		// Only flip to POLLOUT after full parcing, valid request
 		// if (conn->_isRequestComplete())
 		// For now, we leave it for testing:

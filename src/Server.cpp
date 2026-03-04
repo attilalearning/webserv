@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Server.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mosokina <mosokina@student.42.fr>          +#+  +:+       +#+        */
+/*   By: aistok <aistok@student.42london.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/23 14:48:56 by mosokina          #+#    #+#             */
-/*   Updated: 2026/02/22 00:25:48 by mosokina         ###   ########.fr       */
+/*   Updated: 2026/02/27 18:54:58 by aistok           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,6 +30,11 @@ Server::~Server()
 int Server::getListenFd() const
 {
 	return _listenFd;
+}
+
+const ServerConfig &Server::getConfig() const
+{
+	return _config;
 }
 
 void Server::initSocket()
