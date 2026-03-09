@@ -6,7 +6,7 @@
 /*   By: aistok <aistok@student.42london.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/12 14:37:18 by aistok            #+#    #+#             */
-/*   Updated: 2026/03/09 23:20:55 by aistok           ###   ########.fr       */
+/*   Updated: 2026/03/09 23:35:14 by aistok           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -74,11 +74,20 @@ public:
 	static const HTTP_StatusPair NOT_FOUND;
 	static const HTTP_StatusPair s404;
 
+	static const HTTP_StatusPair METHOD_NOT_ALLOWED;
+	static const HTTP_StatusPair s405;
+
 	static const HTTP_StatusPair REQUEST_TIMEOUT;
 	static const HTTP_StatusPair s408;
 
 	static const HTTP_StatusPair CONFLICT;
 	static const HTTP_StatusPair s409;
+
+	static const HTTP_StatusPair LENGTH_REQUIRED;
+	static const HTTP_StatusPair s411;
+
+	static const HTTP_StatusPair CONTENT_TOO_LARGE;
+	static const HTTP_StatusPair s413;
 
 	static const HTTP_StatusPair UNPROCESSABLE_CONTENT;
 	static const HTTP_StatusPair s422;
@@ -98,6 +107,9 @@ public:
 
 	static const HTTP_StatusPair GATEWAY_TIMEOUT;
 	static const HTTP_StatusPair s504;
+
+	static const HTTP_StatusPair HTTP_VERSION_NOT_SUPPORTED;
+	static const HTTP_StatusPair s505;
 
 	static const HTTP_StatusPair *all();
 	static int count();

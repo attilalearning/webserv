@@ -6,7 +6,7 @@
 /*   By: aistok <aistok@student.42london.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/12 14:39:13 by aistok            #+#    #+#             */
-/*   Updated: 2026/02/26 22:03:44 by aistok           ###   ########.fr       */
+/*   Updated: 2026/03/09 23:39:15 by aistok           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,8 +33,11 @@ const HTTP_StatusPair HTTP_Status::_table[] = {
 	{401, "Unauthorized"},
 	{403, "Forbidden"},
 	{404, "Not Found"},
+	{405, "Method Not Allowed"},
 	{408, "Request Timeout"},
 	{409, "Conflict"},
+	{411, "Length Required"},
+	{413, "Content Too Large"},
 	{422, "Unprocessable Entity"},
 
 	{500, "Internal Server Error"},
@@ -42,6 +45,7 @@ const HTTP_StatusPair HTTP_Status::_table[] = {
 	{502, "Bad Gateway"},
 	{503, "Service Unavailable"},
 	{504, "Gateway Timeout"},
+	{505, "HTTP Version Not Supported"},
 };
 
 const int HTTP_Status::_count =
@@ -99,30 +103,42 @@ const HTTP_StatusPair HTTP_Status::s403 = HTTP_Status::FORBIDDEN;
 const HTTP_StatusPair HTTP_Status::NOT_FOUND = HTTP_Status::_table[15];
 const HTTP_StatusPair HTTP_Status::s404 = HTTP_Status::NOT_FOUND;
 
-const HTTP_StatusPair HTTP_Status::REQUEST_TIMEOUT = HTTP_Status::_table[16];
+const HTTP_StatusPair HTTP_Status::METHOD_NOT_ALLOWED = HTTP_Status::_table[16];
+const HTTP_StatusPair HTTP_Status::s405 = HTTP_Status::METHOD_NOT_ALLOWED;
+
+const HTTP_StatusPair HTTP_Status::REQUEST_TIMEOUT = HTTP_Status::_table[17];
 const HTTP_StatusPair HTTP_Status::s408 = HTTP_Status::REQUEST_TIMEOUT;
 
-const HTTP_StatusPair HTTP_Status::CONFLICT = HTTP_Status::_table[17];
+const HTTP_StatusPair HTTP_Status::CONFLICT = HTTP_Status::_table[18];
 const HTTP_StatusPair HTTP_Status::s409 = HTTP_Status::CONFLICT;
 
-const HTTP_StatusPair HTTP_Status::UNPROCESSABLE_CONTENT = HTTP_Status::_table[18];
+const HTTP_StatusPair HTTP_Status::LENGTH_REQUIRED = HTTP_Status::_table[19];
+const HTTP_StatusPair HTTP_Status::s411 = HTTP_Status::LENGTH_REQUIRED;
+
+const HTTP_StatusPair HTTP_Status::CONTENT_TOO_LARGE = HTTP_Status::_table[20];
+const HTTP_StatusPair HTTP_Status::s413 = HTTP_Status::CONTENT_TOO_LARGE;
+
+const HTTP_StatusPair HTTP_Status::UNPROCESSABLE_CONTENT = HTTP_Status::_table[21];
 const HTTP_StatusPair HTTP_Status::s422 = HTTP_Status::UNPROCESSABLE_CONTENT;
 
 /* 5xx Server Errors */
-const HTTP_StatusPair HTTP_Status::INTERNAL_SERVER_ERROR = HTTP_Status::_table[19];
+const HTTP_StatusPair HTTP_Status::INTERNAL_SERVER_ERROR = HTTP_Status::_table[22];
 const HTTP_StatusPair HTTP_Status::s500 = HTTP_Status::INTERNAL_SERVER_ERROR;
 
-const HTTP_StatusPair HTTP_Status::NOT_IMPLEMENTED = HTTP_Status::_table[20];
+const HTTP_StatusPair HTTP_Status::NOT_IMPLEMENTED = HTTP_Status::_table[23];
 const HTTP_StatusPair HTTP_Status::s501 = HTTP_Status::NOT_IMPLEMENTED;
 
-const HTTP_StatusPair HTTP_Status::BAD_GATEWAY = HTTP_Status::_table[21];
+const HTTP_StatusPair HTTP_Status::BAD_GATEWAY = HTTP_Status::_table[24];
 const HTTP_StatusPair HTTP_Status::s502 = HTTP_Status::BAD_GATEWAY;
 
-const HTTP_StatusPair HTTP_Status::SERVICE_UNAVAILABLE = HTTP_Status::_table[22];
+const HTTP_StatusPair HTTP_Status::SERVICE_UNAVAILABLE = HTTP_Status::_table[25];
 const HTTP_StatusPair HTTP_Status::s503 = HTTP_Status::SERVICE_UNAVAILABLE;
 
-const HTTP_StatusPair HTTP_Status::GATEWAY_TIMEOUT = HTTP_Status::_table[23];
+const HTTP_StatusPair HTTP_Status::GATEWAY_TIMEOUT = HTTP_Status::_table[26];
 const HTTP_StatusPair HTTP_Status::s504 = HTTP_Status::GATEWAY_TIMEOUT;
+
+const HTTP_StatusPair HTTP_Status::HTTP_VERSION_NOT_SUPPORTED = HTTP_Status::_table[27];
+const HTTP_StatusPair HTTP_Status::s505 = HTTP_Status::HTTP_VERSION_NOT_SUPPORTED;
 
 const HTTP_StatusPair *HTTP_Status::fromCode(int code)
 {
