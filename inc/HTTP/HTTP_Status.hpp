@@ -6,14 +6,18 @@
 /*   By: aistok <aistok@student.42london.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/12 14:37:18 by aistok            #+#    #+#             */
-/*   Updated: 2026/02/26 22:09:34 by aistok           ###   ########.fr       */
+/*   Updated: 2026/03/09 23:20:55 by aistok           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef HTTP_STATUS_HPP
 #define HTTP_STATUS_HPP
 
-#include "HTTP_StatusPair.hpp"
+typedef struct HTTP_StatusPair
+{
+	int code;
+	const char *text;
+} HTTP_StatusPair;
 
 class HTTP_Status
 {
