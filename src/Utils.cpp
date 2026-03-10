@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Utils.cpp                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mosokina <mosokina@student.42london.com    +#+  +:+       +#+        */
+/*   By: aistok <aistok@student.42london.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/25 11:32:29 by mosokina          #+#    #+#             */
-/*   Updated: 2026/02/25 11:32:30 by mosokina         ###   ########.fr       */
+/*   Updated: 2026/03/10 07:33:02 by aistok           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -100,6 +100,25 @@ bool replace(std::string &str, const std::string &from, const std::string &to)
 		return false;
 	str.replace(start_pos, from.length(), to);
 	return true;
+}
+
+bool removePortion(std::string &line, std::string portion)
+{
+	if (line.find(portion) == std::string::npos)
+		return (false);
+	line.erase(line.size() - portion.size(), portion.size());
+	return (true);
+}
+
+bool numberIsPositive(std::string value)
+{
+	if (value.empty())
+		return (false);
+
+	if (value.find('-') != std::string::npos)
+		return (false);
+
+	return (true);
 }
 
 PathType getPathType(const std::string &pathStr)

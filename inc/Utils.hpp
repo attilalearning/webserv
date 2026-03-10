@@ -6,7 +6,7 @@
 /*   By: aistok <aistok@student.42london.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/26 23:56:58 by mosokina          #+#    #+#             */
-/*   Updated: 2026/02/27 11:29:03 by aistok           ###   ########.fr       */
+/*   Updated: 2026/03/10 07:33:11 by aistok           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -48,6 +48,9 @@ enum PathType {
     PATH_FILE,
     PATH_DIRECTORY
 };
+
+bool removePortion(std::string &line, std::string portion);
+bool numberIsPositive(std::string value);
 
 PathType getPathType(const std::string &pathStr);
 

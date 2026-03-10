@@ -6,7 +6,7 @@
 /*   By: aistok <aistok@student.42london.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/16 16:34:38 by aistok            #+#    #+#             */
-/*   Updated: 2026/03/10 07:16:00 by aistok           ###   ########.fr       */
+/*   Updated: 2026/03/10 07:33:53 by aistok           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -68,8 +68,6 @@ private:
 
 	ParseStatus _parseStatus;
 
-	int _removePortion(std::string &line, std::string portion);
-
 	int _parseRequestLine(std::string line);
 	int _parseMethod(std::string method);
 	int _parseURL(std::string url);
@@ -82,7 +80,6 @@ private:
 	int _headerValueIsValid(std::string value);
 	int _fieldNameAlreadyProcessed(std::string eKey);
 	int _fieldNameIsSecurityRisk(std::string eKey);
-	int _validNumber(std::string value);
 
 	// only if need access to private or protected elements
 	friend class HTTP;

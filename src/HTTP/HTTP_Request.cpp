@@ -6,7 +6,7 @@
 /*   By: aistok <aistok@student.42london.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/16 16:46:32 by aistok            #+#    #+#             */
-/*   Updated: 2026/03/10 07:20:50 by aistok           ###   ########.fr       */
+/*   Updated: 2026/03/10 07:34:52 by aistok           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -166,15 +166,6 @@ const std::string &HTTP_Request::getURL() const
 	return (_url);
 }
 
-// TO-DO: if this function is used elsewhere too, place it in utils
-int HTTP_Request::_removePortion(std::string &line, std::string portion)
-{
-	if (line.find(portion) == std::string::npos)
-		return (FAILURE);
-	line.erase(line.size() - portion.size(), portion.size());
-	return (SUCCESS);
-}
-
 // TO-DO: should be protected
 int HTTP_Request::_parseRequestLine(std::string line)
 {
@@ -182,7 +173,7 @@ int HTTP_Request::_parseRequestLine(std::string line)
 	 *	getline removes '\n' (LF), so,
 	 *	only check and remove '\r' (CR).
 	 */
-	if (!_removePortion(line, CR))
+	if (!removePortion(line, CR))
 	{
 		_parseStatus = HTTP_Request::BAD_REQUEST;
 		return (FAILURE);
@@ -287,7 +278,7 @@ int HTTP_Request::_parseHeaderLine(std::string line)
 	 *	getline removes '\n' (LF), so,
 	 *	only check and remove '\r' (CR).
 	 */
-	if (!_removePortion(line, CR))
+	if (!removePortion(line, CR))
 	{
 		_parseStatus = HTTP_Request::BAD_REQUEST;
 		return (FAILURE);
@@ -316,7 +307,7 @@ int HTTP_Request::_parseHeaderLine(std::string line)
 	{
 		size_t value_size_t;
 
-		if (_validNumber(value) && toNumber(value, value_size_t))
+		if (numberIsPositive(value) && toNumber(value, value_size_t))
 			_headers[HTTP_FieldName::CONTENT_LENGTH] = toString(value_size_t);
 		else
 		{
@@ -404,18 +395,6 @@ int HTTP_Request::_fieldNameIsSecurityRisk(std::string fieldName)
 		return (SUCCESS);
 
 	return (FAILURE);
-}
-
-int HTTP_Request::_validNumber(std::string value)
-{
-	if (value.empty())
-		return (FAILURE);
-
-	/* disallow negative values for content-length header */
-	if (value.find('-') != std::string::npos)
-		return (FAILURE);
-
-	return (SUCCESS);
 }
 
 bool HTTP_Request::ready()
