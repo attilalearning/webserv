@@ -6,7 +6,7 @@
 /*   By: aistok <aistok@student.42london.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/20 10:48:39 by aistok            #+#    #+#             */
-/*   Updated: 2026/03/03 21:19:49 by aistok           ###   ########.fr       */
+/*   Updated: 2026/03/10 07:14:51 by aistok           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,23 +17,23 @@ std::string HTTP_ResponseBuilder::serverBasePath = std::string("./");
 HTTP_Response HTTP_ResponseBuilder::build(const ServerConfig &sc, HTTP_Request &hReq)
 {
 	(void)sc;
-	if (hReq.parseStatus == HTTP_Request::BAD_REQUEST)
+	if (hReq.getParseStatus() == HTTP_Request::BAD_REQUEST)
 		return (HTTP_Response(HTTP_Status::BAD_REQUEST)); //(build(BAD_REQUEST, sc));
 
-	if (hReq.parseStatus == HTTP_Request::INCOMPLETE)
+	if (hReq.getParseStatus() == HTTP_Request::INCOMPLETE)
 	{
 		// throw exception ?
 	}
 
-	if (hReq.method == HTTP_Method::GET)
+	if (hReq.getMethod() == HTTP_Method::GET)
 	{
 		return (build_response_for_GET(sc, hReq));
 	}
-	else if (hReq.method == HTTP_Method::POST)
+	else if (hReq.getMethod() == HTTP_Method::POST)
 	{
 		return (HTTP_Response()); //(build_response_for_POST(sc, hReq));
 	}
-	else if (hReq.method == HTTP_Method::DELETE)
+	else if (hReq.getMethod() == HTTP_Method::DELETE)
 	{
 		return (HTTP_Response()); //(build_response_for_DELETE(sc, hReq));
 	}
@@ -112,7 +112,7 @@ HTTP_Response HTTP_ResponseBuilder::build_response_for_GET(
 			// redirect; the directory exists, but the client did not request
 			// it properly, there was a missing '/' at the end
 			hResponse.setStatus(HTTP_Status::MOVED_PERMANENTLY);
-			hResponse.headers[HTTP_FieldName::LOCATION] = hRequest.url + "/";
+			hResponse.headers[HTTP_FieldName::LOCATION] = hRequest.getURL() + "/";
 			hResponse.headers[HTTP_FieldName::CONTENT_LENGTH] = ::toString(0);
 			return (hResponse);
 		}
@@ -190,7 +190,7 @@ const Location &HTTP_ResponseBuilder::locationGetBestMatch(
 	for (; loc_it != serverConfig.locations.end(); ++loc_it)
 	{
 		std::vector<Location>::const_iterator location_it = loc_it;
-		if (hRequest.url.find(location_it->path) == 0)
+		if (hRequest.getURL().find(location_it->path) == 0)
 		{
 			if (selectedLocation_it == serverConfig.locations.end())
 				selectedLocation_it = loc_it;
@@ -217,13 +217,13 @@ std::string HTTP_ResponseBuilder::translateUriToPath(
 	const Location &location, HTTP_Request &hRequest)
 {
 	const std::string &basePath = location.root;
-	std::string result = hRequest.url;
+	std::string result = hRequest.getURL();
 
 	if (!replace(result, location.path, ""))
 	{
 		std::cout
 			<< "Error: HTTP_ResponseBuilder::translateUriToPath invalid "
-			<< "request url \"" << hRequest.url << "\"" << std::endl;
+			<< "request url \"" << hRequest.getURL() << "\"" << std::endl;
 		throw(std::runtime_error(""));
 	}
 

@@ -6,7 +6,7 @@
 /*   By: aistok <aistok@student.42london.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/16 16:46:32 by aistok            #+#    #+#             */
-/*   Updated: 2026/03/03 20:13:36 by aistok           ###   ########.fr       */
+/*   Updated: 2026/03/10 07:20:50 by aistok           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,43 +15,53 @@
 
 #include "HTTP/HTTP_Request.hpp"
 
-HTTP_Request::HTTP_Request() : method(""),
-							   url(""),
-							   version(""),
-							   requestLine_completed(false),
-							   headers_completed(false),
-							   headersRequiredCount(0),
-							   bodyLen(0),
-							   body_completed(false),
-							   parseStatus(INCOMPLETE)
+HTTP_Request::HTTP_Request() : _method(""),
+							   _url(""),
+							   _version(""),
+							   _requestLine_completed(false),
+							   _headers_completed(false),
+							   _headersRequiredCount(0),
+							   _bodyLen(0),
+							   _body_completed(false),
+							   _parseStatus(INCOMPLETE)
 {
 	// done
 }
 
-HTTP_Request::HTTP_Request(const char *raw, size_t len) : method(""),
-														  url(""),
-														  version(""),
-														  requestLine_completed(false),
-														  headers_completed(false),
-														  headersRequiredCount(0),
-														  bodyLen(0),
-														  body_completed(false),
-														  parseStatus(INCOMPLETE)
+HTTP_Request::HTTP_Request(const char *raw, size_t len) : _method(""),
+														  _url(""),
+														  _version(""),
+														  _requestLine_completed(false),
+														  _headers_completed(false),
+														  _headersRequiredCount(0),
+														  _bodyLen(0),
+														  _body_completed(false),
+														  _parseStatus(INCOMPLETE)
 {
 	parse(raw, len);
 }
 
-HTTP_Request::~HTTP_Request()
-{
-	std::cout << "HTTP Request destructor called!" << std::endl;
-}
+// HTTP_Request::~HTTP_Request()
+// {
+// std::cout << "HTTP Request destructor called!" << std::endl;
+// }
+
+// HTTP_Request::HTTP_Request(const HTTP_Request &other)
+// {
+// TO-DO
+// }
+
+// HTTP_Request &HTTP_Request::operator=(const HTTP_Request &other)
+// {
+// TO-DO
+// }
 
 /* getline removes the '\n' from each line it reads! */
 int HTTP_Request::parse(const char *raw, size_t len)
 {
 	if (!len)
 	{
-		parseStatus = HTTP_Request::INCOMPLETE;
+		_parseStatus = HTTP_Request::INCOMPLETE;
 		return (FAILURE);
 	}
 
@@ -60,43 +70,43 @@ int HTTP_Request::parse(const char *raw, size_t len)
 	std::istream is(&sb);
 	std::string line;
 
-	if (!requestLine_completed)
+	if (!_requestLine_completed)
 	{
 		if (!std::getline(is, line))
 		{
 			/* no data available
 			 * QUESTION: is this even possible? for '\n' to be missing?
 			 */
-			this->parseStatus = HTTP_Request::INCOMPLETE;
+			this->_parseStatus = HTTP_Request::INCOMPLETE;
 			return (FAILURE);
 		}
-		if (!parseRequestLine(line))
+		if (!_parseRequestLine(line))
 			/* request line was malformed?
 			 * parseStatus will be set!
 			 */
 			return (FAILURE);
 
-		requestLine_completed = true;
+		_requestLine_completed = true;
 	}
 
-	while (!headers_completed && std::getline(is, line))
+	while (!_headers_completed && std::getline(is, line))
 	{
 		if (line == CR) /* LF was removed by getline! */
 		{
 			/* reached the end of headers;
 			 * body may be present after this
 			 */
-			if (headersRequiredCount < 2)
+			if (_headersRequiredCount < 2)
 			{
-				parseStatus = HTTP_Request::BAD_REQUEST;
+				_parseStatus = HTTP_Request::BAD_REQUEST;
 				return (FAILURE);
 			}
-			headers_completed = true;
+			_headers_completed = true;
 			break;
 		}
 		else
 		{
-			if (!HTTP_Request::parseHeaderLine(line))
+			if (!HTTP_Request::_parseHeaderLine(line))
 				/* malformed header line
 				 * TO-DO: or awaiting for more data?
 				 * parseStatus is now set accordingly!
@@ -116,33 +126,48 @@ int HTTP_Request::parse(const char *raw, size_t len)
 	 */
 	if (!is.eof())
 	{
-		if (headers.find(HTTP_FieldName::CONTENT_LENGTH) != headers.end() &&
-			toNumber(headers[HTTP_FieldName::CONTENT_LENGTH], bodyLen))
+		if (_headers.find(HTTP_FieldName::CONTENT_LENGTH) != _headers.end() &&
+			toNumber(_headers[HTTP_FieldName::CONTENT_LENGTH], _bodyLen))
 		{
 			/* bodyLen is now set */
 		}
-		else if (headers.find(HTTP_FieldName::TRANSFER_ENCODING) != headers.end())
-			bodyLen = is.rdbuf()->in_avail();
+		else if (_headers.find(HTTP_FieldName::TRANSFER_ENCODING) != _headers.end())
+			_bodyLen = is.rdbuf()->in_avail();
 
-		this->body = std::string(bodyLen, '\0');
-		is.read(&this->body[0], bodyLen);
+		this->_body = std::string(_bodyLen, '\0');
+		is.read(&this->_body[0], _bodyLen);
 
-		if (is.gcount() != static_cast<std::streamsize>(bodyLen))
+		if (is.gcount() != static_cast<std::streamsize>(_bodyLen))
 		{
-			parseStatus = HTTP_Request::INCOMPLETE;
+			_parseStatus = HTTP_Request::INCOMPLETE;
 			return (FAILURE); /* TO-DO: should this be SUCCESS?
 							   * ex: if it's "Transfer-Encoding: chunked
 							   */
 		}
 	}
 
-	body_completed = true;
-	parseStatus = HTTP_Request::COMPLETE;
+	_body_completed = true;
+	_parseStatus = HTTP_Request::COMPLETE;
 	return (SUCCESS);
 }
 
-/* TO-DO: if this function is used elsewhere too, place it in utils */
-int HTTP_Request::removePortion(std::string &line, std::string portion)
+int HTTP_Request::getParseStatus() const
+{
+	return (_parseStatus);
+}
+
+const std::string &HTTP_Request::getMethod() const
+{
+	return (_method);
+}
+
+const std::string &HTTP_Request::getURL() const
+{
+	return (_url);
+}
+
+// TO-DO: if this function is used elsewhere too, place it in utils
+int HTTP_Request::_removePortion(std::string &line, std::string portion)
 {
 	if (line.find(portion) == std::string::npos)
 		return (FAILURE);
@@ -151,15 +176,15 @@ int HTTP_Request::removePortion(std::string &line, std::string portion)
 }
 
 // TO-DO: should be protected
-int HTTP_Request::parseRequestLine(std::string line)
+int HTTP_Request::_parseRequestLine(std::string line)
 {
 	/*
 	 *	getline removes '\n' (LF), so,
 	 *	only check and remove '\r' (CR).
 	 */
-	if (!removePortion(line, CR))
+	if (!_removePortion(line, CR))
 	{
-		parseStatus = HTTP_Request::BAD_REQUEST;
+		_parseStatus = HTTP_Request::BAD_REQUEST;
 		return (FAILURE);
 	}
 
@@ -175,17 +200,17 @@ int HTTP_Request::parseRequestLine(std::string line)
 		start = end + 1;
 		if (part == 1)
 		{
-			if (!parseMethod(subString))
+			if (!_parseMethod(subString))
 			{
-				parseStatus = HTTP_Request::BAD_REQUEST;
+				_parseStatus = HTTP_Request::BAD_REQUEST;
 				return (FAILURE);
 			}
 		}
 		else if (part == 2)
 		{
-			if (!parseURL(subString))
+			if (!_parseURL(subString))
 			{
-				parseStatus = HTTP_Request::BAD_REQUEST;
+				_parseStatus = HTTP_Request::BAD_REQUEST;
 				return (FAILURE);
 			}
 		}
@@ -195,15 +220,15 @@ int HTTP_Request::parseRequestLine(std::string line)
 	if (part == 3)
 	{
 		subString = line.substr(start, line.size() - start);
-		if (!parseVersion(subString))
+		if (!_parseVersion(subString))
 		{
-			parseStatus = HTTP_Request::BAD_REQUEST;
+			_parseStatus = HTTP_Request::BAD_REQUEST;
 			return (FAILURE);
 		}
 	}
 	else
 	{
-		parseStatus = HTTP_Request::BAD_REQUEST;
+		_parseStatus = HTTP_Request::BAD_REQUEST;
 		return (FAILURE);
 	}
 
@@ -211,42 +236,42 @@ int HTTP_Request::parseRequestLine(std::string line)
 	 *	this line is mandatory to be present in the request,
 	 *	therefore, count it in the required headers
 	 */
-	headersRequiredCount++;
+	_headersRequiredCount++;
 	return (SUCCESS);
 }
 
-int HTTP_Request::parseMethod(std::string method)
+int HTTP_Request::_parseMethod(std::string method)
 {
 	if (method == HTTP_Method::GET ||
 		method == HTTP_Method::POST ||
 		method == HTTP_Method::DELETE)
 	{
-		this->method = method;
+		this->_method = method;
 		return (SUCCESS);
 	}
 	return (FAILURE);
 }
 
-int HTTP_Request::parseURL(std::string url)
+int HTTP_Request::_parseURL(std::string url)
 {
-	if (!URLIsValid(url))
+	if (!_URLIsValid(url))
 		return (FAILURE);
-	this->url = url;
+	this->_url = url;
 	return (SUCCESS);
 }
 
-int HTTP_Request::parseVersion(std::string version)
+int HTTP_Request::_parseVersion(std::string version)
 {
 	if (version == "HTTP/1.1" ||
 		version == "HTTP/1.0")
 	{
-		this->version = version;
+		this->_version = version;
 		return (SUCCESS);
 	}
 	return (FAILURE);
 }
 
-int HTTP_Request::URLIsValid(std::string url)
+int HTTP_Request::_URLIsValid(std::string url)
 {
 	/* TO-DO: verify if url is valid */
 	/* 	ex. contains white spaces, control characters,
@@ -256,34 +281,34 @@ int HTTP_Request::URLIsValid(std::string url)
 }
 
 // TO-DO: should be protected
-int HTTP_Request::parseHeaderLine(std::string line)
+int HTTP_Request::_parseHeaderLine(std::string line)
 {
 	/*
 	 *	getline removes '\n' (LF), so,
 	 *	only check and remove '\r' (CR).
 	 */
-	if (!removePortion(line, CR))
+	if (!_removePortion(line, CR))
 	{
-		parseStatus = HTTP_Request::BAD_REQUEST;
+		_parseStatus = HTTP_Request::BAD_REQUEST;
 		return (FAILURE);
 	}
 
 	std::string::size_type pos = line.find(":", 0);
 	if (pos == std::string::npos)
 	{
-		parseStatus = HTTP_Request::BAD_REQUEST;
+		_parseStatus = HTTP_Request::BAD_REQUEST;
 		return (FAILURE);
 	}
 
 	std::string fieldName = line.substr(0, pos);
 	fieldName = capitaliseFirstLetter(fieldName);
 	std::string value = line.substr(pos + 1, line.size());
-	if (!fieldNameIsValid(fieldName) ||
-		!headerValueIsValid(value) ||
-		fieldNameAlreadyProcessed(fieldName) ||
-		fieldNameIsSecurityRisk(fieldName))
+	if (!_fieldNameIsValid(fieldName) ||
+		!_headerValueIsValid(value) ||
+		_fieldNameAlreadyProcessed(fieldName) ||
+		_fieldNameIsSecurityRisk(fieldName))
 	{
-		parseStatus = HTTP_Request::BAD_REQUEST;
+		_parseStatus = HTTP_Request::BAD_REQUEST;
 		return (FAILURE);
 	}
 
@@ -291,22 +316,22 @@ int HTTP_Request::parseHeaderLine(std::string line)
 	{
 		size_t value_size_t;
 
-		if (validNumber(value) && toNumber(value, value_size_t))
-			headers[HTTP_FieldName::CONTENT_LENGTH] = toString(value_size_t);
+		if (_validNumber(value) && toNumber(value, value_size_t))
+			_headers[HTTP_FieldName::CONTENT_LENGTH] = toString(value_size_t);
 		else
 		{
 			/* not possible to parse value as a number */
-			parseStatus = HTTP_Request::BAD_REQUEST;
+			_parseStatus = HTTP_Request::BAD_REQUEST;
 			return (FAILURE);
 		}
 	}
 	else
 	{
 		value = trimString(value, DISALLOWED_CHARS_IN_FIELD_VALUE);
-		headers[fieldName] = value;
+		_headers[fieldName] = value;
 	}
 
-	countHeaderIfRequired(fieldName);
+	_countHeaderIfRequired(fieldName);
 
 	return (SUCCESS);
 }
@@ -314,15 +339,15 @@ int HTTP_Request::parseHeaderLine(std::string line)
 /* this function can include other headers
  * in the future if needed
  */
-int HTTP_Request::countHeaderIfRequired(std::string fieldName)
+int HTTP_Request::_countHeaderIfRequired(std::string fieldName)
 {
 	if (fieldName == HTTP_FieldName::HOST)
-		headersRequiredCount++;
+		_headersRequiredCount++;
 	return (SUCCESS);
 }
 
 /* Defined in RFC 9112, summarized in RFC 9110 */
-int HTTP_Request::fieldNameIsValid(std::string fieldName)
+int HTTP_Request::_fieldNameIsValid(std::string fieldName)
 {
 	const static std::string allowedChars(ALLOWED_CHARS_IN_FIELD_NAME);
 
@@ -343,7 +368,7 @@ int HTTP_Request::fieldNameIsValid(std::string fieldName)
 }
 
 /* defined in RFC 9112, with semantics summarized in RFC 9110 */
-int HTTP_Request::headerValueIsValid(std::string value)
+int HTTP_Request::_headerValueIsValid(std::string value)
 {
 	for (std::string::size_type i = 0; i < value.size(); ++i)
 	{
@@ -358,9 +383,9 @@ int HTTP_Request::headerValueIsValid(std::string value)
 	return (SUCCESS);
 }
 
-int HTTP_Request::fieldNameAlreadyProcessed(std::string fieldName)
+int HTTP_Request::_fieldNameAlreadyProcessed(std::string fieldName)
 {
-	if (headers.find(fieldName) != headers.end())
+	if (_headers.find(fieldName) != _headers.end())
 		return (SUCCESS);
 	return (FAILURE);
 }
@@ -368,20 +393,20 @@ int HTTP_Request::fieldNameAlreadyProcessed(std::string fieldName)
 /* Disallow CONTENT_LENGTH && TRANSFER_ENCODING headers,
  * both at the same time in the http request to avoid "request smuggling"
  */
-int HTTP_Request::fieldNameIsSecurityRisk(std::string fieldName)
+int HTTP_Request::_fieldNameIsSecurityRisk(std::string fieldName)
 {
 	if (fieldName == HTTP_FieldName::TRANSFER_ENCODING &&
-		fieldNameAlreadyProcessed(HTTP_FieldName::CONTENT_LENGTH))
+		_fieldNameAlreadyProcessed(HTTP_FieldName::CONTENT_LENGTH))
 		return (SUCCESS);
 
 	if (fieldName == HTTP_FieldName::CONTENT_LENGTH &&
-		fieldNameAlreadyProcessed(HTTP_FieldName::TRANSFER_ENCODING))
+		_fieldNameAlreadyProcessed(HTTP_FieldName::TRANSFER_ENCODING))
 		return (SUCCESS);
 
 	return (FAILURE);
 }
 
-int HTTP_Request::validNumber(std::string value)
+int HTTP_Request::_validNumber(std::string value)
 {
 	if (value.empty())
 		return (FAILURE);
@@ -395,49 +420,49 @@ int HTTP_Request::validNumber(std::string value)
 
 bool HTTP_Request::ready()
 {
-	return (this->parseStatus == HTTP_Request::COMPLETE ||
-			this->parseStatus == HTTP_Request::BAD_REQUEST);
+	return (this->_parseStatus == HTTP_Request::COMPLETE ||
+			this->_parseStatus == HTTP_Request::BAD_REQUEST);
 }
 
 void HTTP_Request::reset()
 {
-	method = "";
-	url = "";
-	version = "";
-	requestLine_completed = false;
+	_method = "";
+	_url = "";
+	_version = "";
+	_requestLine_completed = false;
 
-	headers.clear();
+	_headers.clear();
 
-	headers_completed = false;
-	headersRequiredCount = 0;
+	_headers_completed = false;
+	_headersRequiredCount = 0;
 
-	bodyLen = 0;
-	body = "";
-	body_completed = false;
+	_bodyLen = 0;
+	_body = "";
+	_body_completed = false;
 
-	parseStatus = INCOMPLETE;
+	_parseStatus = INCOMPLETE;
 }
 
 std::ostream &operator<<(std::ostream &os, HTTP_Request &hr)
 {
-	if (!hr.requestLine_completed) /* TO-DO: this is for debug only! */
+	if (!hr._requestLine_completed) /* TO-DO: this is for debug only! */
 	{
 		os << "HTTP REQUEST [ DEBUG ]: incomplete request - incomplete header line";
 		return (os);
 	}
 
-	os << hr.method << " " << hr.url << " " << hr.version;
+	os << hr._method << " " << hr._url << " " << hr._version;
 
 	os << CRLF;
 
-	if (!hr.headers_completed) /* TO-DO: this is for debug only! */
+	if (!hr._headers_completed) /* TO-DO: this is for debug only! */
 	{
 		os << "HTTP REQUEST [ DEBUG ]: incomplete request - incomplete headers";
 		return (os);
 	}
 
 	std::map<std::string, std::string>::const_iterator it;
-	for (it = hr.headers.begin(); it != hr.headers.end(); ++it)
+	for (it = hr._headers.begin(); it != hr._headers.end(); ++it)
 	{
 		std::string fieldName = it->first;
 		std::string value = it->second;
@@ -447,12 +472,12 @@ std::ostream &operator<<(std::ostream &os, HTTP_Request &hr)
 
 	os << CRLF;
 
-	if (!hr.body_completed) /* TO-DO: this is for debug only! */
+	if (!hr._body_completed) /* TO-DO: this is for debug only! */
 	{
 		os << "HTTP REQUEST [ DEBUG ]: incomplete request - incomplete body";
 		return (os);
 	}
 
-	os.write(hr.body.c_str(), hr.body.size());
+	os.write(hr._body.c_str(), hr._body.size());
 	return (os);
 }

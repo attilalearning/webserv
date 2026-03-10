@@ -6,7 +6,7 @@
 /*   By: aistok <aistok@student.42london.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/16 16:34:38 by aistok            #+#    #+#             */
-/*   Updated: 2026/03/03 16:00:00 by aistok           ###   ########.fr       */
+/*   Updated: 2026/03/10 07:16:00 by aistok           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,23 +21,13 @@
 #include "HTTP_FieldName.hpp"
 #include "Utils.hpp"
 
-// TO-DO: orthodox canonical form!
 class HTTP_Request
 {
 public:
+	HTTP_Request();
+	HTTP_Request(const char *raw, size_t len);
 
-	std::string method;
-	std::string url;
-	std::string version;
-	bool requestLine_completed;
-
-	std::map<std::string, std::string> headers;
-	bool headers_completed;
-	int headersRequiredCount;
-
-	size_t bodyLen;
-	std::string body;
-	bool body_completed;
+	// ~HTTP_Request();
 
 	enum ParseStatus
 	{
@@ -46,45 +36,57 @@ public:
 		COMPLETE = 1
 	};
 
-	ParseStatus parseStatus;
-
-	HTTP_Request();
-	HTTP_Request(const char *raw, size_t len);
-
-	~HTTP_Request();
-
 	int parse(const char *raw, size_t len);
-	int removePortion(std::string &line, std::string portion);
 
-	int parseRequestLine(std::string line);
-	int parseMethod(std::string method);
-	int parseURL(std::string url);
-	int parseVersion(std::string version);
-	int URLIsValid(std::string url);
-
-	int parseHeaderLine(std::string line);
-	int countHeaderIfRequired(std::string fieldName);
-	int fieldNameIsValid(std::string fieldName);
-	int headerValueIsValid(std::string value);
-	int fieldNameAlreadyProcessed(std::string eKey);
-	int fieldNameIsSecurityRisk(std::string eKey);
-	int validNumber(std::string value);
+	int getParseStatus() const;
+	const std::string &getMethod() const;
+	const std::string &getURL() const;
 
 	bool ready();
 	void reset();
 
-	/* only if need access to private or protected elements */
-	// friend class HTTP;
-	// friend std::ostream &operator<<(std::ostream &os, HTTPRequest &hr);
-
 protected:
-
-	/* ... */
+	// ...
 
 private:
+	// Rule of three
+	// HTTP_Request(const HTTP_Request &other);			// TO-DO:
+	// HTTP_Request &operator=(const HTTP_Request &other);	// TO-DO:
 
-	/* ... */
+	std::string _method;
+	std::string _url;
+	std::string _version;
+	bool _requestLine_completed;
 
+	std::map<std::string, std::string> _headers;
+	bool _headers_completed;
+	int _headersRequiredCount;
+
+	size_t _bodyLen;
+	std::string _body;
+	bool _body_completed;
+
+	ParseStatus _parseStatus;
+
+	int _removePortion(std::string &line, std::string portion);
+
+	int _parseRequestLine(std::string line);
+	int _parseMethod(std::string method);
+	int _parseURL(std::string url);
+	int _parseVersion(std::string version);
+	int _URLIsValid(std::string url);
+
+	int _parseHeaderLine(std::string line);
+	int _countHeaderIfRequired(std::string fieldName);
+	int _fieldNameIsValid(std::string fieldName);
+	int _headerValueIsValid(std::string value);
+	int _fieldNameAlreadyProcessed(std::string eKey);
+	int _fieldNameIsSecurityRisk(std::string eKey);
+	int _validNumber(std::string value);
+
+	// only if need access to private or protected elements
+	friend class HTTP;
+	friend std::ostream &operator<<(std::ostream &os, HTTP_Request &hr);
 };
 
 std::ostream &operator<<(std::ostream &os, HTTP_Request &hr);
