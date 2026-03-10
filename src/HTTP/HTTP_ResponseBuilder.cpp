@@ -6,7 +6,7 @@
 /*   By: aistok <aistok@student.42london.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/20 10:48:39 by aistok            #+#    #+#             */
-/*   Updated: 2026/03/10 07:14:51 by aistok           ###   ########.fr       */
+/*   Updated: 2026/03/10 15:17:16 by aistok           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -112,8 +112,8 @@ HTTP_Response HTTP_ResponseBuilder::build_response_for_GET(
 			// redirect; the directory exists, but the client did not request
 			// it properly, there was a missing '/' at the end
 			hResponse.setStatus(HTTP_Status::MOVED_PERMANENTLY);
-			hResponse.headers[HTTP_FieldName::LOCATION] = hRequest.getURL() + "/";
-			hResponse.headers[HTTP_FieldName::CONTENT_LENGTH] = ::toString(0);
+			hResponse.getHeaders()[HTTP_FieldName::LOCATION] = hRequest.getURL() + "/";
+			hResponse.getHeaders()[HTTP_FieldName::CONTENT_LENGTH] = ::toString(0);
 			return (hResponse);
 		}
 

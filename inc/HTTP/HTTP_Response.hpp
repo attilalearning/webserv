@@ -6,7 +6,7 @@
 /*   By: aistok <aistok@student.42london.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/16 16:34:38 by aistok            #+#    #+#             */
-/*   Updated: 2026/02/24 00:10:26 by aistok           ###   ########.fr       */
+/*   Updated: 2026/03/10 15:55:15 by aistok           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,14 +26,11 @@
 class HTTP_Response
 {
 public:
-	std::map<std::string, std::string> headers;
-
-	size_t bodyLen;
-	std::string body;
-
 	HTTP_Response();
 	HTTP_Response(const HTTP_StatusPair &status);
 	HTTP_Response(const HTTP_StatusPair &status, std::string textContent);
+
+	std::map<std::string, std::string> getHeaders();
 
 	void setStatus(const HTTP_StatusPair &status); // will set status message too
 												   // add headers
@@ -56,6 +53,11 @@ protected:
 private:
 	HTTP_StatusPair _status;
 	std::string _version;
+
+	std::map<std::string, std::string> _headers;
+
+	size_t _bodyLen;
+	std::string _body;
 };
 
 #endif // HTTP_RESPONSE_HPP

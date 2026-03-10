@@ -6,7 +6,7 @@
 /*   By: aistok <aistok@student.42london.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/16 16:34:38 by aistok            #+#    #+#             */
-/*   Updated: 2026/02/25 05:14:29 by aistok           ###   ########.fr       */
+/*   Updated: 2026/03/10 15:52:19 by aistok           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,21 +14,26 @@
 #include <sstream>
 
 HTTP_Response::HTTP_Response()
-	: bodyLen(0), body(""), _status(HTTP_Status::UNSET), _version(HTTP_Version::v1_1)
+	: _status(HTTP_Status::UNSET), _version(HTTP_Version::v1_1), _bodyLen(0), _body("")
 {
 	// done
 }
 
 HTTP_Response::HTTP_Response(const HTTP_StatusPair &status)
-	: bodyLen(0), body(""), _status(status), _version(HTTP_Version::v1_1)
+	: _status(status), _version(HTTP_Version::v1_1), _bodyLen(0), _body("")
 {
 	// done
 }
 
 HTTP_Response::HTTP_Response(const HTTP_StatusPair &status, std::string textContent)
-	: bodyLen(0), /*body(""),*/ _status(status), _version(HTTP_Version::v1_1)
+	: _status(status), _version(HTTP_Version::v1_1), _bodyLen(0)/*, _body("")*/
 {
 	setContent(textContent);
+}
+
+std::map<std::string, std::string> HTTP_Response::getHeaders()
+{
+	return (_headers);
 }
 
 // will set status message too add headers
@@ -46,8 +51,8 @@ std::string HTTP_Response::toString()
 
 void HTTP_Response::setContent(std::string text)
 {
-	body = text;
-	headers[HTTP_FieldName::CONTENT_LENGTH] = ::toString(text.length());
+	_body = text;
+	_headers[HTTP_FieldName::CONTENT_LENGTH] = ::toString(text.length());
 }
 
 // figure out, what functions are needed to be able to add
@@ -60,7 +65,7 @@ std::ostream &operator<<(std::ostream &os, HTTP_Response &hResp)
 	os << hResp._version << " " << hResp._status.code << " " << hResp._status.text << CRLF;
 
 	std::map<std::string, std::string>::const_iterator it;
-	for (it = hResp.headers.begin(); it != hResp.headers.end(); ++it)
+	for (it = hResp._headers.begin(); it != hResp._headers.end(); ++it)
 	{
 		std::string fieldName = it->first;
 		std::string value = it->second;
@@ -70,8 +75,8 @@ std::ostream &operator<<(std::ostream &os, HTTP_Response &hResp)
 
 	os << CRLF;
 
-	if (hResp.body.size() > 0)
-		os.write(hResp.body.c_str(), hResp.body.size());
+	if (hResp._body.size() > 0)
+		os.write(hResp._body.c_str(), hResp._body.size());
 
 	return (os);
 }
