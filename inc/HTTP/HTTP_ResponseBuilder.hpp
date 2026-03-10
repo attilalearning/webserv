@@ -6,7 +6,7 @@
 /*   By: aistok <aistok@student.42london.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/20 10:48:39 by aistok            #+#    #+#             */
-/*   Updated: 2026/02/27 18:57:06 by aistok           ###   ########.fr       */
+/*   Updated: 2026/03/10 20:30:40 by aistok           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,10 +45,10 @@ public:
 		const ServerConfig &serverConfig, HTTP_Request &hRequest);
 
 	static const Location &locationGetBestMatch(
-		const ServerConfig &serverConfig, HTTP_Request &hRequest);
+		const ServerConfig &serverConfig, const HTTP_Request &hRequest);
 
 	static std::string translateUriToPath(
-		const Location &location, HTTP_Request &hRequest);
+		const Location &location, const HTTP_Request &hRequest);
 };
 
 #endif // HTTP_RESPONSEBUILDER_HPP

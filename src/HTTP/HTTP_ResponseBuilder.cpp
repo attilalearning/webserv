@@ -6,7 +6,7 @@
 /*   By: aistok <aistok@student.42london.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/20 10:48:39 by aistok            #+#    #+#             */
-/*   Updated: 2026/03/10 15:17:16 by aistok           ###   ########.fr       */
+/*   Updated: 2026/03/10 20:30:28 by aistok           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -90,7 +90,16 @@ HTTP_Response HTTP_ResponseBuilder::build_response_for_GET(
 							  ErrorPages::generate(HTTP_Status::FORBIDDEN)));
 	}
 
-	std::string pathOnServer = translateUriToPath(location, hRequest);
+	std::string pathOnServer;
+	try
+	{
+		pathOnServer = translateUriToPath(location, hRequest);
+	}
+	catch (std::exception &e)
+	{
+		return (HTTP_Response(HTTP_Status::BAD_REQUEST,
+							  ErrorPages::generate(HTTP_Status::BAD_REQUEST)));
+	}
 	PathType pathType = getPathType(pathOnServer);
 
 	if (pathType == PATH_NONE)
@@ -181,7 +190,7 @@ HTTP_Response HTTP_ResponseBuilder::build_response_for_GET(
 
 const Location &HTTP_ResponseBuilder::locationGetBestMatch(
 	const ServerConfig &serverConfig,
-	HTTP_Request &hRequest)
+	const HTTP_Request &hRequest)
 {
 	std::vector<Location>::const_iterator selectedLocation_it = serverConfig.locations.end();
 
@@ -214,17 +223,16 @@ const Location &HTTP_ResponseBuilder::locationGetBestMatch(
 // the above in nginx is an alias but in webserv has to be
 // the default way.
 std::string HTTP_ResponseBuilder::translateUriToPath(
-	const Location &location, HTTP_Request &hRequest)
+	const Location &location, const HTTP_Request &hRequest)
 {
 	const std::string &basePath = location.root;
 	std::string result = hRequest.getURL();
 
 	if (!replace(result, location.path, ""))
 	{
-		std::cout
-			<< "Error: HTTP_ResponseBuilder::translateUriToPath invalid "
-			<< "request url \"" << hRequest.getURL() << "\"" << std::endl;
-		throw(std::runtime_error(""));
+		std::string error = "Error: HTTP_ResponseBuilder::translateUriToPath invalid request url \"" + hRequest.getURL() + "\"\n";
+		std::cout << error;
+		throw(std::runtime_error(error));
 	}
 
 	char basePathLastChar = *(basePath.rbegin());
