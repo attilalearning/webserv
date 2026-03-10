@@ -6,7 +6,7 @@
 /*   By: aistok <aistok@student.42london.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/16 16:46:32 by aistok            #+#    #+#             */
-/*   Updated: 2026/03/10 07:34:52 by aistok           ###   ########.fr       */
+/*   Updated: 2026/03/10 16:37:31 by aistok           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -422,7 +422,7 @@ void HTTP_Request::reset()
 	_parseStatus = INCOMPLETE;
 }
 
-std::ostream &operator<<(std::ostream &os, HTTP_Request &hr)
+std::ostream &operator<<(std::ostream &os, const HTTP_Request &hr)
 {
 	if (!hr._requestLine_completed) /* TO-DO: this is for debug only! */
 	{

@@ -6,7 +6,7 @@
 /*   By: aistok <aistok@student.42london.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/16 16:34:38 by aistok            #+#    #+#             */
-/*   Updated: 2026/03/10 07:33:53 by aistok           ###   ########.fr       */
+/*   Updated: 2026/03/10 16:36:18 by aistok           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -83,9 +83,9 @@ private:
 
 	// only if need access to private or protected elements
 	friend class HTTP;
-	friend std::ostream &operator<<(std::ostream &os, HTTP_Request &hr);
+	friend std::ostream &operator<<(std::ostream &os, const HTTP_Request &hr);
 };
 
-std::ostream &operator<<(std::ostream &os, HTTP_Request &hr);
+std::ostream &operator<<(std::ostream &os, const HTTP_Request &hr);
 
 #endif // HTTP_REQUEST_HPP
