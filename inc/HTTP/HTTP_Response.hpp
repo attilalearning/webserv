@@ -6,7 +6,7 @@
 /*   By: aistok <aistok@student.42london.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/16 16:34:38 by aistok            #+#    #+#             */
-/*   Updated: 2026/03/10 15:55:15 by aistok           ###   ########.fr       */
+/*   Updated: 2026/03/10 21:12:02 by aistok           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,7 +45,7 @@ public:
 
 	// friend is needed for the operator<< to be able to access
 	// the status and version private variables
-	friend std::ostream &operator<<(std::ostream &os, HTTP_Response &hResp);
+	friend std::ostream &operator<<(std::ostream &os, const HTTP_Response &hResp);
 
 protected:
 	// ...

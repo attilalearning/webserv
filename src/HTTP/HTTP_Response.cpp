@@ -6,7 +6,7 @@
 /*   By: aistok <aistok@student.42london.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/16 16:34:38 by aistok            #+#    #+#             */
-/*   Updated: 2026/03/10 15:52:19 by aistok           ###   ########.fr       */
+/*   Updated: 2026/03/10 21:11:49 by aistok           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -60,7 +60,7 @@ void HTTP_Response::setContent(std::string text)
 // add the appropriate headers for it
 // (ex content length, transfer encoding, range? mime type?)
 
-std::ostream &operator<<(std::ostream &os, HTTP_Response &hResp)
+std::ostream &operator<<(std::ostream &os, const HTTP_Response &hResp)
 {
 	os << hResp._version << " " << hResp._status.code << " " << hResp._status.text << CRLF;
 
