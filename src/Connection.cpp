@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Connection.cpp                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mosokina <mosokina@student.42london.com    +#+  +:+       +#+        */
+/*   By: aistok <aistok@student.42london.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/11 12:49:10 by mosokina          #+#    #+#             */
-/*   Updated: 2026/02/25 14:19:53 by mosokina         ###   ########.fr       */
+/*   Updated: 2026/02/27 22:26:38 by aistok           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,4 +35,18 @@ void Connection::resetTimeout()
 bool Connection::isTimedOut(time_t now, int limit) const
 {
 	return (std::difftime(now, _lastActive) >= limit);
+}
+HTTP::Request &Connection::getRequest()
+{
+	return (_request);
+}
+
+HTTP::Response &Connection::getResponse()
+{
+	return (_response);
+}
+
+Server *Connection::getServer()
+{
+	return (_server);
 }

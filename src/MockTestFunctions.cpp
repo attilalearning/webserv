@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   MockTestFunctions.cpp                              :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mosokina <mosokina@student.42london.com    +#+  +:+       +#+        */
+/*   By: aistok <aistok@student.42london.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/11 12:49:30 by mosokina          #+#    #+#             */
-/*   Updated: 2026/02/13 15:14:49 by mosokina         ###   ########.fr       */
+/*   Updated: 2026/03/03 21:14:39 by aistok           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -90,6 +90,15 @@ std::vector<ServerConfig> getMockConfig()
 	loc1.autoindex = true;
 	s1.locations.push_back(loc1);
 
+	// Location / (Root)
+	Location loc2;
+	loc2.path = "/YoupiBanane";
+	loc2.root = "./www/html";
+	loc2.index = "banane.html";
+	loc2.methods.push_back("GET");
+	loc2.autoindex = true;
+	s1.locations.push_back(loc2);
+
 	configs.push_back(s1);
 
 	// --- SERVER 2 (Port 9090) ---
@@ -99,12 +108,12 @@ std::vector<ServerConfig> getMockConfig()
 	s2.max_body_size = 5000; // Small limit for testing 413 errors
 
 	// Location /uploads
-	Location loc2;
-	loc2.path = "/uploads";
-	loc2.root = "./www/uploads";
-	loc2.methods.push_back("POST");
-	loc2.methods.push_back("DELETE");
-	s2.locations.push_back(loc2);
+	Location loc10;
+	loc10.path = "/uploads";
+	loc10.root = "./www/uploads";
+	loc10.methods.push_back("POST");
+	loc10.methods.push_back("DELETE");
+	s2.locations.push_back(loc10);
 
 	configs.push_back(s2);
 
