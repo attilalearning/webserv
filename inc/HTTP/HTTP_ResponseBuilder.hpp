@@ -6,14 +6,14 @@
 /*   By: aistok <aistok@student.42london.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/20 10:48:39 by aistok            #+#    #+#             */
-/*   Updated: 2026/03/10 20:30:40 by aistok           ###   ########.fr       */
+/*   Updated: 2026/03/12 16:05:11 by aistok           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef HTTP_RESPONSEBUILDER_HPP
 #define HTTP_RESPONSEBUILDER_HPP
 
-#include "ConfigStructs.hpp"
+#include "Config.hpp"
 #include "HTTP/HTTP_Request.hpp"
 #include "HTTP/HTTP_Response.hpp"
 #include "ErrorPages.hpp"
@@ -44,11 +44,11 @@ public:
 	static HTTP_Response build_response_for_GET(
 		const ServerConfig &serverConfig, HTTP_Request &hRequest);
 
-	static const Location &locationGetBestMatch(
+	static const LocationConfig &locationGetBestMatch(
 		const ServerConfig &serverConfig, const HTTP_Request &hRequest);
 
 	static std::string translateUriToPath(
-		const Location &location, const HTTP_Request &hRequest);
+		const LocationConfig &location, const HTTP_Request &hRequest);
 };
 
 #endif // HTTP_RESPONSEBUILDER_HPP

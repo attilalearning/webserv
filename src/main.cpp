@@ -6,7 +6,7 @@
 /*   By: aistok <aistok@student.42london.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/14 19:02:21 by aistok            #+#    #+#             */
-/*   Updated: 2026/03/11 19:05:53 by aistok           ###   ########.fr       */
+/*   Updated: 2026/03/12 16:55:55 by aistok           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,7 @@
 #include <csignal>
 
 #include "WebServ.hpp"
-#include "ConfigStructs.hpp"
+#include "Config.hpp"
 #include "Server.hpp"
 #include "Config.hpp"
 
@@ -35,8 +35,8 @@ void handleSigint(int sig)
 int main(int argc, char **argv)
 {
 	// TEMPORARILY, FOR CONFIG TESTING ONLY
-    // std::string config_file = "config/default.conf";
-    std::string config_file = "config/advanced.conf";
+    std::string config_file = "config/default.conf";
+    // std::string config_file = "config/advanced.conf";
     // std::string config_file = "config/test_duplicate_directive.conf";
     // std::string config_file = "config/test_invalid_method.conf";
     // std::string config_file = "config/test_missing_brace.conf";
@@ -52,7 +52,7 @@ int main(int argc, char **argv)
 	}
 	//std::string configPath = (argc == 2) ? argv[1] : "../default.conf";
 	if (argc == 2)
-        config_file = av[1];
+        config_file = argv[1];
 	try
 	{
 		Config config;

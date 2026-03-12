@@ -6,7 +6,7 @@
 /*   By: aistok <aistok@student.42london.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/23 14:46:16 by mosokina          #+#    #+#             */
-/*   Updated: 2026/02/27 22:28:46 by aistok           ###   ########.fr       */
+/*   Updated: 2026/03/12 16:04:01 by aistok           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,7 +26,7 @@
 #include <cerrno>
 #include <cstring>
 
-#include "ConfigStructs.hpp"
+#include "Config.hpp"
 #include "Utils.hpp"
 
 class Server

@@ -6,7 +6,7 @@
 /*   By: aistok <aistok@student.42london.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/14 19:03:57 by aistok            #+#    #+#             */
-/*   Updated: 2026/03/03 18:10:59 by aistok           ###   ########.fr       */
+/*   Updated: 2026/03/12 16:27:06 by aistok           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,7 +44,7 @@ std::vector<Server *> WebServ::getServers() const
 	return _servers;
 }
 
-void WebServ::setup(std::vector<ServerConfig> &configs)
+void WebServ::setup(const std::vector<ServerConfig> &configs)
 {
 	for (size_t i = 0; i < configs.size(); ++i)
 	{
@@ -62,7 +62,7 @@ void WebServ::setup(std::vector<ServerConfig> &configs)
 		}
 		catch (const std::exception &e)
 		{
-			std::cerr << "Failed to setup server " << configs[i].host << ":" << configs[i].port << ": " << e.what() << std::endl;
+			std::cerr << "Failed to setup server " << configs[i].host << ":" << configs[i].ports[0] << ": " << e.what() << std::endl;
 			if (newServer)
 				delete newServer;
 		}
@@ -172,7 +172,7 @@ Connection &WebServ::getConnectionForFd(int fd)
 	if (_fdToConnMap.count(fd))
 		return *(_fdToConnMap[fd]);
 
-	throw std::runtime_error("No connection found for fd = " + fd);
+	throw std::runtime_error("No connection found for fd = " + ::toString(fd));
 	/*
 	std::map<int, Connection *>::iterator it = _fdToConnMap.find(fd);
 	if (it == _fdToConnMap.end())
