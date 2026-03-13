@@ -25,8 +25,8 @@ struct LocationConfig
 
 struct ServerConfig
 {
-    std::vector<int> ports;
-    std::string host;
+    std::vector<int> ports; //ports will remain thesame if you need one just use index [0]
+    std::string host; //Now added
     std::vector<std::string> server_names;
     std::map<int, std::string> error_pages; //error_code -> page_path
     std::vector<LocationConfig> locations;
@@ -34,8 +34,6 @@ struct ServerConfig
     std::string root;
     std::string index;
 
-    //TO-DO: Ade will implement some changes, and will add hosts to the Config.hpp etc
-    //       This is only for making the project compile
     ServerConfig() : host("localhost"), client_max_body_size(1048576) {}//1mb default..
 };
 

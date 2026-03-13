@@ -335,7 +335,7 @@ void Config::parseServerBlock(std::ifstream& file, ServerConfig& server) {
 
         std::string value = trim(line.substr(key.length(), semicolon - key.length()));
 
-        if (key == "listen") {
+        if (key == "listen" || key == "port") {
             if (!isValidInteger(value)) {
                 throw ConfigException("Invalid port number: " + value, _current_line);
             }
@@ -343,8 +343,12 @@ void Config::parseServerBlock(std::ifstream& file, ServerConfig& server) {
             validatePort(port);
             server.ports.push_back(port);
 
-        }
-        else if (key == "server_name") {
+        } else if (key == "host") {
+            checkDupDirective(seen_directives, key);
+            seen_directives.insert(key);
+            server.host = value;
+
+        } else if (key == "server_name") {
             checkDupDirective(seen_directives, key);
             seen_directives.insert(key);
             server.server_names = split(value, ' ');
