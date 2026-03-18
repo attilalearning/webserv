@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HTTP_Request.hpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: aistok <aistok@student.42london.com>       +#+  +:+       +#+        */
+/*   By: mosokina <mosokina@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/16 16:34:38 by aistok            #+#    #+#             */
-/*   Updated: 2026/03/10 16:36:18 by aistok           ###   ########.fr       */
+/*   Updated: 2026/03/13 12:14:50 by mosokina         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,6 +35,16 @@ public:
 		INCOMPLETE = 0,
 		COMPLETE = 1
 	};
+
+	enum ParsingState
+	{
+		STATE_REQUEST_LINE, // Parsing: GET /index.html HTTP/1.1
+		STATE_HEADERS,      // Parsing: Host: localhost...
+		STATE_BODY,         // Parsing: Binary data or form data
+		STATE_COMPLETE,     // Entire request is ready
+		STATE_ERROR         // Something went wrong (e.g., 400 Bad Request)
+	};
+
 
 	int parse(const char *raw, size_t len);
 

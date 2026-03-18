@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   WebServ.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: aistok <aistok@student.42london.com>       +#+  +:+       +#+        */
+/*   By: mosokina <mosokina@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/14 19:03:57 by aistok            #+#    #+#             */
-/*   Updated: 2026/03/03 18:10:59 by aistok           ###   ########.fr       */
+/*   Updated: 2026/03/13 12:14:50 by mosokina         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -270,7 +270,7 @@ bool WebServ::_readRequest(size_t index)
 {
 	char buffer[BUFFER_SIZE] = {0};
 	int fd = _pollFds[index].fd;
-	// int bytesRead = recv(fd, buffer, sizeof(buffer), 0);
+	int bytesRead = recv(fd, buffer, sizeof(buffer), 0);
 
 	std::map<int, Connection *>::iterator it = _fdToConnMap.find(fd);
 	if (it == _fdToConnMap.end())
@@ -280,26 +280,48 @@ bool WebServ::_readRequest(size_t index)
 		return false;
 	}
 	Connection *conn = it->second;
-	(void)conn;
+	// (void)conn;
 
-	int bytesRead = recv(fd, buffer, sizeof(buffer) - 1, 0); // JUST FOR TEST
+	// int bytesRead = recv(fd, buffer, sizeof(buffer) - 1, 0); // JUST FOR TEST
 
 	// CASE A: Data Received
 	if (bytesRead > 0)
 	{
 		conn->resetTimeout();
-		// JUST FOR TESTS:
-		buffer[bytesRead] = '\0';
+		conn->appendRawRequest(buffer, bytesRead);
+		if (conn->isHeadersComplete())
+		{
+			conn->startParsing()
+			conn->getRequest().parse(buffer, bytesRead);
+			std::cout << "----------------------------------------------------\n";
+			std::cout << ESC_VIOLET_HOLLOW;
+			std::cout << conn->getRequest();
+			std::cout << ESC_END;
+			std::cout << "----------------------------------------------------\n\n";
+			
+			// 1. You would now trigger an "HttpRequest" parser here.
+			// 2. The parser checks: Is there a Content-Length? 
+			// 3. If no body is expected, you're ready to respond!
+			
+			std::cout << "[WebServ] Headers complete for FD " << fd << std::endl;
+			
+			// For your current testing phase:
+			_pollFds[index].events |= POLLOUT;
+		}
+		else
+		{
+			std::cout << "[WebServ] Partial request received, waiting for more..." << std::endl;
+		}
+		return true;
+
+
+		// // JUST FOR TESTS:
+		// buffer[bytesRead] = '\0';
 		//conn->_request.parse(buffer, bytesRead); // not possible since _request is private
 		//conn->getRequest().parse(buffer, bytesRead); // maybe?
 		std::cout << "Received " << bytesRead << " bytes from FD " << fd << std::endl;
 		//HTTP::Request hRequest(buffer, bytesRead);
-		conn->getRequest().parse(buffer, bytesRead);
-		std::cout << "----------------------------------------------------\n";
-		std::cout << ESC_VIOLET_HOLLOW;
-		std::cout << conn->getRequest();
-		std::cout << ESC_END;
-		std::cout << "----------------------------------------------------\n\n";
+
 		
 		// conn->_appendRequest(buffer, bytesRead); 
 		

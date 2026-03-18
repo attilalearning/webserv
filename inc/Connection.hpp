@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Connection.hpp                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: aistok <aistok@student.42london.com>       +#+  +:+       +#+        */
+/*   By: mosokina <mosokina@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/11 12:49:22 by mosokina          #+#    #+#             */
-/*   Updated: 2026/02/27 22:34:04 by aistok           ###   ########.fr       */
+/*   Updated: 2026/03/12 01:22:57 by mosokina         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,15 +32,26 @@ public:
 	HTTP::Request &getRequest();
 	HTTP::Response &getResponse();
 	Server *getServer();
+	void appendRawRequest(const char *buffer, ssize_t bytesRead);
+	bool isHeadersComplete();
+	void handleRead(const char *buffer, ssize_t bytesRead);
+
+
+	enum ConnectionState
+	{
+		READING_HEADERS,
+		READING_BODY,
+		REQUEST_READY,
+		RESPONDING
+	};
 
 private:
 	// Rule of Three: Private and Unimplemented to prevent copying
 	Connection(const Connection &other);
 	Connection &operator=(const Connection &other);
 
-	// void _appendRequest(char *buffer, int bytesRead); // TO-DO
 	// bool _isRequestComplete(); // TO-DO
-
+	ConnectionState _state;
 	int _connectFd;
 	sockaddr_in _clientAddr;
 	Server *_server; // for getting  client_max_body_size from the server config
