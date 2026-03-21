@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HTTP_Request.cpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: aistok <aistok@student.42london.com>       +#+  +:+       +#+        */
+/*   By: mosokina <mosokina@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/16 16:46:32 by aistok            #+#    #+#             */
-/*   Updated: 2026/03/10 16:37:31 by aistok           ###   ########.fr       */
+/*   Updated: 2026/03/20 22:19:25 by mosokina         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -57,7 +57,7 @@ HTTP_Request::HTTP_Request(const char *raw, size_t len) : _method(""),
 // }
 
 /* getline removes the '\n' from each line it reads! */
-int HTTP_Request::parse(const char *raw, size_t len)
+int HTTP_Request::parse(const char *raw, size_t len) // MO:SPLIT TO parseHeaders and setBody()
 {
 	if (!len)
 	{
@@ -164,6 +164,20 @@ const std::string &HTTP_Request::getMethod() const
 const std::string &HTTP_Request::getURL() const
 {
 	return (_url);
+}
+const std::string &HTTP_Request::getVersion() const
+{
+	return (_version);
+}
+
+const std::map<std::string, std::string> HTTP_Request::getHeaders() const
+{
+	return (_headers);
+}
+
+void HTTP_Request::setParseStatus(ParseStatus status)
+{
+	_parseStatus = status;
 }
 
 // TO-DO: should be protected

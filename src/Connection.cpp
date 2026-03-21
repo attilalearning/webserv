@@ -6,14 +6,17 @@
 /*   By: mosokina <mosokina@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/11 12:49:10 by mosokina          #+#    #+#             */
-/*   Updated: 2026/03/12 01:42:42 by mosokina         ###   ########.fr       */
+/*   Updated: 2026/03/21 11:30:49 by mosokina         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Connection.hpp"
 
-Connection::Connection(int fd, const sockaddr_in &clientAddr, Server *server)
-	: _connectFd(fd), _clientAddr(clientAddr), _server(server), _rawRequest("")
+Connection::Connection(int fd, Server *server): _state(READING_HEADERS),
+												_connectFd(fd),
+												_server(server),
+												_expectedBodySize(0),
+												_isChunked(false) 
 {
 	_lastActive = std::time(NULL);
 }
@@ -26,6 +29,18 @@ Connection::~Connection()
 		close(_connectFd);
 		_connectFd = -1;
 	}
+
+	//kill() any child processes it started.- for CGI part
+}
+
+void Connection::resetForNextRequest()
+{
+	_request.reset();
+	_state = READING_HEADERS;
+	// _rawRequest.clear(); ???
+	_chunkedAccumulator.clear();
+	_isChunked = false;
+	_expectedBodySize = 0;
 }
 
 void Connection::resetTimeout()
@@ -52,115 +67,181 @@ Server *Connection::getServer()
 	return (_server);
 }
 
-
-void Connection::appendRawRequest(const char *buffer, ssize_t bytesRead)
+int Connection::getState() const
 {
-    if (bytesRead <= 0) return;
-
-	// // Safety Check: Total buffer protection
-    // size_t absoluteLimit = 10 * 1024 * 1024; // 10MB absolute safety cap
-    // if (_rawRequest.size() + bytesRead > absoluteLimit) {
-    //     throw std::runtime_error("Request exceeds absolute safety limit");
-    // }
-    _rawRequest.append(buffer, bytesRead);
-}
-
-bool Connection::isHeadersComplete()
-{
-    // Search for the CRLF CRLF delimiter
-    if (this->_rawRequest.find(CRLF) != std::string::npos)
-    {
-        return true;
-    }
-    return false;
+	return _state;
 }
 
 void Connection::handleRead(const char *buffer, ssize_t bytesRead)
 {
-    // 1. Always append first
-    _rawRequest.append(buffer, bytesRead);
+	// Safety check: Don't let _rawRequest grow indefinitely while looking for headers
+	if (_state == READING_HEADERS && (_rawRequest.size() + bytesRead > 16384)) { // MO: 16KB limit; add MACRO
+		_state = ERROR;
+		_request.setParseStatus(HTTP_Request::REQUEST_HEADER_FIELDS_TOO_LARGE);
+		return;
+	}
+	_rawRequest.append(buffer, bytesRead);
 
-    // 2. Decide what to do based on current state
-    if (_state == READING_HEADERS) {
-        _tryParseHeaders();
-    }
-    
-    if (_state == READING_BODY) {
-        _checkBodyCompletion();
-    }
+	if (_state == READING_HEADERS)
+	{
+		size_t pos = _rawRequest.find(DBL_CRLF);
+		if (pos != std::string::npos) {
+			std::string headerString = _rawRequest.substr(0, pos + 4);
+			
+			if (_request.parse(headerString.c_str(), headerString.size()) == -1) {
+				_state = ERROR;
+				return;
+			}
+
+			// Remove headers from buffer; only the start of the body remains
+			_rawRequest.erase(0, pos + 4);
+			_setupBodyReading();
+		}
+	}
+
+	if (_state == READING_BODY) {
+		if (_isChunked)
+			_handleChunkedBody();
+		else
+			_handleStandardBody();
+	}
 }
 
-void Connection::_tryParseHeaders()
+bool Connection::handleWrite() //bool is finised
 {
-    size_t pos = _rawRequest.find("\r\n\r\n");
-    if (pos == std::string::npos) return; // Not enough data yet
+	if (_rawResponse.empty())
+		return true; // //MO: check case, Nothing to send
 
-    // 1. Extract the header block (including the delimiter)
-    std::string headerBlock = _rawRequest.substr(0, pos + 4);
-    
-    // 2. Pass it to your HTTP::Request object to parse
-    _request.parseHeaders(headerBlock);
+	const char* dataPtr = _rawResponse.c_str() + _bytesSent;
+	size_t remaining = _rawResponse.size() - _bytesSent;
 
-    // 3. Determine the "Body Start" point
-    _headerSize = pos + 4; 
+	ssize_t sent = send(_connectFd, dataPtr, remaining, 0);
 
-    // 4. Check if we expect a body
-    if (_request.hasHeader("Content-Length")) {
-        _contentLength = std::stoul(_request.getHeader("Content-Length"));
-        
-        if (_contentLength > _server->getConfig().max_body_size)
-		{
-            throw std::runtime_error("413 Payload Too Large");
-        }
-        
-        _state = READING_BODY;
-        _checkBodyCompletion(); // Check if the body was already in the buffer
-    }
-	else {
-        _state = REQUEST_READY; // No body (like a GET request)
-    }
+	if (sent == -1)
+	{
+		if (errno == EAGAIN || errno == EWOULDBLOCK)
+			return false;
+		_state = ERROR; //MO: check case
+		return true; 
+	}
+
+	_bytesSent += sent;
+	this->resetTimeout(); //MO: find proper place for this line
+	if (_bytesSent >= _rawResponse.size()) {
+		return true;
+	}
+	return false;
+}
+
+bool Connection::shouldClose() const
+{
+	// MO: HANDLE OTHER ERRORS
+	if (_request.getParseStatus() == HTTP_Request::BAD_REQUEST)
+		return true;
+
+	const std::map<std::string, std::string>& headers = _request.getHeaders();
+	std::string version = _request.getVersion();
+
+	// Find the 'Connection' header
+	std::string connHeader = "";
+	std::map<std::string, std::string>::const_iterator it = headers.find("Connection");
+		if (it != headers.end()) {
+			connHeader = it->second; // C++98 safe!
+			for (size_t i = 0; i < connHeader.length(); ++i)
+				connHeader[i] = std::tolower(connHeader[i]);
+		}
+	// 1. HTTP/1.1 Logic: Persistent by default
+	if (version == HTTP_Version::v1_1) {
+		return (connHeader == "close");
+	}
+
+	// 2. HTTP/1.0 Logic: Close by default
+	if (version == HTTP_Version::v1_0) {
+		return (connHeader != "keep-alive");
+	}
+
+	return true; // Default to safety
 }
 
 
-// void Connection::_checkBodyCompletion() {
-//     // Total bytes we need = header length + body length
-//     if (_rawRequest.size() >= (_headerSize + _contentLength)) {
-        
-//         // Extract the body from the raw buffer
-//         std::string body = _rawRequest.substr(_headerSize, _contentLength);
-//         _request.setBody(body);
-        
-//         _state = REQUEST_READY;
-        
-//         // OPTIONAL: Clear _rawRequest to save memory if you're done with it
-//         // _rawRequest.clear(); 
-//     }
-// }
+void Connection::prepareResponse()
+{
+	HTTP::Response hResponse = HTTP::ResponseBuilder::build(_server->getConfig(), _request);
+	_rawResponse = hResponse.toString(); //MO: rename to sterilise()?
+	_bytesSent = 0;
+}
 
-void Connection::_determineNextState() {
-    // 1. Check for Chunked Encoding (Priority 1)
-    if (_request.getHeader("Transfer-Encoding") == "chunked") {
-        _state = READING_BODY_CHUNKED;
-        return;
-    }
+void Connection::forceTimeoutError()
+{
+	_state = ERROR;
+	_request.setParseStatus(HTTP_Request::REQUEST_TIMEOUT);
+}
 
-    // 2. Check for Content-Length (Priority 2)
-    if (_request.hasHeader("Content-Length")) {
-        _contentLength = std::stoul(_request.getHeader("Content-Length"));
-        
-        if (_contentLength > 0) {
-            if (_contentLength > _server->getConfig().max_body_size) {
-                // Return 413 Payload Too Large
-                return;
-            }
-            _state = READING_BODY;
-        } else {
-            _state = REQUEST_READY; // Content-Length is 0
-        }
-        return;
-    }
+void Connection::_setupBodyReading()
+{
+	const std::map<std::string, std::string>& h = _request.getHeaders();
+	std::map<std::string, std::string>::const_iterator it;
 
-    // 3. No headers found - assume no body for standard methods
-    // (POST/PUT without Content-Length usually results in a 400 or 411 error)
-    _state = REQUEST_READY;
+	it = h.find("Transfer-Encoding");
+	if (it != h.end() && it->second == "chunked")
+	{
+		_isChunked = true;
+		_state = READING_BODY;
+	} 
+	else 
+	{
+		it = h.find("Content-Length");
+		if (it != h.end()) {
+			_expectedBodySize = std::strtoul(it->second.c_str(), NULL, 10);
+			//SECURITY CHECK 1: Is the announced size too big?
+			size_t maxBodySize = _server->getConfig().max_body_size;
+			if (_expectedBodySize > maxBodySize) {
+				std::cout << "[WebServ] Payload too large (Content-Length): " << _expectedBodySize << std::endl;
+				_request.setParseStatus(HTTP_Request::CONTENT_TOO_LARGE);
+				_state = ERROR;
+				return;
+			}
+
+			_state = (_expectedBodySize > 0) ? READING_BODY : REQUEST_READY;
+		}
+		else {
+			_state = REQUEST_READY; // No body
+		}
+	}
+}
+
+void Connection::_handleStandardBody()
+{
+	if (_rawRequest.size() >= _expectedBodySize) {
+		_request.setBody(_rawRequest.substr(0, _expectedBodySize));
+		_rawRequest.erase(0, _expectedBodySize);
+		_state = REQUEST_READY;
+	}
+}
+
+void Connection::_handleChunkedBody() {
+	while (true) {
+		size_t pos = _rawRequest.find(CRLF);
+		if (pos == std::string::npos) return; // Wait for more data
+
+		size_t chunkSize = std::strtoul(_rawRequest.substr(0, pos).c_str(), NULL, 16); //test!
+		
+		// Check if we have: [size_line]\r\n + [data] + \r\n
+		if (_rawRequest.size() < pos + 2 + chunkSize + 2) return;
+
+		if (chunkSize == 0) {
+			_request.setBody(_chunkedAccumulator);
+			_state = REQUEST_READY;
+			return;
+		}
+		size_t maxBodySize = _server->getConfig().max_body_size;
+		if (_chunkedAccumulator.size() + chunkSize > maxBodySize) {
+			std::cout << "[WebServ] Payload too large (Chunked stream exceeded limit)" << std::endl;
+			_request.setParseStatus(HTTP_Request::CONTENT_TOO_LARGE);
+			_state = ERROR;
+			return;
+		}
+		_chunkedAccumulator.append(_rawRequest.substr(pos + 2, chunkSize));
+		_rawRequest.erase(0, pos + 2 + chunkSize + 2); // Move to next chunk
+	}
 }

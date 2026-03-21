@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HTTP_Response.cpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: aistok <aistok@student.42london.com>       +#+  +:+       +#+        */
+/*   By: mosokina <mosokina@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/16 16:34:38 by aistok            #+#    #+#             */
-/*   Updated: 2026/03/10 21:11:49 by aistok           ###   ########.fr       */
+/*   Updated: 2026/03/20 21:32:12 by mosokina         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,9 +42,11 @@ void HTTP_Response::setStatus(const HTTP_StatusPair &status)
 	_status = status;
 }
 
-std::string HTTP_Response::toString()
+std::string HTTP_Response::toString() //MO: rename to steriliser()? as to string of bytes / not string of text
 {
-	std::ostringstream oss;
+	
+	std::ostringstream oss(std::ios::binary); //MO: changes
+	// std::ostringstream oss;
 	oss << *this;
 	return (oss.str());
 }

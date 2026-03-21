@@ -6,7 +6,7 @@
 /*   By: mosokina <mosokina@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/11 12:49:22 by mosokina          #+#    #+#             */
-/*   Updated: 2026/03/12 01:22:57 by mosokina         ###   ########.fr       */
+/*   Updated: 2026/03/20 22:27:53 by mosokina         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,44 +24,65 @@
 class Connection
 {
 public:
-	Connection(int fd, const sockaddr_in &clientAddr, Server *server); // check later -  const for Server)
+	Connection(int fd, Server *server); // check later -  const for Server)
 	~Connection();
-
-	void resetTimeout();
-	bool isTimedOut(time_t now, int limit) const;
-	HTTP::Request &getRequest();
-	HTTP::Response &getResponse();
-	Server *getServer();
-	void appendRawRequest(const char *buffer, ssize_t bytesRead);
-	bool isHeadersComplete();
-	void handleRead(const char *buffer, ssize_t bytesRead);
-
 
 	enum ConnectionState
 	{
 		READING_HEADERS,
 		READING_BODY,
 		REQUEST_READY,
-		RESPONDING
+		WAITING_FOR_CGI,
+		ERROR
 	};
+	
+	void resetTimeout();
+	bool isTimedOut(time_t now, int limit) const;
+	
+	HTTP::Request &getRequest();
+	HTTP::Response &getResponse();
+	Server *getServer();
+	int getState() const;
+
+	void handleRead(const char *buffer, ssize_t bytesRead);
+	bool handleWrite();
+	bool shouldClose() const;
+	void prepareResponse();
+	void forceTimeoutError();
+
+
+	void resetForNextRequest();
+
 
 private:
-	// Rule of Three: Private and Unimplemented to prevent copying
 	Connection(const Connection &other);
 	Connection &operator=(const Connection &other);
 
-	// bool _isRequestComplete(); // TO-DO
 	ConnectionState _state;
 	int _connectFd;
-	sockaddr_in _clientAddr;
 	Server *_server; // for getting  client_max_body_size from the server config
-	std::string _rawRequest; // as a buffer to accumulate data from multiple recv() calls
-	// std::string _clientIP;
-	time_t _lastActive; // Great for timeout logic!
+	
+	std::string _rawRequest;
+	std::string	_chunkedAccumulator;
+	std::string _rawResponse;
 
-	// Parsed data
-	HTTP::Request     _request;
-	HTTP::Response    _response;
+
+	size_t	_expectedBodySize;
+    bool _isChunked;
+	size_t _bytesSent;
+	time_t _lastActive;
+
+	HTTP::Request _request;
+	HTTP::Response _response;
+
+	// sockaddr_in _clientAddr;
+	// std::string _clientIP;
+
+	void _handleHeaders();
+	void _setupBodyReading();
+    void _handleStandardBody();
+    void _handleChunkedBody();
+
 };
 
 #endif

@@ -6,7 +6,7 @@
 /*   By: mosokina <mosokina@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/16 16:34:38 by aistok            #+#    #+#             */
-/*   Updated: 2026/03/13 12:14:50 by mosokina         ###   ########.fr       */
+/*   Updated: 2026/03/20 22:16:46 by mosokina         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,7 +33,10 @@ public:
 	{
 		BAD_REQUEST = -400,
 		INCOMPLETE = 0,
-		COMPLETE = 1
+		COMPLETE = 1,
+		REQUEST_TIMEOUT = 408,
+		CONTENT_TOO_LARGE = 413,
+		REQUEST_HEADER_FIELDS_TOO_LARGE = 431,
 	};
 
 	enum ParsingState
@@ -51,9 +54,12 @@ public:
 	int getParseStatus() const;
 	const std::string &getMethod() const;
 	const std::string &getURL() const;
+	const std::string &getVersion() const;
+	const std::map<std::string, std::string> HTTP_Request::getHeaders() const;
 
 	bool ready();
 	void reset();
+	void setParseStatus(ParseStatus status);
 
 protected:
 	// ...

@@ -6,7 +6,7 @@
 /*   By: mosokina <mosokina@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/14 19:03:57 by aistok            #+#    #+#             */
-/*   Updated: 2026/03/13 12:14:50 by mosokina         ###   ########.fr       */
+/*   Updated: 2026/03/20 21:56:54 by mosokina         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -102,55 +102,18 @@ void WebServ::run(void)
 				continue;
 
 			// 1. HANDLE READS (Highest Priority)
-			// We check this FIRST. If a client sends data and closes immediately,
-			// we read the data before noticing the HUP.
 			if (_pollFds[i].revents & POLLIN)
 			{
 				if (_isListener(_pollFds[i].fd))
 					this->_acceptNewConnection(_pollFds[i].fd);
-				else if (this->_readRequest(i) == false) // if close connection
-					i--;								 // <--- THIS is what makes the Swap & Pop safe!
+				else
+					_readRequest(&i);
 			}
 
 			// 2. HANDLE WRITES
-			// Use 'else if' to prevent operating on a closed FD if step 1 closed it.
-			// Only check POLLOUT if you know you have data to send.
 			else if (_pollFds[i].revents & POLLOUT)
 			{
-				// this->_sendResponse(i);
-
-				// JUST FOR TEST:
-				// std::string msg = "Hello World!\n";
-//				std::string msg = "HTTP/1.1 200 OK\r\nContent-Length: 13\r\n\r\nHello World!\n";
-				Connection &connection = getConnectionForFd(_pollFds[i].fd);
-				const ServerConfig &serverConfig = connection.getServer()->getConfig();
-
-				HTTP::Response hResponse = HTTP::ResponseBuilder::build(serverConfig, connection.getRequest());
-
-				//HTTP::Response hResponse(HTTP::Status::FORBIDDEN,
-				//	ErrorPages::generate(HTTP::Status::FORBIDDEN));
-				std::string data_to_send = hResponse.toString();
-				std::cout << "Sending below response of " << data_to_send.size() << " bytes" << std::endl;
-				std::cout << "----------------------------------------------------\n";
-				std::cout << ESC_YELLOW_HOLLOW;
-				std::cout << hResponse;
-//				std::cout << msg;
-				std::cout << ESC_END;
-				std::cout << "----------------------------------------------------\n\n";
-
-				send(_pollFds[i].fd, data_to_send.c_str(), data_to_send.size(), 0);
-//				send(_pollFds[i].fd, msg.c_str(), msg.size(), 0);
-
-				// should check if response was complete and sent, and if so,
-				// and _request is no longer needed, reset it to prepare for
-				// next cycle
-				connection.getRequest().reset();
-
-				_pollFds[i].events &= ~POLLOUT; //TO-DO handle not only "keep-alive" but also "close" option
-
-				int fd = _pollFds[i].fd;
-				if (_fdToConnMap.count(fd))
-					_fdToConnMap[fd]->resetTimeout();
+				_sendResponse(&i);
 			}
 			// 3. HANDLE ERRORS (Lowest Priority)
 			// This is a fallback. Standard closures are usually handled by
@@ -158,35 +121,14 @@ void WebServ::run(void)
 			else if (_pollFds[i].revents & (POLLERR | POLLHUP | POLLNVAL))
 			{
 				_closeConnection(i);
-				// If your _closeConnection removes the element from the vector
-				// by swapping with the last element, you must decrement i
-				// to re-check the swapped element in the next iteration.
 				i--;
 			}
 		}
 	}
 }
 
-Connection &WebServ::getConnectionForFd(int fd)
-{
-	if (_fdToConnMap.count(fd))
-		return *(_fdToConnMap[fd]);
 
-	throw std::runtime_error("No connection found for fd = " + fd);
-	/*
-	std::map<int, Connection *>::iterator it = _fdToConnMap.find(fd);
-	if (it == _fdToConnMap.end())
-	{
-		std::cerr << "[WebServ] Critical: No connection object for FD " << fd << std::endl;
-		//_closeConnection(index);
-		// throw exception ??
-	}
-	Connection *conn = it->second;
-	*/
-}
-
-/* private section ---------------------------- */
-void WebServ::_addNewFdtoPool(int newFd, short events) // short - data type for bitmask of events
+void WebServ::_addNewFdtoPool(int newFd, short events)
 {
 	if (newFd < 0)
 		return;
@@ -266,74 +208,42 @@ void WebServ::_closeConnection(size_t index)
 	std::cout << "Closed connection on FD: " << fd << std::endl;
 }
 
-bool WebServ::_readRequest(size_t index)
+
+void WebServ::_readRequest(size_t *index)
 {
-	char buffer[BUFFER_SIZE] = {0};
-	int fd = _pollFds[index].fd;
-	int bytesRead = recv(fd, buffer, sizeof(buffer), 0);
-
-	std::map<int, Connection *>::iterator it = _fdToConnMap.find(fd);
-	if (it == _fdToConnMap.end())
-	{
-		std::cerr << "[WebServ] Critical: No connection object for FD " << fd << std::endl;
-		_closeConnection(index);
-		return false;
-	}
-	Connection *conn = it->second;
-	// (void)conn;
-
-	// int bytesRead = recv(fd, buffer, sizeof(buffer) - 1, 0); // JUST FOR TEST
-
-	// CASE A: Data Received
+	char tempBuffer[BUFFER_SIZE] = {0};
+	int fd = _pollFds[*index].fd;
+	int bytesRead = recv(fd, tempBuffer, sizeof(tempBuffer), 0);
 	if (bytesRead > 0)
 	{
+		std::map<int, Connection *>::iterator it = _fdToConnMap.find(fd);
+		if (it == _fdToConnMap.end())
+		{
+			std::cerr << "[WebServ] Critical: No connection object for FD " << fd << std::endl;
+			_closeConnection(*index);
+			(*index)--;
+		}
+		Connection *conn = it->second;
 		conn->resetTimeout();
-		conn->appendRawRequest(buffer, bytesRead);
-		if (conn->isHeadersComplete())
+		conn->handleRead(tempBuffer, bytesRead);
+
+		if (conn->getState() == Connection::REQUEST_READY)
 		{
-			conn->startParsing()
-			conn->getRequest().parse(buffer, bytesRead);
-			std::cout << "----------------------------------------------------\n";
-			std::cout << ESC_VIOLET_HOLLOW;
-			std::cout << conn->getRequest();
-			std::cout << ESC_END;
-			std::cout << "----------------------------------------------------\n\n";
+			std::cout << "[WebServ] Request complete on FD " << fd << ". Flipping to POLLOUT." << std::endl;
 			
-			// 1. You would now trigger an "HttpRequest" parser here.
-			// 2. The parser checks: Is there a Content-Length? 
-			// 3. If no body is expected, you're ready to respond!
-			
-			std::cout << "[WebServ] Headers complete for FD " << fd << std::endl;
-			
-			// For your current testing phase:
-			_pollFds[index].events |= POLLOUT;
+			conn->prepareResponse();
+			_updateEvent(*index, POLLOUT, POLLIN);
 		}
-		else
+		else if (conn->getState() == Connection::ERROR)
 		{
-			std::cout << "[WebServ] Partial request received, waiting for more..." << std::endl;
+			conn->prepareResponse();
+			_updateEvent(*index, POLLOUT, POLLIN);
 		}
-		return true;
-
-
-		// // JUST FOR TESTS:
-		// buffer[bytesRead] = '\0';
-		//conn->_request.parse(buffer, bytesRead); // not possible since _request is private
-		//conn->getRequest().parse(buffer, bytesRead); // maybe?
-		std::cout << "Received " << bytesRead << " bytes from FD " << fd << std::endl;
-		//HTTP::Request hRequest(buffer, bytesRead);
-
-		
-		// conn->_appendRequest(buffer, bytesRead); 
-		
-		// Only flip to POLLOUT after full parcing, valid request
-		// if (conn->_isRequestComplete())
-		// For now, we leave it for testing:
-		_pollFds[index].events |= POLLOUT;
-		return true;
+		return ;
 	}
 	// CASE B: Soft Error (Try again later + EINTR - signals case)
 	else if (bytesRead == -1 && (errno == EAGAIN || errno == EWOULDBLOCK || errno == EINTR))
-		return true;
+		return ;
 	// CASE C: Client Closed Connection (FIN) OR Error (-1)
 	else
 	{
@@ -342,17 +252,51 @@ bool WebServ::_readRequest(size_t index)
 
 		else
 			std::cerr << "[WebServ] Fatal recv error on FD: " << fd << ". Closing." << std::endl;
-		_closeConnection(index);
-		return false;
+		_closeConnection(*index);
+		(*index)--;
+		return ;
 	}
 }
+
+void WebServ::_sendResponse(size_t *index)
+{
+	int fd = _pollFds[*index].fd;
+	std::map<int, Connection *>::iterator it = _fdToConnMap.find(fd);
+	if (it == _fdToConnMap.end())
+	{
+		std::cerr << "[WebServ] Critical: No connection object for FD " << fd << std::endl;
+		_closeConnection(*index);
+		(*index)--;
+		return ;
+	}
+	Connection *conn = it->second;
+	conn->resetTimeout();
+	bool finished = conn->handleWrite();
+	if (finished)
+	{
+		// Decide whether to close or keep open (Keep-Alive)
+		if (conn->shouldClose()) {
+			std::cout << "[WebServ] Closing connection on FD " << fd << std::endl;
+			_closeConnection(*index);
+			(*index)--;
+			return ;
+		}
+		else //keep open (Keep-Alive)
+		{
+			std::cout << "[WebServ] Keeping connection alive on FD " << fd << std::endl;
+			conn->resetForNextRequest();
+			_updateEvent(*index, POLLIN, POLLOUT);
+			return ;
+		}
+	}
+}
+
 
 void WebServ::_checkConnTimeouts()
 {
 	time_t now = std::time(NULL);
-	
-	//Iterate through all active Connections
 	std::map<int, Connection*>::iterator it = _fdToConnMap.begin();
+
 	while (it != _fdToConnMap.end())
 	{
 		int fd = it->first;
@@ -360,25 +304,53 @@ void WebServ::_checkConnTimeouts()
 		std::map<int, Connection*>::iterator next = it;
 		++next;
 
-		if(conn->isTimedOut(now, CONNECTION_TIMEOUT))
+		if (conn->isTimedOut(now, CONNECTION_TIMEOUT))
 		{
-			std::cout << "[WebServ] Connection timeout on FD: " << fd << std::endl;
-			
-			// if (conn->isReading()) // 
-			// Check if we are in a state where a 408 is appropriate
-			// (i.e., we've started reading but haven't sent a response yet)
-			std::string response408 = "HTTP/1.1 408 Request Timeout\r\n"; //TO-DO  check and replace later
-			send(fd, response408.c_str(), response408.length(), 0);
-			
-			for (size_t index = 0; index < _pollFds.size(); ++index) // to find the index in _pollFds for closing Connection
-			{
-				if (_pollFds[index].fd == fd)
-				{
-					_closeConnection(index);
+			// 1. Find the index in _pollFds once
+			int pollIdx = -1;
+			for (size_t i = 0; i < _pollFds.size(); ++i) {
+				if (_pollFds[i].fd == fd) {
+					pollIdx = i;
 					break;
 				}
+			}
+
+			if (pollIdx == -1) { 
+				it = next; // Should never happen, but safety first
+				continue; 
+			}
+
+			// 2. Decide: Polite Goodbye (408) or Silent Goodbye (Close)
+			if (conn->getState() == Connection::READING_HEADERS || 
+				conn->getState() == Connection::READING_BODY)
+			{
+				std::cout << "[WebServ] 408 Request Timeout on FD: " << fd << std::endl;    
+				conn->forceTimeoutError();
+				conn->prepareResponse();
+				
+				// Flip to write mode to send the 408
+				_updateEvent(pollIdx, POLLOUT, POLLIN);
+				
+			}
+			//TO-DO: if the state is WAITING_FOR_CGI - send a 504 Gateway Timeout
+			else 
+			{
+				std::cout << "[WebServ] Connection idle timeout (closing) on FD: " << fd << std::endl;
+				_closeConnection(pollIdx);
 			}
 		}
 		it = next;
 	} 
+}
+
+void WebServ::_updateEvent(size_t index, short enable, short disable)
+{
+	if (index >= _pollFds.size())
+		return;
+
+	// Turn ON the bits you want
+	_pollFds[index].events |= enable;
+
+	// Turn OFF the bits you don't want
+	_pollFds[index].events &= ~disable;
 }

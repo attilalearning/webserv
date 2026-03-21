@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   WebServ.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: aistok <aistok@student.42london.com>       +#+  +:+       +#+        */
+/*   By: mosokina <mosokina@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/14 19:03:57 by aistok            #+#    #+#             */
-/*   Updated: 2026/02/27 22:29:32 by aistok           ###   ########.fr       */
+/*   Updated: 2026/03/20 13:05:32 by mosokina         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -56,7 +56,7 @@ public:
 	void setup(std::vector<ServerConfig> &configs);
 	void run();
 
-	Connection &getConnectionForFd(int fd);
+	// Connection &getConnectionForFd(int fd);
 
 private:
 	// Rule of Three: Private and Unimplemented
@@ -64,11 +64,14 @@ private:
 	WebServ &operator=(const WebServ &other);
 
 	void _addNewFdtoPool(int newFd, short events);
+	void _updateEvent(size_t index, short enable, short disable);
 
 	bool _isListener(int fd);
 	void _acceptNewConnection(int listenFd);
 	void _closeConnection(size_t index);
-	bool _readRequest(size_t index); // return status of connection (opened/closed)
+	void _readRequest(size_t *index); // index -- if conn is closed 
+	void _sendResponse(size_t *index); //index -- if conn is closed
+
 	void _checkConnTimeouts(); 
 
 	static const int CONNECTION_TIMEOUT = 10; //sec TO-DO change to 60 sec(most common default in ngenx) or parse from confif 
