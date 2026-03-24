@@ -6,7 +6,7 @@
 /*   By: mosokina <mosokina@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/11 12:49:22 by mosokina          #+#    #+#             */
-/*   Updated: 2026/03/20 22:27:53 by mosokina         ###   ########.fr       */
+/*   Updated: 2026/03/24 12:37:41 by mosokina         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,6 +17,7 @@
 #include <iostream>
 #include <unistd.h> // close
 #include <ctime>
+#include <cstdlib>
 
 #include "Server.hpp"
 #include "HTTP/HTTP.hpp"
@@ -53,6 +54,8 @@ public:
 
 	void resetForNextRequest();
 
+	static const int MAX_HEADER_SIZE = 16384; // 16KB
+
 
 private:
 	Connection(const Connection &other);
@@ -82,6 +85,8 @@ private:
 	void _setupBodyReading();
     void _handleStandardBody();
     void _handleChunkedBody();
+	bool _isValidHex(const std::string& s) const;
+
 
 };
 

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HTTP_Status.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: aistok <aistok@student.42london.com>       +#+  +:+       +#+        */
+/*   By: mosokina <mosokina@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/12 14:39:13 by aistok            #+#    #+#             */
-/*   Updated: 2026/03/09 23:39:15 by aistok           ###   ########.fr       */
+/*   Updated: 2026/03/23 13:35:08 by mosokina         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,6 +39,7 @@ const HTTP_StatusPair HTTP_Status::_table[] = {
 	{411, "Length Required"},
 	{413, "Content Too Large"},
 	{422, "Unprocessable Entity"},
+	{431, "Request Header Fields Too Large"},
 
 	{500, "Internal Server Error"},
 	{501, "Not Implemented"},
@@ -118,26 +119,29 @@ const HTTP_StatusPair HTTP_Status::s411 = HTTP_Status::LENGTH_REQUIRED;
 const HTTP_StatusPair HTTP_Status::CONTENT_TOO_LARGE = HTTP_Status::_table[20];
 const HTTP_StatusPair HTTP_Status::s413 = HTTP_Status::CONTENT_TOO_LARGE;
 
-const HTTP_StatusPair HTTP_Status::UNPROCESSABLE_CONTENT = HTTP_Status::_table[21];
+const HTTP_StatusPair HTTP_Status::REQUEST_HEADER_FIELDS_TOO_LARGE = HTTP_Status::_table[21];
 const HTTP_StatusPair HTTP_Status::s422 = HTTP_Status::UNPROCESSABLE_CONTENT;
 
+const HTTP_StatusPair HTTP_Status::UNPROCESSABLE_CONTENT = HTTP_Status::_table[22];
+const HTTP_StatusPair HTTP_Status::s431 = HTTP_Status::REQUEST_HEADER_FIELDS_TOO_LARGE;
+
 /* 5xx Server Errors */
-const HTTP_StatusPair HTTP_Status::INTERNAL_SERVER_ERROR = HTTP_Status::_table[22];
+const HTTP_StatusPair HTTP_Status::INTERNAL_SERVER_ERROR = HTTP_Status::_table[23];
 const HTTP_StatusPair HTTP_Status::s500 = HTTP_Status::INTERNAL_SERVER_ERROR;
 
-const HTTP_StatusPair HTTP_Status::NOT_IMPLEMENTED = HTTP_Status::_table[23];
+const HTTP_StatusPair HTTP_Status::NOT_IMPLEMENTED = HTTP_Status::_table[24];
 const HTTP_StatusPair HTTP_Status::s501 = HTTP_Status::NOT_IMPLEMENTED;
 
-const HTTP_StatusPair HTTP_Status::BAD_GATEWAY = HTTP_Status::_table[24];
+const HTTP_StatusPair HTTP_Status::BAD_GATEWAY = HTTP_Status::_table[25];
 const HTTP_StatusPair HTTP_Status::s502 = HTTP_Status::BAD_GATEWAY;
 
-const HTTP_StatusPair HTTP_Status::SERVICE_UNAVAILABLE = HTTP_Status::_table[25];
+const HTTP_StatusPair HTTP_Status::SERVICE_UNAVAILABLE = HTTP_Status::_table[26];
 const HTTP_StatusPair HTTP_Status::s503 = HTTP_Status::SERVICE_UNAVAILABLE;
 
-const HTTP_StatusPair HTTP_Status::GATEWAY_TIMEOUT = HTTP_Status::_table[26];
+const HTTP_StatusPair HTTP_Status::GATEWAY_TIMEOUT = HTTP_Status::_table[27];
 const HTTP_StatusPair HTTP_Status::s504 = HTTP_Status::GATEWAY_TIMEOUT;
 
-const HTTP_StatusPair HTTP_Status::HTTP_VERSION_NOT_SUPPORTED = HTTP_Status::_table[27];
+const HTTP_StatusPair HTTP_Status::HTTP_VERSION_NOT_SUPPORTED = HTTP_Status::_table[28];
 const HTTP_StatusPair HTTP_Status::s505 = HTTP_Status::HTTP_VERSION_NOT_SUPPORTED;
 
 const HTTP_StatusPair *HTTP_Status::fromCode(int code)

@@ -6,7 +6,7 @@
 /*   By: mosokina <mosokina@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/16 16:34:38 by aistok            #+#    #+#             */
-/*   Updated: 2026/03/20 22:16:46 by mosokina         ###   ########.fr       */
+/*   Updated: 2026/03/23 14:15:37 by mosokina         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -49,13 +49,14 @@ public:
 	};
 
 
-	int parse(const char *raw, size_t len);
+	int parseHeaders(const char *raw, size_t len);
+	void setBody(std::string data, size_t len);
 
 	int getParseStatus() const;
 	const std::string &getMethod() const;
 	const std::string &getURL() const;
 	const std::string &getVersion() const;
-	const std::map<std::string, std::string> HTTP_Request::getHeaders() const;
+	const std::map<std::string, std::string> getHeaders() const;
 
 	bool ready();
 	void reset();

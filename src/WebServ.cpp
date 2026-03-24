@@ -6,7 +6,7 @@
 /*   By: mosokina <mosokina@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/14 19:03:57 by aistok            #+#    #+#             */
-/*   Updated: 2026/03/20 21:56:54 by mosokina         ###   ########.fr       */
+/*   Updated: 2026/03/23 14:25:22 by mosokina         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -179,7 +179,7 @@ void WebServ::_acceptNewConnection(int listenFd)
 			return;
 		}
 		Server *server = it->second;
-		newConn = new Connection(connFd, clientAddr, server); // can throw exception
+		newConn = new Connection(connFd, server); // can throw exception
 		_addNewFdtoPool(connFd, POLLIN);
 		_fdToConnMap[connFd] = newConn;
 		std::cout << "[WebServ] New connection accepted on FD: " << connFd << " (Listener FD " << listenFd << ")" << std::endl; // log
@@ -236,6 +236,9 @@ void WebServ::_readRequest(size_t *index)
 		}
 		else if (conn->getState() == Connection::ERROR)
 		{
+			std::cerr << "[WebServ] Error detected on FD " << fd 
+              << ": Status " << conn->getRequest().getParseStatus() 
+              << ". Generating error response." << std::endl;
 			conn->prepareResponse();
 			_updateEvent(*index, POLLOUT, POLLIN);
 		}

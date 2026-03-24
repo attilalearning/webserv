@@ -6,7 +6,7 @@
 /*   By: mosokina <mosokina@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/11 12:49:10 by mosokina          #+#    #+#             */
-/*   Updated: 2026/03/21 11:30:49 by mosokina         ###   ########.fr       */
+/*   Updated: 2026/03/24 12:45:16 by mosokina         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -75,7 +75,8 @@ int Connection::getState() const
 void Connection::handleRead(const char *buffer, ssize_t bytesRead)
 {
 	// Safety check: Don't let _rawRequest grow indefinitely while looking for headers
-	if (_state == READING_HEADERS && (_rawRequest.size() + bytesRead > 16384)) { // MO: 16KB limit; add MACRO
+	if (_state == READING_HEADERS && (_rawRequest.size() + bytesRead > MAX_HEADER_SIZE))
+	{
 		_state = ERROR;
 		_request.setParseStatus(HTTP_Request::REQUEST_HEADER_FIELDS_TOO_LARGE);
 		return;
@@ -88,7 +89,7 @@ void Connection::handleRead(const char *buffer, ssize_t bytesRead)
 		if (pos != std::string::npos) {
 			std::string headerString = _rawRequest.substr(0, pos + 4);
 			
-			if (_request.parse(headerString.c_str(), headerString.size()) == -1) {
+			if (_request.parseHeaders(headerString.c_str(), headerString.size()) == FAILURE) {
 				_state = ERROR;
 				return;
 			}
@@ -213,25 +214,39 @@ void Connection::_setupBodyReading()
 void Connection::_handleStandardBody()
 {
 	if (_rawRequest.size() >= _expectedBodySize) {
-		_request.setBody(_rawRequest.substr(0, _expectedBodySize));
+		_request.setBody(_rawRequest.c_str(), _expectedBodySize);
 		_rawRequest.erase(0, _expectedBodySize);
 		_state = REQUEST_READY;
 	}
 }
 
 void Connection::_handleChunkedBody() {
-	while (true) {
+	while (true)
+	{
 		size_t pos = _rawRequest.find(CRLF);
 		if (pos == std::string::npos) return; // Wait for more data
 
+
+		std::string hexStr = _rawRequest.substr(0, pos);
+        
+        // Validation check
+        if (!_isValidHex(hexStr)) {
+            std::cout << "[WebServ] Invalid chunk size format" << std::endl;
+            _request.setParseStatus(HTTP_Request::BAD_REQUEST);
+            _state = ERROR;
+            return;
+        }
+
+		//RFC 9112 requires that the chunk size be sent as a hexadecimal string (base-16)
 		size_t chunkSize = std::strtoul(_rawRequest.substr(0, pos).c_str(), NULL, 16); //test!
 		
 		// Check if we have: [size_line]\r\n + [data] + \r\n
 		if (_rawRequest.size() < pos + 2 + chunkSize + 2) return;
 
 		if (chunkSize == 0) {
-			_request.setBody(_chunkedAccumulator);
+			_request.setBody(_chunkedAccumulator, _chunkedAccumulator.size());
 			_state = REQUEST_READY;
+            _rawRequest.erase(0, pos + 4); // Erase "0\r\n\r\n" to leave the buffer ready for the next pipelined request
 			return;
 		}
 		size_t maxBodySize = _server->getConfig().max_body_size;
@@ -244,4 +259,15 @@ void Connection::_handleChunkedBody() {
 		_chunkedAccumulator.append(_rawRequest.substr(pos + 2, chunkSize));
 		_rawRequest.erase(0, pos + 2 + chunkSize + 2); // Move to next chunk
 	}
+}
+
+bool Connection::_isValidHex(const std::string& s) const
+{
+    if (s.empty()) return false;
+    for (size_t i = 0; i < s.size(); ++i) {
+        if (!std::isxdigit(static_cast<unsigned char>(s[i]))) {
+            return false;
+        }
+    }
+    return true;
 }

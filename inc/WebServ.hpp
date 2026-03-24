@@ -6,7 +6,7 @@
 /*   By: mosokina <mosokina@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/14 19:03:57 by aistok            #+#    #+#             */
-/*   Updated: 2026/03/20 13:05:32 by mosokina         ###   ########.fr       */
+/*   Updated: 2026/03/24 11:42:24 by mosokina         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -74,7 +74,7 @@ private:
 
 	void _checkConnTimeouts(); 
 
-	static const int CONNECTION_TIMEOUT = 10; //sec TO-DO change to 60 sec(most common default in ngenx) or parse from confif 
+	static const int CONNECTION_TIMEOUT = 60; //sec TO-DO change to 60 sec(most common default in ngenx) or parse from confif 
 	static const int POLL_TIMEOUT = 1000;	// Wait up to 1 sec for events
 	static const int BUFFER_SIZE = 4096;	
 	std::vector<Server *> _servers;			// all server instances
