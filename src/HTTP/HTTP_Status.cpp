@@ -6,7 +6,7 @@
 /*   By: mosokina <mosokina@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/12 14:39:13 by aistok            #+#    #+#             */
-/*   Updated: 2026/03/23 13:35:08 by mosokina         ###   ########.fr       */
+/*   Updated: 2026/03/24 14:52:28 by mosokina         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -119,10 +119,10 @@ const HTTP_StatusPair HTTP_Status::s411 = HTTP_Status::LENGTH_REQUIRED;
 const HTTP_StatusPair HTTP_Status::CONTENT_TOO_LARGE = HTTP_Status::_table[20];
 const HTTP_StatusPair HTTP_Status::s413 = HTTP_Status::CONTENT_TOO_LARGE;
 
-const HTTP_StatusPair HTTP_Status::REQUEST_HEADER_FIELDS_TOO_LARGE = HTTP_Status::_table[21];
+const HTTP_StatusPair HTTP_Status::UNPROCESSABLE_CONTENT = HTTP_Status::_table[21];
 const HTTP_StatusPair HTTP_Status::s422 = HTTP_Status::UNPROCESSABLE_CONTENT;
 
-const HTTP_StatusPair HTTP_Status::UNPROCESSABLE_CONTENT = HTTP_Status::_table[22];
+const HTTP_StatusPair HTTP_Status::REQUEST_HEADER_FIELDS_TOO_LARGE = HTTP_Status::_table[22];
 const HTTP_StatusPair HTTP_Status::s431 = HTTP_Status::REQUEST_HEADER_FIELDS_TOO_LARGE;
 
 /* 5xx Server Errors */

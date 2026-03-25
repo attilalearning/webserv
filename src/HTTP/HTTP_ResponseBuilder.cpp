@@ -6,7 +6,7 @@
 /*   By: mosokina <mosokina@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/20 10:48:39 by aistok            #+#    #+#             */
-/*   Updated: 2026/03/20 22:14:18 by mosokina         ###   ########.fr       */
+/*   Updated: 2026/03/24 15:30:27 by mosokina         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -52,7 +52,12 @@ HTTP_Response HTTP_ResponseBuilder::build(const ServerConfig &sc, HTTP_Request &
 	}
 	else if (hReq.getMethod() == HTTP_Method::POST)
 	{
-		return (HTTP_Response()); //(build_response_for_POST(sc, hReq));
+		// return (HTTP_Response()); //(build_response_for_POST(sc, hReq));
+		//MO:for tests
+		HTTP_Response hResponse;
+		hResponse.setStatus(HTTP_Status::OK);
+		hResponse.setContent("POST test");
+		return (hResponse);
 	}
 	else if (hReq.getMethod() == HTTP_Method::DELETE)
 	{

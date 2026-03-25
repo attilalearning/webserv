@@ -6,7 +6,7 @@
 /*   By: mosokina <mosokina@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/11 12:49:22 by mosokina          #+#    #+#             */
-/*   Updated: 2026/03/25 02:02:47 by mosokina         ###   ########.fr       */
+/*   Updated: 2026/03/25 02:19:12 by mosokina         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,6 +46,7 @@ public:
 	int getState() const;
     std::string getRawRequest() const;
 	std::string getRawResponse() const;
+	bool hasBufferedData() const ;
 
 	void handleRead(const char *buffer, ssize_t bytesRead);
 	bool handleWrite();
@@ -55,9 +56,6 @@ public:
 
 
 	void resetForNextRequest();
-
-	bool hasBufferedData() const ;
-	// bool hasCompleteRequestInBuffer() const;
 
 	static const int MAX_HEADER_SIZE = 16384; // 16KB
 
