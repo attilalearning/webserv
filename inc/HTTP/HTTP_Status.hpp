@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HTTP_Status.hpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: aistok <aistok@student.42london.com>       +#+  +:+       +#+        */
+/*   By: mosokina <mosokina@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/12 14:37:18 by aistok            #+#    #+#             */
-/*   Updated: 2026/03/09 23:35:14 by aistok           ###   ########.fr       */
+/*   Updated: 2026/03/20 22:13:20 by mosokina         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -91,6 +91,9 @@ public:
 
 	static const HTTP_StatusPair UNPROCESSABLE_CONTENT;
 	static const HTTP_StatusPair s422;
+
+	static const HTTP_StatusPair REQUEST_HEADER_FIELDS_TOO_LARGE;
+	static const HTTP_StatusPair s431;
 
 	/* 5xx Server Errors */
 	static const HTTP_StatusPair INTERNAL_SERVER_ERROR;

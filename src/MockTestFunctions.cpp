@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   MockTestFunctions.cpp                              :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: aistok <aistok@student.42london.com>       +#+  +:+       +#+        */
+/*   By: mosokina <mosokina@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/11 12:49:30 by mosokina          #+#    #+#             */
-/*   Updated: 2026/03/03 21:14:39 by aistok           ###   ########.fr       */
+/*   Updated: 2026/03/25 14:24:42 by mosokina         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,14 +15,14 @@
 // FOR TESTING (runTemporaryTest() should be replaced by run() with poll() approach):
 void runTemporaryTest(WebServ &ws)
 {
-	if (ws.getServers().empty())
+	if (ws.getListeners().empty())
 	{
 		std::cerr << "Error: No servers initialized to test." << std::endl;
 		return;
 	}
 
-	Server *firstServer = ws.getServers()[0];
-	int listenFd = firstServer->getListenFd();
+	Listener *firstListener = ws.getListeners()[0];
+	int listenFd = firstListener->getListenFd();
 
 	// Safety check: Did the socket actually open?
 	if (listenFd == -1)

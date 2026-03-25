@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HTTP_ResponseBuilder.cpp                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: aistok <aistok@student.42london.com>       +#+  +:+       +#+        */
+/*   By: mosokina <mosokina@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/20 10:48:39 by aistok            #+#    #+#             */
-/*   Updated: 2026/03/10 20:30:28 by aistok           ###   ########.fr       */
+/*   Updated: 2026/03/24 15:30:27 by mosokina         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,6 +17,27 @@ std::string HTTP_ResponseBuilder::serverBasePath = std::string("./");
 HTTP_Response HTTP_ResponseBuilder::build(const ServerConfig &sc, HTTP_Request &hReq)
 {
 	(void)sc;
+
+	int parseStatus = hReq.getParseStatus();
+	if (parseStatus == 408) 
+	{
+		return (HTTP_Response(HTTP_Status::s408,
+							  ErrorPages::generate(HTTP_Status::s408)));
+	}
+	if (parseStatus == 413) 
+	{
+		return (HTTP_Response(HTTP_Status::s413,
+							  ErrorPages::generate(HTTP_Status::s413)));
+	}
+	if (parseStatus == 431) 
+    {
+		return (HTTP_Response(HTTP_Status::s431,
+							  ErrorPages::generate(HTTP_Status::s431)));
+	}
+	// if (hReq.getParseStatus() == HTTP_Request::REQUEST_TIMEOUT)
+	// {
+	// 	return (HTTP_Response(HTTP_Status::REQUEST_TIMEOUT));
+	// }
 	if (hReq.getParseStatus() == HTTP_Request::BAD_REQUEST)
 		return (HTTP_Response(HTTP_Status::BAD_REQUEST)); //(build(BAD_REQUEST, sc));
 
@@ -31,7 +52,12 @@ HTTP_Response HTTP_ResponseBuilder::build(const ServerConfig &sc, HTTP_Request &
 	}
 	else if (hReq.getMethod() == HTTP_Method::POST)
 	{
-		return (HTTP_Response()); //(build_response_for_POST(sc, hReq));
+		// return (HTTP_Response()); //(build_response_for_POST(sc, hReq));
+		//MO:for tests
+		HTTP_Response hResponse;
+		hResponse.setStatus(HTTP_Status::OK);
+		hResponse.setContent("POST test");
+		return (hResponse);
 	}
 	else if (hReq.getMethod() == HTTP_Method::DELETE)
 	{

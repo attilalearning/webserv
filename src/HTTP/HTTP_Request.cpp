@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HTTP_Request.cpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: aistok <aistok@student.42london.com>       +#+  +:+       +#+        */
+/*   By: mosokina <mosokina@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/16 16:46:32 by aistok            #+#    #+#             */
-/*   Updated: 2026/03/10 16:37:31 by aistok           ###   ########.fr       */
+/*   Updated: 2026/03/25 13:09:30 by mosokina         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,7 +38,7 @@ HTTP_Request::HTTP_Request(const char *raw, size_t len) : _method(""),
 														  _body_completed(false),
 														  _parseStatus(INCOMPLETE)
 {
-	parse(raw, len);
+	parseHeaders(raw, len);
 }
 
 // HTTP_Request::~HTTP_Request()
@@ -57,7 +57,7 @@ HTTP_Request::HTTP_Request(const char *raw, size_t len) : _method(""),
 // }
 
 /* getline removes the '\n' from each line it reads! */
-int HTTP_Request::parse(const char *raw, size_t len)
+int HTTP_Request::parseHeaders(const char *raw, size_t len) // MO:SPLIT TO parseHeaders and setBody()
 {
 	if (!len)
 	{
@@ -102,7 +102,8 @@ int HTTP_Request::parse(const char *raw, size_t len)
 				return (FAILURE);
 			}
 			_headers_completed = true;
-			break;
+			_parseStatus = HTTP_Request::COMPLETE; // Headers are done!
+			return (SUCCESS);
 		}
 		else
 		{
@@ -115,41 +116,45 @@ int HTTP_Request::parse(const char *raw, size_t len)
 		}
 	}
 
-	/*	by now, we parsed all the headers and reached the header-body separator
-	 *	(line == CRLF) is true!
-	 *	if there is a body present in the request,
-	 *	copy rest of string byte by byte into the body
-	 */
+	// 3. Fallback: If we ran out of string before finding the empty line
+	_parseStatus = HTTP_Request::INCOMPLETE;
+	return (FAILURE);
 
-	/*	TO-DO: this last bit may need more work, in case there is
-	 *	more data to read (for ex, in chunks?)
-	 */
-	if (!is.eof())
-	{
-		if (_headers.find(HTTP_FieldName::CONTENT_LENGTH) != _headers.end() &&
-			toNumber(_headers[HTTP_FieldName::CONTENT_LENGTH], _bodyLen))
-		{
-			/* bodyLen is now set */
-		}
-		else if (_headers.find(HTTP_FieldName::TRANSFER_ENCODING) != _headers.end())
-			_bodyLen = is.rdbuf()->in_avail();
+	// /*	by now, we parsed all the headers and reached the header-body separator
+	//  *	(line == CRLF) is true!
+	//  *	if there is a body present in the request,
+	//  *	copy rest of string byte by byte into the body
+	//  */
 
-		this->_body = std::string(_bodyLen, '\0');
-		is.read(&this->_body[0], _bodyLen);
+	// /*	TO-DO: this last bit may need more work, in case there is
+	//  *	more data to read (for ex, in chunks?)
+	//  */
+	// if (!is.eof())
+	// {
+	// 	if (_headers.find(HTTP_FieldName::CONTENT_LENGTH) != _headers.end() &&
+	// 		toNumber(_headers[HTTP_FieldName::CONTENT_LENGTH], _bodyLen))
+	// 	{
+	// 		/* bodyLen is now set */
+	// 	}
+	// 	else if (_headers.find(HTTP_FieldName::TRANSFER_ENCODING) != _headers.end())
+	// 		_bodyLen = is.rdbuf()->in_avail();
 
-		if (is.gcount() != static_cast<std::streamsize>(_bodyLen))
-		{
-			_parseStatus = HTTP_Request::INCOMPLETE;
-			return (FAILURE); /* TO-DO: should this be SUCCESS?
-							   * ex: if it's "Transfer-Encoding: chunked
-							   */
-		}
-	}
+	// 	this->_body = std::string(_bodyLen, '\0');
+	// 	is.read(&this->_body[0], _bodyLen);
 
-	_body_completed = true;
-	_parseStatus = HTTP_Request::COMPLETE;
-	return (SUCCESS);
+	// 	if (is.gcount() != static_cast<std::streamsize>(_bodyLen))
+	// 	{
+	// 		_parseStatus = HTTP_Request::INCOMPLETE;
+	// 		return (FAILURE); /* TO-DO: should this be SUCCESS?
+	// 						   * ex: if it's "Transfer-Encoding: chunked
+	// 						   */
+	// 	}
+	// }
+
+	// _parseStatus = HTTP_Request::COMPLETE;// Or a specific HEADERS_DONE status
+	// return (SUCCESS);
 }
+
 
 int HTTP_Request::getParseStatus() const
 {
@@ -164,6 +169,20 @@ const std::string &HTTP_Request::getMethod() const
 const std::string &HTTP_Request::getURL() const
 {
 	return (_url);
+}
+const std::string &HTTP_Request::getVersion() const
+{
+	return (_version);
+}
+
+const std::map<std::string, std::string> HTTP_Request::getHeaders() const
+{
+	return (_headers);
+}
+
+void HTTP_Request::setParseStatus(ParseStatus status)
+{
+	_parseStatus = status;
 }
 
 // TO-DO: should be protected
@@ -459,4 +478,13 @@ std::ostream &operator<<(std::ostream &os, const HTTP_Request &hr)
 
 	os.write(hr._body.c_str(), hr._body.size());
 	return (os);
+}
+
+
+void HTTP_Request::setBody(std::string data, size_t len)
+{
+	_body.assign(data, len);
+	_body_completed = true;
+	if (this->_parseStatus == HTTP_Request::INCOMPLETE)
+		this->_parseStatus = HTTP_Request::COMPLETE;
 }

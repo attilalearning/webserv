@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   ConfigStructs.hpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mosokina <mosokina@student.42london.com    +#+  +:+       +#+        */
+/*   By: mosokina <mosokina@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/20 12:16:52 by mosokina          #+#    #+#             */
-/*   Updated: 2026/02/04 11:04:05 by mosokina         ###   ########.fr       */
+/*   Updated: 2026/03/25 13:25:59 by mosokina         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,6 +16,7 @@
 #include <string>
 #include <vector>
 #include <map>
+#include <cstdlib>
 
 /*Location-Level Elements
 route: The URL prefix (e.g., /images).
@@ -43,7 +44,7 @@ struct Location
 	Location() : autoindex(false) {} // Default is usually 'off'
 };
 
-/*Server-Level Elements
+/*Listener-Level Elements
 listen / host: Crucial for the socket(), bind(), and listen() functions.
 
 server_name: Used if you want to host multiple websites on the same port (Virtual Hosting).

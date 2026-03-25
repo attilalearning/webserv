@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Connection.hpp                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: aistok <aistok@student.42london.com>       +#+  +:+       +#+        */
+/*   By: mosokina <mosokina@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/11 12:49:22 by mosokina          #+#    #+#             */
-/*   Updated: 2026/02/27 22:34:04 by aistok           ###   ########.fr       */
+/*   Updated: 2026/03/25 14:01:46 by mosokina         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,40 +17,80 @@
 #include <iostream>
 #include <unistd.h> // close
 #include <ctime>
+#include <cstdlib>
 
-#include "Server.hpp"
+#include "Listener.hpp"
 #include "HTTP/HTTP.hpp"
 
 class Connection
 {
 public:
-	Connection(int fd, const sockaddr_in &clientAddr, Server *server); // check later -  const for Server)
+	Connection(int fd, Listener *server); // check later -  const for Listener)
 	~Connection();
 
+	enum ConnectionState
+	{
+		READING_HEADERS,
+		READING_BODY,
+		REQUEST_READY,
+		WAITING_FOR_CGI,
+		ERROR
+	};
+	
 	void resetTimeout();
 	bool isTimedOut(time_t now, int limit) const;
+	
 	HTTP::Request &getRequest();
 	HTTP::Response &getResponse();
-	Server *getServer();
+	Listener *getServer();
+	int getState() const;
+    std::string getRawRequest() const;
+	std::string getRawResponse() const;
+	bool hasBufferedData() const ;
+
+	void handleRead(const char *buffer, ssize_t bytesRead);
+	bool handleWrite();
+	bool shouldClose() const;
+	void prepareResponse();
+	void forceTimeoutError();
+
+
+	void resetForNextRequest();
+
+	static const int MAX_HEADER_SIZE = 16384; // 16KB
+
 
 private:
-	// Rule of Three: Private and Unimplemented to prevent copying
 	Connection(const Connection &other);
 	Connection &operator=(const Connection &other);
 
-	// void _appendRequest(char *buffer, int bytesRead); // TO-DO
-	// bool _isRequestComplete(); // TO-DO
-
+	ConnectionState _state;
 	int _connectFd;
-	sockaddr_in _clientAddr;
-	Server *_server; // for getting  client_max_body_size from the server config
-	std::string _rawRequest; // as a buffer to accumulate data from multiple recv() calls
-	// std::string _clientIP;
-	time_t _lastActive; // Great for timeout logic!
+	Listener *_listener; // for getting  client_max_body_size from the server config
+	
+	std::string _rawRequest;
+	std::string	_chunkedAccumulator;
+	std::string _rawResponse;
 
-	// Parsed data
-	HTTP::Request     _request;
-	HTTP::Response    _response;
+
+	size_t	_expectedBodySize;
+    bool _isChunked;
+	size_t _bytesSent;
+	time_t _lastActive;
+
+	HTTP::Request _request;
+	HTTP::Response _response;
+
+	// sockaddr_in _clientAddr;
+	// std::string _clientIP;
+
+	void _handleHeaders();
+	void _setupBodyReading();
+    void _handleStandardBody();
+    void _handleChunkedBody();
+	bool _isValidHex(const std::string& s) const;
+
+
 };
 
 #endif
