@@ -6,7 +6,7 @@
 /*   By: aistok <aistok@student.42london.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/25 08:59:06 by aistok            #+#    #+#             */
-/*   Updated: 2026/03/25 09:37:20 by aistok           ###   ########.fr       */
+/*   Updated: 2026/03/25 20:29:37 by aistok           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,7 +34,7 @@ std::string DirectoriesToHTML::_templateHTMLPage =
 	"</body>\n"
 	"</html>\n";
 std::string DirectoriesToHTML::_templateHTMLDirectoryListItem =
-	"    <p>{{DIRECTORY_NAME}}</p>\n";
+	"    <p><a href=\"{{RESOURCE_HYPERLINK}}\">{{DIRECTORY_NAME}}</a></p>\n";
 
 DirectoriesToHTML::DirectoriesToHTML()
 {
@@ -56,8 +56,14 @@ std::string DirectoriesToHTML::generate(
 	std::vector<std::string>::const_iterator dirList_it = dirList.begin();
 	for (; dirList_it != dirList.end(); ++dirList_it)
 	{
-		htmlDirectoryList += Utils::replaceAll(_templateHTMLDirectoryListItem,
-											   "{{DIRECTORY_NAME}}", *dirList_it);
+		std::string directoryEntry;
+
+		directoryEntry =
+			Utils::replaceAll(_templateHTMLDirectoryListItem, "{{DIRECTORY_NAME}}", *dirList_it);
+		directoryEntry =
+			Utils::replaceAll(directoryEntry, "{{RESOURCE_HYPERLINK}}", requestURL + *dirList_it);
+
+		htmlDirectoryList += directoryEntry;
 	}
 
 	result = Utils::replaceAll(result, "{{DIRECTORY_LIST}}", htmlDirectoryList);
