@@ -1,32 +1,34 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   ErrorPages.hpp                                     :+:      :+:    :+:   */
+/*   DirectoriesToHTML.hpp                              :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: aistok <aistok@student.42london.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/25 08:52:13 by aistok            #+#    #+#             */
-/*   Updated: 2026/03/25 08:55:31 by aistok           ###   ########.fr       */
+/*   Updated: 2026/03/25 09:13:16 by aistok           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#ifndef ERROR_PAGES_HPP
-#define ERROR_PAGES_HPP
+#ifndef DIRECTORIES_TO_HTML_HPP
+#define DIRECTORIES_TO_HTML_HPP
 
 #include <string>
+#include <vector>
 #include "Utils.hpp"
-#include "HTTP/HTTP_Status.hpp"
 
-class ErrorPages
+class DirectoriesToHTML
 {
 public:
-    ErrorPages();
-    ~ErrorPages();
+	DirectoriesToHTML();
+	~DirectoriesToHTML();
 
-    static std::string generate(const HTTP_StatusPair &status);
+	static std::string generate(const std::vector<std::string> &dirList,
+								const std::string &requestURL);
 
 private:
-    static std::string _template;
+	static std::string _templateHTMLPage;
+	static std::string _templateHTMLDirectoryListItem;
 };
 
-#endif // ERROR_PAGES_HPP
+#endif // DIRECTORIES_TO_HTML_HPP

@@ -37,26 +37,8 @@ std::string ErrorPages::generate(const HTTP_StatusPair &status)
     ss << status.code;
 
     std::string result = _template;
-    result = replaceAll(result, "{{STATUS_CODE}}", ss.str());
-    result = replaceAll(result, "{{STATUS_MESSAGE}}", status.text);
+    result = Utils::replaceAll(result, "{{STATUS_CODE}}", ss.str());
+    result = Utils::replaceAll(result, "{{STATUS_MESSAGE}}", status.text);
 
-    return result;
-}
-
-std::string ErrorPages::replaceAll(const std::string &src,
-                                   const std::string &from,
-                                   const std::string &to)
-{
-    if (from.empty())
-        return src;
-
-    std::string result = src;
-    std::string::size_type pos = 0;
-
-    while ((pos = result.find(from, pos)) != std::string::npos)
-    {
-        result.replace(pos, from.length(), to);
-        pos += to.length();
-    }
     return result;
 }
