@@ -6,7 +6,7 @@
 /*   By: mosokina <mosokina@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/16 16:46:32 by aistok            #+#    #+#             */
-/*   Updated: 2026/03/23 14:09:44 by mosokina         ###   ########.fr       */
+/*   Updated: 2026/03/25 13:09:30 by mosokina         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -91,9 +91,7 @@ int HTTP_Request::parseHeaders(const char *raw, size_t len) // MO:SPLIT TO parse
 
 	while (!_headers_completed && std::getline(is, line))
 	{
-		// if (line == CR) /* LF was removed by getline! */
-		// MO:Safe check for the empty line separating headers and body
-		if (line == "\r" || line.empty()) 
+		if (line == CR) /* LF was removed by getline! */
 		{
 			/* reached the end of headers;
 			 * body may be present after this

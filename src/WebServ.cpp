@@ -6,7 +6,7 @@
 /*   By: mosokina <mosokina@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/14 19:03:57 by aistok            #+#    #+#             */
-/*   Updated: 2026/03/25 02:33:39 by mosokina         ###   ########.fr       */
+/*   Updated: 2026/03/25 14:01:15 by mosokina         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,11 +23,11 @@ WebServ::WebServ()
 WebServ::~WebServ()
 {
 	// 1. Servers (Static)
-	for (size_t i = 0; i < _servers.size(); ++i)
+	for (size_t i = 0; i < _listeners.size(); ++i)
 	{
-		delete _servers[i]; // Triggers ~Server() -> close(_listenFd)
+		delete _listeners[i]; // Triggers ~Listener() -> close(_listenFd)
 	}
-	_servers.clear();
+	_listeners.clear();
 	// 2. Connections (Dynamic)
 	std::map<int, Connection *>::iterator it;
 	for (it = _fdToConnMap.begin(); it != _fdToConnMap.end(); ++it)
@@ -39,32 +39,32 @@ WebServ::~WebServ()
 	std::cout << "[WebServ] All sockets closed. Cleanup complete." << std::endl;
 }
 
-std::vector<Server *> WebServ::getServers() const
+std::vector<Listener *> WebServ::getListeners() const
 {
-	return _servers;
+	return _listeners;
 }
 
 void WebServ::setup(std::vector<ServerConfig> &configs)
 {
 	for (size_t i = 0; i < configs.size(); ++i)
 	{
-		Server *newServer = NULL;
+		Listener *newListener = NULL;
 		try
 		{
-			newServer = new Server(configs[i]);
-			newServer->initSocket(); // Creates the socket, bind, listen
-			int listenFd = newServer->getListenFd();
+			newListener = new Listener(configs[i]);
+			newListener->initSocket(); // Creates the socket, bind, listen
+			int listenFd = newListener->getListenFd();
 
-			_servers.push_back(newServer);
+			_listeners.push_back(newListener);
 			_addNewFdtoPool(listenFd, POLLIN);
-			_fdToServerMap[listenFd] = newServer;
-			std::cout << "[WebServ] New Server setted up on FD: " << listenFd << std::endl; // log
+			_fdToListenerMap[listenFd] = newListener;
+			std::cout << "[WebServ] New Listener setted up on FD: " << listenFd << std::endl; // log
 		}
 		catch (const std::exception &e)
 		{
-			std::cerr << "Failed to setup server " << configs[i].host << ":" << configs[i].port << ": " << e.what() << std::endl;
-			if (newServer)
-				delete newServer;
+			std::cerr << "Failed to setup listener " << configs[i].host << ":" << configs[i].port << ": " << e.what() << std::endl;
+			if (newListener)
+				delete newListener;
 		}
 	}
 }
@@ -151,7 +151,7 @@ void WebServ::_addNewFdtoPool(int newFd, short events)
 
 bool WebServ::_isListener(int fd)
 {
-	return _fdToServerMap.find(fd) != _fdToServerMap.end();
+	return _fdToListenerMap.find(fd) != _fdToListenerMap.end();
 }
 
 void WebServ::_acceptNewConnection(int listenFd)
@@ -178,15 +178,15 @@ void WebServ::_acceptNewConnection(int listenFd)
 	Connection *newConn = NULL;
 	try
 	{
-		std::map<int, Server *>::iterator it = _fdToServerMap.find(listenFd);
-		if (it == _fdToServerMap.end())
+		std::map<int, Listener *>::iterator it = _fdToListenerMap.find(listenFd);
+		if (it == _fdToListenerMap.end())
 		{
-			std::cerr << "[WebServ] Critical Error: Listener FD " << listenFd << " not associated with any Server." << std::endl;
+			std::cerr << "[WebServ] Critical Error: Listener FD " << listenFd << " not associated with any Listener." << std::endl;
 			close(connFd);
 			return;
 		}
-		Server *server = it->second;
-		newConn = new Connection(connFd, server); // can throw exception
+		Listener *listener = it->second;
+		newConn = new Connection(connFd, listener); // can throw exception
 		_addNewFdtoPool(connFd, POLLIN);
 		_fdToConnMap[connFd] = newConn;
 		std::cout << "[WebServ] New connection accepted on FD: " << connFd << " (Listener FD " << listenFd << ")" << std::endl; // log

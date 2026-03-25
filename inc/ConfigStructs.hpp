@@ -6,7 +6,7 @@
 /*   By: mosokina <mosokina@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/20 12:16:52 by mosokina          #+#    #+#             */
-/*   Updated: 2026/03/23 14:16:15 by mosokina         ###   ########.fr       */
+/*   Updated: 2026/03/25 13:25:59 by mosokina         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,7 +44,7 @@ struct Location
 	Location() : autoindex(false) {} // Default is usually 'off'
 };
 
-/*Server-Level Elements
+/*Listener-Level Elements
 listen / host: Crucial for the socket(), bind(), and listen() functions.
 
 server_name: Used if you want to host multiple websites on the same port (Virtual Hosting).

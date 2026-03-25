@@ -6,7 +6,7 @@
 /*   By: mosokina <mosokina@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/11 12:49:22 by mosokina          #+#    #+#             */
-/*   Updated: 2026/03/25 02:19:12 by mosokina         ###   ########.fr       */
+/*   Updated: 2026/03/25 14:01:46 by mosokina         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,13 +19,13 @@
 #include <ctime>
 #include <cstdlib>
 
-#include "Server.hpp"
+#include "Listener.hpp"
 #include "HTTP/HTTP.hpp"
 
 class Connection
 {
 public:
-	Connection(int fd, Server *server); // check later -  const for Server)
+	Connection(int fd, Listener *server); // check later -  const for Listener)
 	~Connection();
 
 	enum ConnectionState
@@ -42,7 +42,7 @@ public:
 	
 	HTTP::Request &getRequest();
 	HTTP::Response &getResponse();
-	Server *getServer();
+	Listener *getServer();
 	int getState() const;
     std::string getRawRequest() const;
 	std::string getRawResponse() const;
@@ -66,7 +66,7 @@ private:
 
 	ConnectionState _state;
 	int _connectFd;
-	Server *_server; // for getting  client_max_body_size from the server config
+	Listener *_listener; // for getting  client_max_body_size from the server config
 	
 	std::string _rawRequest;
 	std::string	_chunkedAccumulator;

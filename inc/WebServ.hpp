@@ -6,7 +6,7 @@
 /*   By: mosokina <mosokina@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/14 19:03:57 by aistok            #+#    #+#             */
-/*   Updated: 2026/03/24 11:42:24 by mosokina         ###   ########.fr       */
+/*   Updated: 2026/03/25 13:58:09 by mosokina         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,19 +29,19 @@
 #include <cstring>
 
 #include "ConfigStructs.hpp"
-#include "Server.hpp"
+#include "Listener.hpp"
 #include "Connection.hpp"
 #include "HTTP/HTTP.hpp"
 
 extern volatile sig_atomic_t g_server_running;
 
-/* Why Pointers <Server *>:
+/* Why Pointers <Listener *>:
  1. Memory Stability: std::vector reallocates memory as it grows. Using
- pointers ensures Server objects stay at a fixed address, preventing
+ pointers ensures Listener objects stay at a fixed address, preventing
  dangling pointers in our _fdToServerMap or poll system.
- 2. Polymorphism: Allows storing different types of Server subclasses
+ 2. Polymorphism: Allows storing different types of Listener subclasses
  if the project expands.
- 3. Efficiency: Avoids expensive "deep copies" of Server objects
+ 3. Efficiency: Avoids expensive "deep copies" of Listener objects
  during vector resizing.
  */
 
@@ -52,7 +52,7 @@ public:
 	WebServ();
 	~WebServ();
 
-	std::vector<Server *> getServers() const;
+	std::vector<Listener *> getListeners() const;
 	void setup(std::vector<ServerConfig> &configs);
 	void run();
 
@@ -77,9 +77,9 @@ private:
 	static const int CONNECTION_TIMEOUT = 60; //sec TO-DO change to 60 sec(most common default in ngenx) or parse from confif 
 	static const int POLL_TIMEOUT = 1000;	// Wait up to 1 sec for events
 	static const int BUFFER_SIZE = 4096;	
-	std::vector<Server *> _servers;			// all server instances
+	std::vector<Listener *> _listeners;			// all server instances
 	std::vector<pollfd> _pollFds;			// poll array for the whole program
-	std::map<int, Server *> _fdToServerMap; // helps quickly find which server owns which FD
+	std::map<int, Listener *> _fdToListenerMap; // helps quickly find which server owns which FD
 	std::map<int, Connection *> _fdToConnMap;
 };
 

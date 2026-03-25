@@ -6,15 +6,15 @@
 /*   By: mosokina <mosokina@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/11 12:49:10 by mosokina          #+#    #+#             */
-/*   Updated: 2026/03/25 02:15:47 by mosokina         ###   ########.fr       */
+/*   Updated: 2026/03/25 13:56:37 by mosokina         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Connection.hpp"
 
-Connection::Connection(int fd, Server *server): _state(READING_HEADERS),
+Connection::Connection(int fd, Listener *listener): _state(READING_HEADERS),
 												_connectFd(fd),
-												_server(server),
+												_listener(listener),
 												_expectedBodySize(0),
 												_isChunked(false) 
 {
@@ -66,9 +66,9 @@ HTTP::Response &Connection::getResponse()
 	return (_response);
 }
 
-Server *Connection::getServer()
+Listener *Connection::getServer()
 {
-	return (_server);
+	return (_listener);
 }
 
 int Connection::getState() const
@@ -174,7 +174,7 @@ bool Connection::shouldClose() const
 
 void Connection::prepareResponse()
 {
-	HTTP::Response hResponse = HTTP::ResponseBuilder::build(_server->getConfig(), _request);
+	HTTP::Response hResponse = HTTP::ResponseBuilder::build(_listener->getConfig(), _request);
 	_rawResponse = hResponse.toString(); //MO: rename to sterilise()?
 	_bytesSent = 0;
 }
@@ -222,7 +222,7 @@ void Connection::_setupBodyReading()
 	if (itCL != h.end()) 
 	{
 		_expectedBodySize = std::strtoul(itCL->second.c_str(), NULL, 10);
-		size_t maxBodySize = _server->getConfig().max_body_size;
+		size_t maxBodySize = _listener->getConfig().max_body_size;
 		if (_expectedBodySize > maxBodySize) {
 			std::cout << "[WebServ] Payload too large (Content-Length): " << _expectedBodySize << std::endl;
 			_request.setParseStatus(HTTP_Request::CONTENT_TOO_LARGE);
@@ -294,7 +294,7 @@ void Connection::_handleChunkedBody() {
 		}
 
 		// 3. Overflow and Limit Check for Payload Size
-		size_t maxBodySize = _server->getConfig().max_body_size;
+		size_t maxBodySize = _listener->getConfig().max_body_size;
 		if (chunkSize > maxBodySize || _chunkedAccumulator.size() + chunkSize > maxBodySize)
 		{
 			std::cout << "[WebServ] Payload too large (Chunked stream exceeded limit)" << std::endl;
