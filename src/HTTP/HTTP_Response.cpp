@@ -6,7 +6,7 @@
 /*   By: aistok <aistok@student.42london.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/16 16:34:38 by aistok            #+#    #+#             */
-/*   Updated: 2026/03/12 16:38:02 by aistok           ###   ########.fr       */
+/*   Updated: 2026/03/24 16:37:27 by aistok           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,7 +31,7 @@ HTTP_Response::HTTP_Response(const HTTP_StatusPair &status, std::string textCont
 	setContent(textContent);
 }
 
-std::map<std::string, std::string> HTTP_Response::getHeaders()
+std::map<std::string, std::string> &HTTP_Response::getHeaders()
 {
 	return (_headers);
 }
