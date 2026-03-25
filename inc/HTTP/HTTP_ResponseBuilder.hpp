@@ -6,17 +6,19 @@
 /*   By: aistok <aistok@student.42london.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/20 10:48:39 by aistok            #+#    #+#             */
-/*   Updated: 2026/03/12 16:05:11 by aistok           ###   ########.fr       */
+/*   Updated: 2026/03/25 09:22:21 by aistok           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef HTTP_RESPONSEBUILDER_HPP
 #define HTTP_RESPONSEBUILDER_HPP
 
+#include "Utils.hpp"
 #include "Config.hpp"
 #include "HTTP/HTTP_Request.hpp"
 #include "HTTP/HTTP_Response.hpp"
 #include "ErrorPages.hpp"
+#include "DirectoriesToHTML.hpp"
 
 /*	this class should not be instantiable
  *	and should only contain static methods

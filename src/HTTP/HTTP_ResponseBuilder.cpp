@@ -6,7 +6,7 @@
 /*   By: aistok <aistok@student.42london.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/20 10:48:39 by aistok            #+#    #+#             */
-/*   Updated: 2026/03/12 16:33:41 by aistok           ###   ########.fr       */
+/*   Updated: 2026/03/25 09:28:56 by aistok           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -94,6 +94,7 @@ HTTP_Response HTTP_ResponseBuilder::build_response_for_GET(
 	try
 	{
 		pathOnServer = translateUriToPath(location, hRequest);
+		std::cout << "pathOnServer: " << pathOnServer << "\n";
 	}
 	catch (std::exception &e)
 	{
@@ -110,19 +111,25 @@ HTTP_Response HTTP_ResponseBuilder::build_response_for_GET(
 		// ...
 		// the file exists, open it and add content into the response body
 		hResponse.setStatus(HTTP_Status::OK);
-		hResponse.setContent("File exists, and will be included in here");
+		hResponse.setContent(Utils::getFileContent(pathOnServer));
+		// hResponse.setContent("File exists, and will be included in here");
 		return (hResponse);
 	}
 	else if (pathType == PATH_DIRECTORY)
 	{
-		char lastChar = *(pathOnServer.rbegin());
+		std::string directoryURL = hRequest.getURL();
+		char lastChar = *(directoryURL.rbegin());
 		if (lastChar != '/')
 		{
+			// URL normalization or path canonicalization
 			// redirect; the directory exists, but the client did not request
 			// it properly, there was a missing '/' at the end
 			hResponse.setStatus(HTTP_Status::MOVED_PERMANENTLY);
-			hResponse.getHeaders()[HTTP_FieldName::LOCATION] = hRequest.getURL() + "/";
-			hResponse.getHeaders()[HTTP_FieldName::CONTENT_LENGTH] = ::toString(0);
+			hResponse.getHeaders()[HTTP_FieldName::LOCATION] = directoryURL + "/";
+			hResponse.getHeaders()[HTTP_FieldName::CONTENT_LENGTH] = "0";
+			// std::cout << "URL normalization: " << directoryURL << " -> "
+			// 	<< (directoryURL + "/") << "\n";
+			// std::cout << "Seding response:" << std::endl;
 			return (hResponse);
 		}
 
@@ -134,7 +141,14 @@ HTTP_Response HTTP_ResponseBuilder::build_response_for_GET(
 			if (indexType == PATH_FILE)
 			{
 				hResponse.setStatus(HTTP_Status::OK);
-				hResponse.setContent("For test only... index file exists, content will go in here...");
+				try
+				{
+					hResponse.setContent(Utils::getFileContent(indexOnServer));
+				}
+				catch (std::exception &e)
+				{
+					hResponse.setContent(ErrorPages::generate(HTTP_Status::FORBIDDEN));
+				}
 				return (hResponse);
 			}
 		}
@@ -151,7 +165,10 @@ HTTP_Response HTTP_ResponseBuilder::build_response_for_GET(
 		// go ahead and list directory content,
 		// and add it to response body
 		hResponse.setStatus(HTTP_Status::OK);
-		hResponse.setContent("For test only... directory listing goes in here");
+		std::string htmlDirectories = DirectoriesToHTML::generate(
+			Utils::getDirectoryList(pathOnServer),
+			hRequest.getURL());
+		hResponse.setContent(htmlDirectories);
 		return (hResponse);
 	}
 
@@ -193,23 +210,30 @@ const LocationConfig &HTTP_ResponseBuilder::locationGetBestMatch(
 	const HTTP_Request &hRequest)
 {
 	std::vector<LocationConfig>::const_iterator selectedLocation_it = serverConfig.locations.end();
+	std::string reqURL = hRequest.getURL();
 
 	// now, go through the locations and match the best one
 	std::vector<LocationConfig>::const_iterator loc_it = serverConfig.locations.begin();
 	for (; loc_it != serverConfig.locations.end(); ++loc_it)
 	{
 		std::vector<LocationConfig>::const_iterator location_it = loc_it;
-		if (hRequest.getURL().find(location_it->path) == 0)
+		std::string locPath = location_it->path;
+
+		if (reqURL.find(locPath) == 0)
 		{
-			if (selectedLocation_it == serverConfig.locations.end())
-				selectedLocation_it = loc_it;
-			else if (location_it->path.length() > selectedLocation_it->path.length())
-				selectedLocation_it = loc_it;
+			std::string overlap = locPath;
+			if (*overlap.rbegin() == '/' || overlap.length() == reqURL.length())
+			{
+				if (selectedLocation_it == serverConfig.locations.end())
+					selectedLocation_it = loc_it;
+				else if (location_it->path.length() > selectedLocation_it->path.length())
+					selectedLocation_it = loc_it;
+			}
 		}
 	}
 
 	if (selectedLocation_it == serverConfig.locations.end())
-		throw std::runtime_error("No suitable server/location found!");
+		throw std::runtime_error("No suitable server/location found for " + reqURL);
 
 	std::cout << "Best location match is: " << selectedLocation_it->path << std::endl;
 	return (*selectedLocation_it);
