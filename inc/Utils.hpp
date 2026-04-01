@@ -6,7 +6,7 @@
 /*   By: aistok <aistok@student.42london.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/26 23:56:58 by mosokina          #+#    #+#             */
-/*   Updated: 2026/03/11 18:53:31 by aistok           ###   ########.fr       */
+/*   Updated: 2026/04/01 20:03:47 by aistok           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,6 +16,9 @@
 #include <sstream>
 #include <string>
 #include <vector>
+
+#include <sys/stat.h> // used for stat
+#include <unistd.h> // used for stat
 
 #include <sys/stat.h> // used for stat
 #include <unistd.h> // used for stat
