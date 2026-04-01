@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   main.cpp                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mosokina <mosokina@student.42london.com    +#+  +:+       +#+        */
+/*   By: aistok <aistok@student.42london.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/14 19:02:21 by aistok            #+#    #+#             */
-/*   Updated: 2026/02/11 12:48:27 by mosokina         ###   ########.fr       */
+/*   Updated: 2026/03/12 16:55:55 by aistok           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,10 +14,11 @@
 #include <csignal>
 
 #include "WebServ.hpp"
-#include "ConfigStructs.hpp"
+#include "Config.hpp"
 #include "Server.hpp"
+#include "Config.hpp"
 
-#include "MockTestFnctions.hpp"
+//#include "MockTestFnctions.hpp"
 
 /*How to Test:
 1 - Run it: ./webserv
@@ -33,6 +34,14 @@ void handleSigint(int sig)
 
 int main(int argc, char **argv)
 {
+	// TEMPORARILY, FOR CONFIG TESTING ONLY
+    std::string config_file = "config/default.conf";
+    // std::string config_file = "config/advanced.conf";
+    // std::string config_file = "config/test_duplicate_directive.conf";
+    // std::string config_file = "config/test_invalid_method.conf";
+    // std::string config_file = "config/test_missing_brace.conf";
+    // std::string config_file = "config/test_missing_semicolon.conf";
+
 	signal(SIGPIPE, SIG_IGN);	  // Prevents crash on broken pipe
 	signal(SIGINT, handleSigint); // Handles Ctrl+C
 
@@ -41,15 +50,19 @@ int main(int argc, char **argv)
 		std::cerr << "Usage: ./webserv [config_file]" << std::endl;
 		return 1;
 	}
-	std::string configPath = (argc == 2) ? argv[1] : "../default.conf";
+	//std::string configPath = (argc == 2) ? argv[1] : "../default.conf";
+	if (argc == 2)
+        config_file = argv[1];
 	try
 	{
-
+		Config config;
+		config.load(config_file);
 		// FOR TESTING (getMockConfig() should be replaced by ConfigParser)
-		std::vector<ServerConfig> configs = getMockConfig();
+		//std::vector<ServerConfig> configs = getMockConfig();
 
 		WebServ ws;
-		ws.setup(configs);
+		//ws.setup(configs);
+		ws.setup(config.getServers());
 
 		ws.run();
 		// FOR TESTING (runTemporaryTest() should be replaced by run() with poll() approach):

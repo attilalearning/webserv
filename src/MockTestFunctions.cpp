@@ -6,11 +6,12 @@
 /*   By: aistok <aistok@student.42london.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/11 12:49:30 by mosokina          #+#    #+#             */
-/*   Updated: 2026/03/03 21:14:39 by aistok           ###   ########.fr       */
+/*   Updated: 2026/04/01 20:08:40 by aistok           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../inc/MockTestFnctions.hpp"
+#include "WebServ.hpp"
+#include "Config.hpp"
 
 // FOR TESTING (runTemporaryTest() should be replaced by run() with poll() approach):
 void runTemporaryTest(WebServ &ws)
@@ -77,25 +78,25 @@ std::vector<ServerConfig> getMockConfig()
 
 	// --- SERVER 1 (Port 8080) ---
 	ServerConfig s1;
-	s1.port = 8080;
+	s1.ports.push_back(8080);
 	s1.host = "127.0.0.1";
-	s1.max_body_size = 1048576; // 1MB
+	s1.client_max_body_size = 1048576; // 1MB
 
 	// Location / (Root)
-	Location loc1;
+	LocationConfig loc1;
 	loc1.path = "/";
 	loc1.root = "./www/html";
 	loc1.index = "index.html";
-	loc1.methods.push_back("GET");
+	loc1.allowed_methods.push_back("GET");
 	loc1.autoindex = true;
 	s1.locations.push_back(loc1);
 
 	// Location / (Root)
-	Location loc2;
+	LocationConfig loc2;
 	loc2.path = "/YoupiBanane";
 	loc2.root = "./www/html";
 	loc2.index = "banane.html";
-	loc2.methods.push_back("GET");
+	loc2.allowed_methods.push_back("GET");
 	loc2.autoindex = true;
 	s1.locations.push_back(loc2);
 
@@ -103,16 +104,16 @@ std::vector<ServerConfig> getMockConfig()
 
 	// --- SERVER 2 (Port 9090) ---
 	ServerConfig s2;
-	s2.port = 9090;
+	s2.ports.push_back(9090);
 	s2.host = "127.0.0.1";
-	s2.max_body_size = 5000; // Small limit for testing 413 errors
+	s2.client_max_body_size = 5000; // Small limit for testing 413 errors
 
 	// Location /uploads
-	Location loc10;
+	LocationConfig loc10;
 	loc10.path = "/uploads";
 	loc10.root = "./www/uploads";
-	loc10.methods.push_back("POST");
-	loc10.methods.push_back("DELETE");
+	loc10.allowed_methods.push_back("POST");
+	loc10.allowed_methods.push_back("DELETE");
 	s2.locations.push_back(loc10);
 
 	configs.push_back(s2);

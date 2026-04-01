@@ -6,7 +6,7 @@
 /*   By: aistok <aistok@student.42london.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/16 16:34:38 by aistok            #+#    #+#             */
-/*   Updated: 2026/03/10 21:12:02 by aistok           ###   ########.fr       */
+/*   Updated: 2026/04/01 20:05:24 by aistok           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,6 +37,7 @@ public:
 
 	std::string toString();
 	void setContent(std::string text);
+	size_t getBodyLen() const; // TO-DO: temporary only, to compile the project
 
 	// figure out, what functions are needed to be able to add
 	// a body into the response, encode it if needed and

@@ -6,7 +6,7 @@
 /*   By: aistok <aistok@student.42london.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/20 10:48:39 by aistok            #+#    #+#             */
-/*   Updated: 2026/03/10 20:30:28 by aistok           ###   ########.fr       */
+/*   Updated: 2026/04/01 20:06:13 by aistok           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,7 +45,7 @@ HTTP_Response HTTP_ResponseBuilder::build_response_for_GET(
 	HTTP_Request &hRequest)
 {
 	HTTP_Response hResponse;
-	Location location;
+	LocationConfig location;
 
 	try
 	{
@@ -77,13 +77,13 @@ HTTP_Response HTTP_ResponseBuilder::build_response_for_GET(
 	// nice if could be incorporated into a function of a specific class?
 	// NOTE2: the .find() for vector and map could easily be replaced by
 	// .count() == 0 to ease the code even more?
-	std::vector<std::string>::iterator method_it = location.methods.begin();
-	for (; method_it != location.methods.end(); ++method_it)
+	std::vector<std::string>::iterator method_it = location.allowed_methods.begin();
+	for (; method_it != location.allowed_methods.end(); ++method_it)
 	{
 		if (*method_it == HTTP_Method::GET)
 			break;
 	}
-	if (method_it == location.methods.end())
+	if (method_it == location.allowed_methods.end())
 	{
 		// the GET method was not found for the location
 		return (HTTP_Response(HTTP_Status::FORBIDDEN,
@@ -188,17 +188,17 @@ HTTP_Response HTTP_ResponseBuilder::build_response_for_GET(
 	return (hResponse);
 }
 
-const Location &HTTP_ResponseBuilder::locationGetBestMatch(
+const LocationConfig &HTTP_ResponseBuilder::locationGetBestMatch(
 	const ServerConfig &serverConfig,
 	const HTTP_Request &hRequest)
 {
-	std::vector<Location>::const_iterator selectedLocation_it = serverConfig.locations.end();
+	std::vector<LocationConfig>::const_iterator selectedLocation_it = serverConfig.locations.end();
 
 	// now, go through the locations and match the best one
-	std::vector<Location>::const_iterator loc_it = serverConfig.locations.begin();
+	std::vector<LocationConfig>::const_iterator loc_it = serverConfig.locations.begin();
 	for (; loc_it != serverConfig.locations.end(); ++loc_it)
 	{
-		std::vector<Location>::const_iterator location_it = loc_it;
+		std::vector<LocationConfig>::const_iterator location_it = loc_it;
 		if (hRequest.getURL().find(location_it->path) == 0)
 		{
 			if (selectedLocation_it == serverConfig.locations.end())
@@ -223,7 +223,7 @@ const Location &HTTP_ResponseBuilder::locationGetBestMatch(
 // the above in nginx is an alias but in webserv has to be
 // the default way.
 std::string HTTP_ResponseBuilder::translateUriToPath(
-	const Location &location, const HTTP_Request &hRequest)
+	const LocationConfig &location, const HTTP_Request &hRequest)
 {
 	const std::string &basePath = location.root;
 	std::string result = hRequest.getURL();

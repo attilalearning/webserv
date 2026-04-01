@@ -6,7 +6,7 @@
 /*   By: aistok <aistok@student.42london.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/16 16:34:38 by aistok            #+#    #+#             */
-/*   Updated: 2026/03/10 21:11:49 by aistok           ###   ########.fr       */
+/*   Updated: 2026/04/01 20:05:34 by aistok           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -53,6 +53,11 @@ void HTTP_Response::setContent(std::string text)
 {
 	_body = text;
 	_headers[HTTP_FieldName::CONTENT_LENGTH] = ::toString(text.length());
+}
+
+size_t HTTP_Response::getBodyLen() const // TO-DO: temporary only, to compile the project
+{
+	return (_bodyLen);
 }
 
 // figure out, what functions are needed to be able to add

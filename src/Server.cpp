@@ -6,7 +6,7 @@
 /*   By: aistok <aistok@student.42london.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/23 14:48:56 by mosokina          #+#    #+#             */
-/*   Updated: 2026/02/27 18:54:58 by aistok           ###   ########.fr       */
+/*   Updated: 2026/04/01 20:04:27 by aistok           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -61,13 +61,13 @@ void Server::initSocket()
 		throw std::runtime_error("Failed to set non-blocking mode");
 	}
 	// 4. Prepare address structure
-	_address = _getSocketAddress(_config.host, _config.port);
+	_address = _getSocketAddress(_config.host, _config.ports[0]); // TO-DO: in case port stays a vector, update this code
 	// 5. Bind socket to the address/port
 	if (bind(_listenFd, (sockaddr *)&_address, sizeof(_address)) == -1)
 	{
 		close(_listenFd);
 		_listenFd = -1;		
-		throw std::runtime_error("Failed to bind to port " + toString(_config.port) + ": " + std::strerror(errno));
+		throw std::runtime_error("Failed to bind to port " + toString(_config.ports[0]) + ": " + std::strerror(errno));
 	}
 	// 6. Start listening for incoming connections
 	if (listen(_listenFd, BACKLOG) == -1)
@@ -76,7 +76,7 @@ void Server::initSocket()
 		_listenFd = -1;
 		throw std::runtime_error("Failed to listen on socket");
 	}
-	std::cout << "[Server] Listening on " << _config.host << ":" << _config.port << std::endl;
+	std::cout << "[Server] Listening on " << _config.host << ":" << _config.ports[0] << std::endl;
 }
 
 // Helper function to resolve host/port to sockaddr_in
