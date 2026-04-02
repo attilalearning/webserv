@@ -6,7 +6,7 @@
 /*   By: aistok <aistok@student.42london.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/20 10:48:39 by aistok            #+#    #+#             */
-/*   Updated: 2026/04/02 11:19:26 by aistok           ###   ########.fr       */
+/*   Updated: 2026/04/02 18:10:22 by aistok           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -59,11 +59,19 @@ private:
 		const LocationConfig &location,
 		const ServerConfig &sc,
 		bool asAlias);
-	
+
 	static void setResponse(
 		HTTP_Response &response,
 		const HTTP_StatusPair &status,
 		const ServerConfig &sc);
+
+	static void setResponseRedirect(
+		HTTP_Response &response,
+		const LocationConfig &loc);
+	static void setResponseRedirect(
+		HTTP_Response &response,
+		const int statusCode,
+		const std::string url);
 };
 
 #endif // HTTP_RESPONSEBUILDER_HPP

@@ -6,7 +6,7 @@
 /*   By: aistok <aistok@student.42london.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/20 10:48:39 by aistok            #+#    #+#             */
-/*   Updated: 2026/04/02 11:44:51 by aistok           ###   ########.fr       */
+/*   Updated: 2026/04/02 18:45:09 by aistok           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -51,6 +51,25 @@ void HTTP_ResponseBuilder::setResponse(
 	response.setContent(ErrorPages::getContent(sc, status));
 }
 
+void HTTP_ResponseBuilder::setResponseRedirect(
+	HTTP_Response &response,
+	const LocationConfig &loc)
+{
+	response.setStatus(HTTP_Status::fromCode(loc.redirect_code));
+	response.getHeaders()[HTTP_FieldName::LOCATION] = loc.redirect_url;
+	response.setContent("");
+}
+
+void HTTP_ResponseBuilder::setResponseRedirect(
+	HTTP_Response &response,
+	const int statusCode,
+	const std::string url)
+{
+	response.setStatus(HTTP_Status::fromCode(statusCode));
+	response.getHeaders()[HTTP_FieldName::LOCATION] = url;
+	response.setContent("");
+}
+
 bool HTTP_ResponseBuilder::locationHasMethod(LocationConfig &loc, std::string method)
 {
 	std::vector<std::string>::iterator method_it = loc.allowed_methods.begin();
@@ -83,13 +102,11 @@ void HTTP_ResponseBuilder::build_response_for_GET(
 		return;
 	}
 
-	// TO-DO ???
-	// need to consider the redirects from the config file, if there are any
-	// like:
-	// location / {
-	//      [method = GET]
-	// 		return 301 [POST] /some/url/here
-	// }
+	if (location.redirect_code > 0)
+	{
+		setResponseRedirect(response, location);
+		return;
+	}
 
 	if (!locationHasMethod(location, HTTP_Method::GET))
 	{
@@ -130,15 +147,19 @@ void HTTP_ResponseBuilder::build_response_for_GET(
 		char lastChar = *(directoryURL.rbegin());
 		if (lastChar != '/')
 		{
-			// URL normalization or path canonicalization
-			// redirect; the directory exists, but the client did not request
+			// URL normalization or path canonicalization redirect
+			// the directory exists, but the client did not request
 			// it properly, there was a missing '/' at the end
-			response.setStatus(HTTP_Status::MOVED_PERMANENTLY);
-			response.getHeaders()[HTTP_FieldName::LOCATION] = directoryURL + "/";
-			response.setContent("");
-			// std::cout << "URL normalization: " << directoryURL << " -> "
-			// 	<< (directoryURL + "/") << "\n";
-			// std::cout << "Seding response:" << std::endl;
+			setResponseRedirect(
+				response,
+				HTTP_Status::MOVED_PERMANENTLY.code,
+				directoryURL + "/");
+			// response.setStatus(HTTP_Status::MOVED_PERMANENTLY);
+			// response.getHeaders()[HTTP_FieldName::LOCATION] = directoryURL + "/";
+			// response.setContent("");
+			//  std::cout << "URL normalization: " << directoryURL << " -> "
+			//  	<< (directoryURL + "/") << "\n";
+			//  std::cout << "Seding response:" << std::endl;
 			return;
 		}
 
@@ -249,10 +270,10 @@ const LocationConfig &HTTP_ResponseBuilder::locationGetBestMatch(
 // the above in nginx is an alias but in webserv has to be
 // the default way.
 std::string HTTP_ResponseBuilder::translateUriToPath(
-		const HTTP_Request &request,
-		const LocationConfig &location,
-		const ServerConfig &sc,
-		bool asAlias)
+	const HTTP_Request &request,
+	const LocationConfig &location,
+	const ServerConfig &sc,
+	bool asAlias)
 {
 	std::string basePath;
 
