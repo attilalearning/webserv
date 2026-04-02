@@ -6,7 +6,7 @@
 /*   By: aistok <aistok@student.42london.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/20 10:48:39 by aistok            #+#    #+#             */
-/*   Updated: 2026/04/02 10:47:09 by aistok           ###   ########.fr       */
+/*   Updated: 2026/04/02 11:19:26 by aistok           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -48,14 +48,17 @@ private:
 		HTTP_Response &response,
 		HTTP_Request &request,
 		const ServerConfig &sc);
-	
+
 	static bool locationHasMethod(LocationConfig &loc, std::string method);
 
 	static const LocationConfig &locationGetBestMatch(
 		const ServerConfig &serverConfig, const HTTP_Request &request);
 
 	static std::string translateUriToPath(
-		const LocationConfig &location, const HTTP_Request &request, bool asAlias);
+		const HTTP_Request &request,
+		const LocationConfig &location,
+		const ServerConfig &sc,
+		bool asAlias);
 	
 	static void setResponse(
 		HTTP_Response &response,
