@@ -6,7 +6,7 @@
 /*   By: aistok <aistok@student.42london.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/12 14:39:13 by aistok            #+#    #+#             */
-/*   Updated: 2026/03/09 23:39:15 by aistok           ###   ########.fr       */
+/*   Updated: 2026/04/02 18:05:17 by aistok           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -140,14 +140,14 @@ const HTTP_StatusPair HTTP_Status::s504 = HTTP_Status::GATEWAY_TIMEOUT;
 const HTTP_StatusPair HTTP_Status::HTTP_VERSION_NOT_SUPPORTED = HTTP_Status::_table[27];
 const HTTP_StatusPair HTTP_Status::s505 = HTTP_Status::HTTP_VERSION_NOT_SUPPORTED;
 
-const HTTP_StatusPair *HTTP_Status::fromCode(int code)
+const HTTP_StatusPair &HTTP_Status::fromCode(int code)
 {
 	for (int i = 0; i < _count; ++i)
 	{
 		if (_table[i].code == code)
-			return &_table[i];
+			return _table[i];
 	}
-	return 0;
+	return _table[0];
 }
 
 const HTTP_StatusPair *HTTP_Status::all()

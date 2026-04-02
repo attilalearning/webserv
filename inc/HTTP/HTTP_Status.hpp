@@ -6,7 +6,7 @@
 /*   By: aistok <aistok@student.42london.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/12 14:37:18 by aistok            #+#    #+#             */
-/*   Updated: 2026/03/09 23:35:14 by aistok           ###   ########.fr       */
+/*   Updated: 2026/04/02 18:05:13 by aistok           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -114,7 +114,7 @@ public:
 	static const HTTP_StatusPair *all();
 	static int count();
 
-	static const HTTP_StatusPair *fromCode(int code);
+	static const HTTP_StatusPair &fromCode(int code);
 
 private:
 	static const HTTP_StatusPair _table[];
