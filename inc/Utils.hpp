@@ -6,7 +6,7 @@
 /*   By: aistok <aistok@student.42london.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/26 23:56:58 by mosokina          #+#    #+#             */
-/*   Updated: 2026/03/25 09:26:33 by aistok           ###   ########.fr       */
+/*   Updated: 2026/04/02 08:34:42 by aistok           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -73,8 +73,6 @@ class Utils
 
         /*File operations*/
         static bool fileExists(const std::string& path);
-        static bool isDirectory(const std::string& path);
-        static bool isFile(const std::string& path);
         static std::string readFile(const std::string& path);
         static bool writeFile(const std::string& path, const std::string& content);
         static bool deleteFile(const std::string& path);
