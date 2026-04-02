@@ -6,7 +6,7 @@
 /*   By: aistok <aistok@student.42london.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/20 10:48:39 by aistok            #+#    #+#             */
-/*   Updated: 2026/04/02 11:34:37 by aistok           ###   ########.fr       */
+/*   Updated: 2026/04/02 11:44:51 by aistok           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -142,9 +142,15 @@ void HTTP_ResponseBuilder::build_response_for_GET(
 			return;
 		}
 
-		if (location.index != "")
+		std::string theIndexFile = "";
+		if (!location.index.empty())
+			theIndexFile = location.index;
+		else if (!sc.index.empty())
+			theIndexFile = sc.index;
+
+		if (theIndexFile != "")
 		{
-			std::string indexOnServer = pathOnServer + location.index;
+			std::string indexOnServer = pathOnServer + theIndexFile;
 			PathType indexType = getPathType(indexOnServer);
 
 			if (indexType == PATH_FILE)
