@@ -6,7 +6,7 @@
 /*   By: aistok <aistok@student.42london.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/20 10:48:39 by aistok            #+#    #+#             */
-/*   Updated: 2026/03/25 09:22:21 by aistok           ###   ########.fr       */
+/*   Updated: 2026/04/02 06:02:30 by aistok           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -50,7 +50,7 @@ public:
 		const ServerConfig &serverConfig, const HTTP_Request &hRequest);
 
 	static std::string translateUriToPath(
-		const LocationConfig &location, const HTTP_Request &hRequest);
+		const LocationConfig &location, const HTTP_Request &hRequest, bool asAlias);
 };
 
 #endif // HTTP_RESPONSEBUILDER_HPP

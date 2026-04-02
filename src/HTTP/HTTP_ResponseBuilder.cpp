@@ -6,7 +6,7 @@
 /*   By: aistok <aistok@student.42london.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/20 10:48:39 by aistok            #+#    #+#             */
-/*   Updated: 2026/03/25 09:28:56 by aistok           ###   ########.fr       */
+/*   Updated: 2026/04/02 06:39:30 by aistok           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -93,7 +93,7 @@ HTTP_Response HTTP_ResponseBuilder::build_response_for_GET(
 	std::string pathOnServer;
 	try
 	{
-		pathOnServer = translateUriToPath(location, hRequest);
+		pathOnServer = translateUriToPath(location, hRequest, true);
 		std::cout << "pathOnServer: " << pathOnServer << "\n";
 	}
 	catch (std::exception &e)
@@ -247,16 +247,19 @@ const LocationConfig &HTTP_ResponseBuilder::locationGetBestMatch(
 // the above in nginx is an alias but in webserv has to be
 // the default way.
 std::string HTTP_ResponseBuilder::translateUriToPath(
-	const LocationConfig &location, const HTTP_Request &hRequest)
+	const LocationConfig &location, const HTTP_Request &hRequest, bool asAlias)
 {
 	const std::string &basePath = location.root;
 	std::string result = hRequest.getURL();
 
-	if (!replace(result, location.path, ""))
+	if (asAlias)
 	{
-		std::string error = "Error: HTTP_ResponseBuilder::translateUriToPath invalid request url \"" + hRequest.getURL() + "\"\n";
-		std::cout << error;
-		throw(std::runtime_error(error));
+		if (!replace(result, location.path, ""))
+		{
+			std::string error = "Error: HTTP_ResponseBuilder::translateUriToPath invalid request url \"" + hRequest.getURL() + "\"\n";
+			std::cout << error;
+			throw(std::runtime_error(error));
+		}
 	}
 
 	char basePathLastChar = *(basePath.rbegin());
