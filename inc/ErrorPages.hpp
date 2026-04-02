@@ -6,7 +6,7 @@
 /*   By: aistok <aistok@student.42london.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/25 08:52:13 by aistok            #+#    #+#             */
-/*   Updated: 2026/03/25 08:55:31 by aistok           ###   ########.fr       */
+/*   Updated: 2026/04/02 07:56:35 by aistok           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,17 +16,19 @@
 #include <string>
 #include "Utils.hpp"
 #include "HTTP/HTTP_Status.hpp"
+#include "Config.hpp"
 
 class ErrorPages
 {
 public:
-    ErrorPages();
-    ~ErrorPages();
+	ErrorPages();
+	~ErrorPages();
 
-    static std::string generate(const HTTP_StatusPair &status);
+	static std::string generate(const HTTP_StatusPair &status);
+	static std::string getContent(const ServerConfig &sc, const HTTP_StatusPair &status);
 
 private:
-    static std::string _template;
+	static std::string _template;
 };
 
 #endif // ERROR_PAGES_HPP
