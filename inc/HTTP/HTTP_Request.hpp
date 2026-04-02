@@ -6,7 +6,7 @@
 /*   By: aistok <aistok@student.42london.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/16 16:34:38 by aistok            #+#    #+#             */
-/*   Updated: 2026/03/10 16:36:18 by aistok           ###   ########.fr       */
+/*   Updated: 2026/04/02 09:35:05 by aistok           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,9 +31,9 @@ public:
 
 	enum ParseStatus
 	{
-		BAD_REQUEST = -400,
 		INCOMPLETE = 0,
-		COMPLETE = 1
+		COMPLETE = 1,
+		BAD_REQUEST = 400
 	};
 
 	int parse(const char *raw, size_t len);
