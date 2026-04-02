@@ -6,60 +6,81 @@
 /*   By: aistok <aistok@student.42london.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/20 10:48:39 by aistok            #+#    #+#             */
-/*   Updated: 2026/04/02 06:39:30 by aistok           ###   ########.fr       */
+/*   Updated: 2026/04/02 10:37:54 by aistok           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "HTTP/HTTP_ResponseBuilder.hpp"
 
-std::string HTTP_ResponseBuilder::serverBasePath = std::string("./");
-
-HTTP_Response HTTP_ResponseBuilder::build(const ServerConfig &sc, HTTP_Request &hReq)
+void HTTP_ResponseBuilder::build(
+	HTTP_Response &response,
+	HTTP_Request &request,
+	const ServerConfig &sc)
 {
-	(void)sc;
-	if (hReq.getParseStatus() == HTTP_Request::BAD_REQUEST)
-		return (HTTP_Response(HTTP_Status::BAD_REQUEST)); //(build(BAD_REQUEST, sc));
+	if (request.getParseStatus() == HTTP_Request::BAD_REQUEST)
+	{
+		setResponse(response, HTTP_Status::BAD_REQUEST, sc);
+		return;
+	}
 
-	if (hReq.getParseStatus() == HTTP_Request::INCOMPLETE)
+	if (request.getParseStatus() == HTTP_Request::INCOMPLETE)
 	{
 		// throw exception ?
+		return; //?
 	}
 
-	if (hReq.getMethod() == HTTP_Method::GET)
-	{
-		return (build_response_for_GET(sc, hReq));
-	}
-	else if (hReq.getMethod() == HTTP_Method::POST)
-	{
-		return (HTTP_Response()); //(build_response_for_POST(sc, hReq));
-	}
-	else if (hReq.getMethod() == HTTP_Method::DELETE)
-	{
-		return (HTTP_Response()); //(build_response_for_DELETE(sc, hReq));
-	}
-	return (HTTP_Response(HTTP_Status::FORBIDDEN));
+	if (request.getMethod() == HTTP_Method::GET)
+		build_response_for_GET(response, request, sc);
+
+	else if (request.getMethod() == HTTP_Method::POST)
+		build_response_for_POST(response, request, sc);
+
+	else if (request.getMethod() == HTTP_Method::DELETE)
+		build_response_for_DELETE(response, request, sc);
+
+	else
+		setResponse(response, HTTP_Status::FORBIDDEN, sc);
 }
 
-HTTP_Response HTTP_ResponseBuilder::build_response_for_GET(
-	const ServerConfig &serverConfig,
-	HTTP_Request &hRequest)
+void HTTP_ResponseBuilder::setResponse(
+	HTTP_Response &response,
+	const HTTP_StatusPair &status,
+	const ServerConfig &sc)
 {
-	HTTP_Response hResponse;
+	response.setStatus(status);
+	response.setContent(ErrorPages::getContent(sc, status));
+}
+
+bool HTTP_ResponseBuilder::locationHasMethod(LocationConfig &loc, std::string method)
+{
+	std::vector<std::string>::iterator method_it = loc.allowed_methods.begin();
+	for (; method_it != loc.allowed_methods.end(); ++method_it)
+	{
+		if (*method_it == method)
+			return (true);
+	}
+	return (false);
+}
+
+void HTTP_ResponseBuilder::build_response_for_GET(
+	HTTP_Response &response,
+	HTTP_Request &request,
+	const ServerConfig &sc)
+{
 	LocationConfig location;
 
 	try
 	{
-		location = locationGetBestMatch(serverConfig, hRequest);
+		location = locationGetBestMatch(sc, request);
 	}
 	catch (std::exception &e)
 	{
-		// need to somehow load a default error page from server
-		// or from serverConfig if there is any for the server or for the location
 		std::cout << "HTTP_ResponseBuilder::build_response_for_GET - location"
 				  << std::endl
 				  << e.what() << std::endl;
-		return (HTTP_Response(HTTP_Status::NOT_FOUND,
-							  ErrorPages::generate(HTTP_Status::NOT_FOUND)));
+
+		setResponse(response, HTTP_Status::NOT_FOUND, sc);
+		return;
 	}
 
 	// TO-DO ???
@@ -70,67 +91,54 @@ HTTP_Response HTTP_ResponseBuilder::build_response_for_GET(
 	// 		return 301 [POST] /some/url/here
 	// }
 
-	// SUGGESTION: Location should transform into a proper class, having it's own
-	// methods? Here, a bool .hasMethod(std::string method) would be useful, so
-	// that these iterator loops are ommitted
-	// NOTE: there are iterator loops in other parts of the code, which would be
-	// nice if could be incorporated into a function of a specific class?
-	// NOTE2: the .find() for vector and map could easily be replaced by
-	// .count() == 0 to ease the code even more?
-	std::vector<std::string>::iterator method_it = location.allowed_methods.begin();
-	for (; method_it != location.allowed_methods.end(); ++method_it)
-	{
-		if (*method_it == HTTP_Method::GET)
-			break;
-	}
-	if (method_it == location.allowed_methods.end())
+	if (!locationHasMethod(location, HTTP_Method::GET))
 	{
 		// the GET method was not found for the location
-		return (HTTP_Response(HTTP_Status::FORBIDDEN,
-							  ErrorPages::generate(HTTP_Status::FORBIDDEN)));
+		setResponse(response, HTTP_Status::FORBIDDEN, sc);
+		return;
 	}
 
 	std::string pathOnServer;
 	try
 	{
-		pathOnServer = translateUriToPath(location, hRequest, true);
+		pathOnServer = translateUriToPath(location, request, true);
 		std::cout << "pathOnServer: " << pathOnServer << "\n";
 	}
 	catch (std::exception &e)
 	{
-		return (HTTP_Response(HTTP_Status::BAD_REQUEST,
-							  ErrorPages::generate(HTTP_Status::BAD_REQUEST)));
+		setResponse(response, HTTP_Status::BAD_REQUEST, sc);
+		return;
 	}
+
 	PathType pathType = getPathType(pathOnServer);
 
 	if (pathType == PATH_NONE)
-		return (HTTP_Response(HTTP_Status::NOT_FOUND,
-							  ErrorPages::generate(HTTP_Status::NOT_FOUND)));
+	{
+		setResponse(response, HTTP_Status::NOT_FOUND, sc);
+		return;
+	}
 	else if (pathType == PATH_FILE)
 	{
-		// ...
-		// the file exists, open it and add content into the response body
-		hResponse.setStatus(HTTP_Status::OK);
-		hResponse.setContent(Utils::getFileContent(pathOnServer));
-		// hResponse.setContent("File exists, and will be included in here");
-		return (hResponse);
+		response.setStatus(HTTP_Status::OK);
+		response.setContent(Utils::getFileContent(pathOnServer));
+		return;
 	}
 	else if (pathType == PATH_DIRECTORY)
 	{
-		std::string directoryURL = hRequest.getURL();
+		std::string directoryURL = request.getURL();
 		char lastChar = *(directoryURL.rbegin());
 		if (lastChar != '/')
 		{
 			// URL normalization or path canonicalization
 			// redirect; the directory exists, but the client did not request
 			// it properly, there was a missing '/' at the end
-			hResponse.setStatus(HTTP_Status::MOVED_PERMANENTLY);
-			hResponse.getHeaders()[HTTP_FieldName::LOCATION] = directoryURL + "/";
-			hResponse.getHeaders()[HTTP_FieldName::CONTENT_LENGTH] = "0";
+			response.setStatus(HTTP_Status::MOVED_PERMANENTLY);
+			response.getHeaders()[HTTP_FieldName::LOCATION] = directoryURL + "/";
+			response.setContent("");
 			// std::cout << "URL normalization: " << directoryURL << " -> "
 			// 	<< (directoryURL + "/") << "\n";
 			// std::cout << "Seding response:" << std::endl;
-			return (hResponse);
+			return;
 		}
 
 		if (location.index != "")
@@ -140,69 +148,56 @@ HTTP_Response HTTP_ResponseBuilder::build_response_for_GET(
 
 			if (indexType == PATH_FILE)
 			{
-				hResponse.setStatus(HTTP_Status::OK);
 				try
 				{
-					hResponse.setContent(Utils::getFileContent(indexOnServer));
+					response.setContent(Utils::getFileContent(indexOnServer));
+					response.setStatus(HTTP_Status::OK);
 				}
 				catch (std::exception &e)
 				{
-					hResponse.setContent(ErrorPages::generate(HTTP_Status::FORBIDDEN));
+					setResponse(response, HTTP_Status::FORBIDDEN, sc);
 				}
-				return (hResponse);
+				return;
 			}
 		}
 
 		if (!location.autoindex)
 		{
-			return (HTTP_Response(HTTP_Status::FORBIDDEN,
-								  ErrorPages::generate(HTTP_Status::FORBIDDEN)));
-			// hResponse.setStatus(HTTP_Status::FORBIDDEN);
-			// hResponse.headers[HTTP_FieldName::CONTENT_LENGTH] = ::toString(0);
-			// return (hResponse);
+			setResponse(response, HTTP_Status::FORBIDDEN, sc);
+			return;
 		}
 
-		// go ahead and list directory content,
-		// and add it to response body
-		hResponse.setStatus(HTTP_Status::OK);
-		std::string htmlDirectories = DirectoriesToHTML::generate(
-			Utils::getDirectoryList(pathOnServer),
-			hRequest.getURL());
-		hResponse.setContent(htmlDirectories);
-		return (hResponse);
+		// go ahead and list directory content
+		std::string htmlDirectories =
+			DirectoriesToHTML::generate(
+				Utils::getDirectoryList(pathOnServer), request.getURL());
+
+		response.setStatus(HTTP_Status::OK);
+		response.setContent(htmlDirectories);
+		return;
 	}
 
-	/*
-	 *	response is based on sc.path, sc.root, sc.index and autoindex
-	 *		and requestedUrl
-	 *
-	 *	we have to go through all the locations in serverConfig and check if
-	 *	the requestUrl starts with any of the sc.path's
-	 *	the locations in the serverConfig need to be sorted from the longest to
-	 *	the shortest, ex:
-	 *		/home/pages/contact			1st loc entry
-	 *		/home/companyDescription	2nd loc entry
-	 *		/contactUs					3rd loc entry
-	 *		/							4th loc entry
-	 *	and we need to match the longest such path to then check properties in
-	 *	ex. for requestedUrl = "/home/pages/contact/email-form" the 1st entry should be matched
-	 *		for requestedUrl = "/contactUs/ITDepartment/teams" the 3rd entry should be matched
-	 *
-	 *	if there is a match, if the requestUrl is a directory && autoindex = off -> 403 forbidden
-	 *														  && autoindex = on -> generate directory listing
-	 *										      a file, open file and copy contents into the response body
-	 *						if directory or file is not accessible (no permissions) -> 403 forbidden
-	 *
-	 * 	if there is no match, check if autoindex is 'on' and if so, proceed with
-	 *	obtaining the directory listing, generate a HTML as body for the response
-	 *
-	 *	if there is no match and autoindex = off, send 403 Forbidden
-	 *
-	 */
+	response.setStatus(HTTP_Status::OK);
+	response.setContent("This should NEVER happen!?");
+	return;
+}
 
-	hResponse.setStatus(HTTP_Status::OK); // ?
-	hResponse.setContent("This should NEVER happen!?");
-	return (hResponse);
+void HTTP_ResponseBuilder::build_response_for_POST(
+	HTTP_Response &response,
+	HTTP_Request &request,
+	const ServerConfig &sc)
+{
+	(void)request;
+	setResponse(response, HTTP_Status::NOT_IMPLEMENTED, sc);
+}
+
+void HTTP_ResponseBuilder::build_response_for_DELETE(
+	HTTP_Response &response,
+	HTTP_Request &request,
+	const ServerConfig &sc)
+{
+	(void)request;
+	setResponse(response, HTTP_Status::NOT_IMPLEMENTED, sc);
 }
 
 const LocationConfig &HTTP_ResponseBuilder::locationGetBestMatch(
