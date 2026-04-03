@@ -6,7 +6,7 @@
 /*   By: aistok <aistok@student.42london.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/20 10:48:39 by aistok            #+#    #+#             */
-/*   Updated: 2026/04/02 18:45:09 by aistok           ###   ########.fr       */
+/*   Updated: 2026/04/02 20:51:00 by aistok           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,8 +25,7 @@ void HTTP_ResponseBuilder::build(
 
 	if (request.getParseStatus() == HTTP_Request::INCOMPLETE)
 	{
-		// throw exception ?
-		return; //?
+		return; // should we throw exception ?
 	}
 
 	if (request.getMethod() == HTTP_Method::GET)
@@ -39,7 +38,7 @@ void HTTP_ResponseBuilder::build(
 		build_response_for_DELETE(response, request, sc);
 
 	else
-		setResponse(response, HTTP_Status::FORBIDDEN, sc);
+		setResponse(response, HTTP_Status::NOT_IMPLEMENTED, sc);
 }
 
 void HTTP_ResponseBuilder::setResponse(
