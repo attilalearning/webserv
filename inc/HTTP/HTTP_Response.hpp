@@ -6,7 +6,7 @@
 /*   By: aistok <aistok@student.42london.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/16 16:34:38 by aistok            #+#    #+#             */
-/*   Updated: 2026/04/01 20:05:24 by aistok           ###   ########.fr       */
+/*   Updated: 2026/04/04 18:28:09 by aistok           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,7 +30,7 @@ public:
 	HTTP_Response(const HTTP_StatusPair &status);
 	HTTP_Response(const HTTP_StatusPair &status, std::string textContent);
 
-	std::map<std::string, std::string> getHeaders();
+	std::map<std::string, std::string> &getHeaders();
 
 	void setStatus(const HTTP_StatusPair &status); // will set status message too
 												   // add headers

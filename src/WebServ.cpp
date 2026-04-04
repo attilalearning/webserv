@@ -6,7 +6,7 @@
 /*   By: aistok <aistok@student.42london.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/14 19:03:57 by aistok            #+#    #+#             */
-/*   Updated: 2026/04/01 20:03:16 by aistok           ###   ########.fr       */
+/*   Updated: 2026/04/04 18:26:57 by aistok           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -125,15 +125,13 @@ void WebServ::run(void)
 				Connection &connection = getConnectionForFd(_pollFds[i].fd);
 				const ServerConfig &serverConfig = connection.getServer()->getConfig();
 
-				HTTP::Response hResponse = HTTP::ResponseBuilder::build(serverConfig, connection.getRequest());
+				HTTP::ResponseBuilder::build(connection.getResponse(), connection.getRequest(), serverConfig);
 
-				//HTTP::Response hResponse(HTTP::Status::FORBIDDEN,
-				//	ErrorPages::generate(HTTP::Status::FORBIDDEN));
-				std::string data_to_send = hResponse.toString();
+				std::string data_to_send = connection.getResponse().toString();
 				std::cout << "Sending below response of " << data_to_send.size() << " bytes" << std::endl;
 				std::cout << "----------------------------------------------------\n";
 				std::cout << ESC_YELLOW_HOLLOW;
-				std::cout << hResponse;
+				std::cout << connection.getResponse();
 //				std::cout << msg;
 				std::cout << ESC_END;
 				std::cout << "----------------------------------------------------\n\n";

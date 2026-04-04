@@ -6,7 +6,7 @@
 /*   By: aistok <aistok@student.42london.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/25 11:32:29 by mosokina          #+#    #+#             */
-/*   Updated: 2026/04/01 20:04:06 by aistok           ###   ########.fr       */
+/*   Updated: 2026/04/04 18:26:00 by aistok           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -228,6 +228,24 @@ bool Utils::endsWith(const std::string& str, const std::string& suffix)
     return (str.substr(str.length() - suffix.length()) == suffix);
 }
 
+std::string Utils::replaceAll(const std::string &src,
+							  const std::string &from,
+							  const std::string &to)
+{
+	if (from.empty())
+		return src;
+
+	std::string result = src;
+	std::string::size_type pos = 0;
+
+	while ((pos = result.find(from, pos)) != std::string::npos)
+	{
+		result.replace(pos, from.length(), to);
+		pos += to.length();
+	}
+	return result;
+}
+
 bool Utils::fileExists(const std::string& path)
 {
     struct stat st;
@@ -247,4 +265,40 @@ size_t Utils::toSizeT(const std::string& str) {
     int res;
     ss >> res;
     return (res);
+}
+
+std::string Utils::getFileContent(const std::string& filename)
+{
+	std::ifstream file(filename.c_str(), std::ios_base::binary);
+
+	if (!file.is_open()) {
+		throw std::runtime_error(filename + " can not be opened!");
+	}
+
+	std::string content((std::istreambuf_iterator<char>(file)), 
+						std::istreambuf_iterator<char>());
+
+	return content;
+}
+
+std::vector<std::string> Utils::getDirectoryList(const std::string& path) {
+	std::vector<std::string> result;
+
+	DIR* dir = opendir(path.c_str());
+	if (!dir) {
+		throw std::runtime_error(path + " is not a directory!");
+	}
+
+	struct dirent* entry;
+	while ((entry = readdir(dir)) != NULL) {
+		std::string name = entry->d_name;
+		if (name != "." && name != "..") {
+			result.push_back(name);
+		}
+	}
+
+	closedir(dir);
+	std::sort(result.begin(), result.end());
+
+	return (result);
 }

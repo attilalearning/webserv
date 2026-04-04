@@ -6,17 +6,19 @@
 /*   By: aistok <aistok@student.42london.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/20 10:48:39 by aistok            #+#    #+#             */
-/*   Updated: 2026/04/01 20:05:47 by aistok           ###   ########.fr       */
+/*   Updated: 2026/04/04 18:29:17 by aistok           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef HTTP_RESPONSEBUILDER_HPP
 #define HTTP_RESPONSEBUILDER_HPP
 
+#include "Utils.hpp"
 #include "Config.hpp"
 #include "HTTP/HTTP_Request.hpp"
 #include "HTTP/HTTP_Response.hpp"
 #include "ErrorPages.hpp"
+#include "DirectoriesToHTML.hpp"
 
 /*	this class should not be instantiable
  *	and should only contain static methods
@@ -26,29 +28,50 @@
 class HTTP_ResponseBuilder
 {
 public:
-	/*
-	 *	This is temporary, can be moved later to other struct or class
-	 *
-	 *	if webserv is given a config file as argument,
-	 *	this variable will be overwritten by the the path to that config file
-	 *
-	 *	if no argument is present, this path will be the dafault,
-	 *	where the WebServ will try to look for a config file.
-	 *
-	 */
-	static std::string serverBasePath; // ?
+	static void build(
+		HTTP_Response &response,
+		HTTP_Request &request,
+		const ServerConfig &sc);
 
-	static HTTP_Response build(
-		const ServerConfig &sc, HTTP_Request &hReq);
+private:
+	static void build_response_for_GET(
+		HTTP_Response &response,
+		HTTP_Request &request,
+		const ServerConfig &sc);
 
-	static HTTP_Response build_response_for_GET(
-		const ServerConfig &serverConfig, HTTP_Request &hRequest);
+	static void build_response_for_POST(
+		HTTP_Response &response,
+		HTTP_Request &request,
+		const ServerConfig &sc);
+
+	static void build_response_for_DELETE(
+		HTTP_Response &response,
+		HTTP_Request &request,
+		const ServerConfig &sc);
+
+	static bool locationHasMethod(LocationConfig &loc, std::string method);
 
 	static const LocationConfig &locationGetBestMatch(
-		const ServerConfig &serverConfig, const HTTP_Request &hRequest);
+		const ServerConfig &serverConfig, const HTTP_Request &request);
 
 	static std::string translateUriToPath(
-		const LocationConfig &location, const HTTP_Request &hRequest);
+		const HTTP_Request &request,
+		const LocationConfig &location,
+		const ServerConfig &sc,
+		bool asAlias);
+
+	static void setResponse(
+		HTTP_Response &response,
+		const HTTP_StatusPair &status,
+		const ServerConfig &sc);
+
+	static void setResponseRedirect(
+		HTTP_Response &response,
+		const LocationConfig &loc);
+	static void setResponseRedirect(
+		HTTP_Response &response,
+		const int statusCode,
+		const std::string url);
 };
 
 #endif // HTTP_RESPONSEBUILDER_HPP

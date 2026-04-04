@@ -6,13 +6,14 @@
 /*   By: aistok <aistok@student.42london.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/26 23:56:58 by mosokina          #+#    #+#             */
-/*   Updated: 2026/04/01 20:03:47 by aistok           ###   ########.fr       */
+/*   Updated: 2026/04/04 18:25:11 by aistok           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef UTILS_HPP
 #define UTILS_HPP
 
+#include <fstream>
 #include <sstream>
 #include <string>
 #include <vector>
@@ -69,15 +70,17 @@ class Utils
         static std::vector<std::string> split(const std::string& str, const std::string& delimiter);
         static bool startsWith(const std::string& str, const std::string& prefix);
         static bool endsWith(const std::string& str, const std::string& suffix);
+        static std::string replaceAll(const std::string &src,
+                                      const std::string &from,
+                                      const std::string &to);
 
         /*File operations*/
         static bool fileExists(const std::string& path);
-        static bool isDirectory(const std::string& path);
-        static bool isFile(const std::string& path);
         static std::string readFile(const std::string& path);
         static bool writeFile(const std::string& path, const std::string& content);
         static bool deleteFile(const std::string& path);
-        static std::vector<std::string> listDirectory(const std::string& path);
+        static std::string getFileContent(const std::string& filename);
+        static std::vector<std::string> getDirectoryList(const std::string& path);
 
         /*Path operations*/
 
