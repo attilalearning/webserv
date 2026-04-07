@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HTTP_Request.hpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mosokina <mosokina@student.42.fr>          +#+  +:+       +#+        */
+/*   By: aistok <aistok@student.42london.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/16 16:34:38 by aistok            #+#    #+#             */
-/*   Updated: 2026/03/23 14:15:37 by mosokina         ###   ########.fr       */
+/*   Updated: 2026/04/07 20:15:56 by aistok           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,12 +31,12 @@ public:
 
 	enum ParseStatus
 	{
-		BAD_REQUEST = -400,
 		INCOMPLETE = 0,
 		COMPLETE = 1,
+		BAD_REQUEST = 400,
 		REQUEST_TIMEOUT = 408,
 		CONTENT_TOO_LARGE = 413,
-		REQUEST_HEADER_FIELDS_TOO_LARGE = 431,
+		REQUEST_HEADER_FIELDS_TOO_LARGE = 431
 	};
 
 	enum ParsingState

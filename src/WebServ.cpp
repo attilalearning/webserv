@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   WebServ.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mosokina <mosokina@student.42.fr>          +#+  +:+       +#+        */
+/*   By: aistok <aistok@student.42london.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/14 19:03:57 by aistok            #+#    #+#             */
-/*   Updated: 2026/04/07 18:55:03 by mosokina         ###   ########.fr       */
+/*   Updated: 2026/04/07 20:50:12 by aistok           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,7 +44,7 @@ std::vector<Listener *> WebServ::getListeners() const
 	return _listeners;
 }
 
-void WebServ::setup(std::vector<ServerConfig> &configs)
+void WebServ::setup(const std::vector<ServerConfig> &configs)
 {
 	for (size_t i = 0; i < configs.size(); ++i)
 	{
@@ -62,7 +62,7 @@ void WebServ::setup(std::vector<ServerConfig> &configs)
 		}
 		catch (const std::exception &e)
 		{
-			std::cerr << "Failed to setup listener " << configs[i].host << ":" << configs[i].port << ": " << e.what() << std::endl;
+			std::cerr << "Failed to setup listener " << configs[i].host << ":" << configs[i].ports[0] << ": " << e.what() << std::endl;
 			if (newListener)
 				delete newListener;
 		}

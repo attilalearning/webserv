@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   WebServ.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mosokina <mosokina@student.42.fr>          +#+  +:+       +#+        */
+/*   By: aistok <aistok@student.42london.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/14 19:03:57 by aistok            #+#    #+#             */
-/*   Updated: 2026/03/25 13:58:09 by mosokina         ###   ########.fr       */
+/*   Updated: 2026/04/07 20:51:42 by aistok           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,7 +28,7 @@
 #include <cerrno>
 #include <cstring>
 
-#include "ConfigStructs.hpp"
+#include "Config.hpp"
 #include "Listener.hpp"
 #include "Connection.hpp"
 #include "HTTP/HTTP.hpp"
@@ -53,7 +53,7 @@ public:
 	~WebServ();
 
 	std::vector<Listener *> getListeners() const;
-	void setup(std::vector<ServerConfig> &configs);
+	void setup(const std::vector<ServerConfig> &configs);
 	void run();
 
 	// Connection &getConnectionForFd(int fd);

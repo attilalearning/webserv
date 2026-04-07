@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   MockTestFnctions.hpp                               :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mosokina <mosokina@student.42.fr>          +#+  +:+       +#+        */
+/*   By: aistok <aistok@student.42london.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/11 12:49:26 by mosokina          #+#    #+#             */
-/*   Updated: 2026/03/25 13:59:33 by mosokina         ###   ########.fr       */
+/*   Updated: 2026/04/07 21:22:28 by aistok           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,7 +17,7 @@
 #include <csignal>
 
 #include "WebServ.hpp"
-#include "ConfigStructs.hpp"
+#include "Config.hpp"
 #include "Listener.hpp"
 
 std::vector<ServerConfig> getMockConfig();

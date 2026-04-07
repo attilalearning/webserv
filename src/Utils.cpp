@@ -6,12 +6,21 @@
 /*   By: aistok <aistok@student.42london.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/25 11:32:29 by mosokina          #+#    #+#             */
-/*   Updated: 2026/03/10 07:33:02 by aistok           ###   ########.fr       */
+/*   Updated: 2026/04/04 18:26:00 by aistok           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include <fcntl.h>
 #include <unistd.h>
+
+#include <algorithm>
+#include <cctype>
+#include <ctime>
+#include <sstream>
+#include <fstream>
+#include <sys/stat.h>
+#include <dirent.h>
+//#include <unistd.h>
 
 #include "Utils.hpp"
 
@@ -135,4 +144,161 @@ PathType getPathType(const std::string &pathStr)
         return PATH_DIRECTORY;
 
     return PATH_NONE;
+}
+
+/*private constructors to prevent instantiation*/
+Utils::Utils() {}
+Utils::~Utils() {}
+
+std::string Utils::trim(const std::string& str)
+{
+    size_t start = 0;
+    size_t end = str.length();
+
+    while (start < end && std::isspace(str[start]))
+        ++start;
+    while (end > start && std::isspace(str[end - 1]))
+        --end;
+    return (str.substr(start, end - start));
+}
+
+std::string Utils::toLowerCase(const std::string& str)
+{
+    std::string res = str;
+    
+    for (size_t i = 0; i < str.length(); ++i)
+        res[i] = std::tolower(res[i]);
+
+    return (res);
+}
+
+std::string Utils::toUpperCase(const std::string& str)
+{
+    std::string res = str;
+
+    for (size_t i = 0; i < str.length(); ++i)
+        res[i] = std::toupper(res[i]);
+
+    return (res);
+}
+
+std::vector<std::string> Utils::split(const std::string& str, char delimiter)
+{
+    std::vector<std::string> res;
+    std::stringstream ss(str);
+    std::string item;
+
+    while (std::getline(ss, item, delimiter))
+    {
+        if (!item.empty())
+            res.push_back(item);
+    }
+    
+    return (res);
+}
+
+std::vector<std::string> Utils::split(const std::string& str, const std::string& delimiter)
+{
+    std::vector<std::string> res;
+    size_t start = 0;
+    size_t end = str.find(delimiter);
+
+    while (end != std::string::npos)
+    {
+        res.push_back(str.substr(start, end - start));
+        start = end + delimiter.length();
+        end = str.find(delimiter, start);
+    }
+    res.push_back(str.substr(start));
+    
+    return (res);
+}
+
+bool Utils::startsWith(const std::string& str, const std::string& prefix)
+{
+    if (prefix.length() > str.length())
+        return (false);
+    return (str.substr(0, prefix.length()) == prefix);
+}
+
+bool Utils::endsWith(const std::string& str, const std::string& suffix)
+{
+    if (suffix.length() > str.length())
+        return (false);
+    return (str.substr(str.length() - suffix.length()) == suffix);
+}
+
+std::string Utils::replaceAll(const std::string &src,
+							  const std::string &from,
+							  const std::string &to)
+{
+	if (from.empty())
+		return src;
+
+	std::string result = src;
+	std::string::size_type pos = 0;
+
+	while ((pos = result.find(from, pos)) != std::string::npos)
+	{
+		result.replace(pos, from.length(), to);
+		pos += to.length();
+	}
+	return result;
+}
+
+bool Utils::fileExists(const std::string& path)
+{
+    struct stat st;
+    return (stat(path.c_str(), &st) == 0);
+}
+
+/*Number conversions*/
+int Utils::toInt(const std::string& str) {
+    std::stringstream ss(str);
+    int res;
+    ss >> res;
+    return (res);
+}
+
+size_t Utils::toSizeT(const std::string& str) {
+    std::stringstream ss(str);
+    int res;
+    ss >> res;
+    return (res);
+}
+
+std::string Utils::getFileContent(const std::string& filename)
+{
+	std::ifstream file(filename.c_str(), std::ios_base::binary);
+
+	if (!file.is_open()) {
+		throw std::runtime_error(filename + " can not be opened!");
+	}
+
+	std::string content((std::istreambuf_iterator<char>(file)), 
+						std::istreambuf_iterator<char>());
+
+	return content;
+}
+
+std::vector<std::string> Utils::getDirectoryList(const std::string& path) {
+	std::vector<std::string> result;
+
+	DIR* dir = opendir(path.c_str());
+	if (!dir) {
+		throw std::runtime_error(path + " is not a directory!");
+	}
+
+	struct dirent* entry;
+	while ((entry = readdir(dir)) != NULL) {
+		std::string name = entry->d_name;
+		if (name != "." && name != "..") {
+			result.push_back(name);
+		}
+	}
+
+	closedir(dir);
+	std::sort(result.begin(), result.end());
+
+	return (result);
 }

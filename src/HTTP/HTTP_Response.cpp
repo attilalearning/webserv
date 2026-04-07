@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HTTP_Response.cpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mosokina <mosokina@student.42.fr>          +#+  +:+       +#+        */
+/*   By: aistok <aistok@student.42london.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/16 16:34:38 by aistok            #+#    #+#             */
-/*   Updated: 2026/03/20 21:32:12 by mosokina         ###   ########.fr       */
+/*   Updated: 2026/04/07 21:34:47 by aistok           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,7 +31,7 @@ HTTP_Response::HTTP_Response(const HTTP_StatusPair &status, std::string textCont
 	setContent(textContent);
 }
 
-std::map<std::string, std::string> HTTP_Response::getHeaders()
+std::map<std::string, std::string> &HTTP_Response::getHeaders()
 {
 	return (_headers);
 }
@@ -42,7 +42,7 @@ void HTTP_Response::setStatus(const HTTP_StatusPair &status)
 	_status = status;
 }
 
-std::string HTTP_Response::toString() //MO: rename to steriliser()? as to string of bytes / not string of text
+std::string HTTP_Response::serialize()
 {
 	
 	std::ostringstream oss(std::ios::binary); //MO: changes
@@ -55,6 +55,11 @@ void HTTP_Response::setContent(std::string text)
 {
 	_body = text;
 	_headers[HTTP_FieldName::CONTENT_LENGTH] = ::toString(text.length());
+}
+
+size_t HTTP_Response::getBodyLen() const // TO-DO: temporary only, to compile the project
+{
+	return (_bodyLen);
 }
 
 // figure out, what functions are needed to be able to add

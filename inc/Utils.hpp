@@ -6,15 +6,20 @@
 /*   By: aistok <aistok@student.42london.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/26 23:56:58 by mosokina          #+#    #+#             */
-/*   Updated: 2026/03/10 07:33:11 by aistok           ###   ########.fr       */
+/*   Updated: 2026/04/04 18:25:11 by aistok           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef UTILS_HPP
 #define UTILS_HPP
 
+#include <fstream>
 #include <sstream>
 #include <string>
+#include <vector>
+
+#include <sys/stat.h> // used for stat
+#include <unistd.h> // used for stat
 
 #include <sys/stat.h> // used for stat
 #include <unistd.h> // used for stat
@@ -53,5 +58,47 @@ bool removePortion(std::string &line, std::string portion);
 bool numberIsPositive(std::string value);
 
 PathType getPathType(const std::string &pathStr);
+
+class Utils
+{
+    public:
+        /*String Manipulations*/
+        static std::string trim(const std::string& str);
+        static std::string toLowerCase(const std::string& str);
+        static std::string toUpperCase(const std::string& str);
+        static std::vector<std::string> split(const std::string& str, char delimiter);
+        static std::vector<std::string> split(const std::string& str, const std::string& delimiter);
+        static bool startsWith(const std::string& str, const std::string& prefix);
+        static bool endsWith(const std::string& str, const std::string& suffix);
+        static std::string replaceAll(const std::string &src,
+                                      const std::string &from,
+                                      const std::string &to);
+
+        /*File operations*/
+        static bool fileExists(const std::string& path);
+        static std::string readFile(const std::string& path);
+        static bool writeFile(const std::string& path, const std::string& content);
+        static bool deleteFile(const std::string& path);
+        static std::string getFileContent(const std::string& filename);
+        static std::vector<std::string> getDirectoryList(const std::string& path);
+
+        /*Path operations*/
+
+        /*MIME types*/
+
+        /*URL operations*/
+
+        /*Number conversions*/
+        static int toInt(const std::string& str);
+        static size_t toSizeT(const std::string& str);
+
+        /*Time*/
+
+    private:
+        Utils();
+        ~Utils();
+        Utils(const Utils&);
+        Utils& operator=(const Utils&);
+};
 
 #endif

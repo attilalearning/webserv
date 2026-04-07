@@ -6,7 +6,7 @@
 /*   By: mosokina <mosokina@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/23 14:46:16 by mosokina          #+#    #+#             */
-/*   Updated: 2026/03/25 13:25:59 by mosokina         ###   ########.fr       */
+/*   Updated: 2026/04/01 20:04:16 by aistok           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,7 +26,7 @@
 #include <cerrno>
 #include <cstring>
 
-#include "ConfigStructs.hpp"
+#include "Config.hpp"
 #include "Utils.hpp"
 
 class Listener

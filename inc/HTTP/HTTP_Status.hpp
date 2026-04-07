@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HTTP_Status.hpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mosokina <mosokina@student.42.fr>          +#+  +:+       +#+        */
+/*   By: aistok <aistok@student.42london.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/12 14:37:18 by aistok            #+#    #+#             */
-/*   Updated: 2026/03/20 22:13:20 by mosokina         ###   ########.fr       */
+/*   Updated: 2026/04/07 20:22:23 by aistok           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -117,7 +117,7 @@ public:
 	static const HTTP_StatusPair *all();
 	static int count();
 
-	static const HTTP_StatusPair *fromCode(int code);
+	static const HTTP_StatusPair &fromCode(int code);
 
 private:
 	static const HTTP_StatusPair _table[];

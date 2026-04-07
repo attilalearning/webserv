@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HTTP_Status.cpp                                    :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mosokina <mosokina@student.42.fr>          +#+  +:+       +#+        */
+/*   By: aistok <aistok@student.42london.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/12 14:39:13 by aistok            #+#    #+#             */
-/*   Updated: 2026/03/24 14:52:28 by mosokina         ###   ########.fr       */
+/*   Updated: 2026/04/07 20:22:35 by aistok           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -144,14 +144,14 @@ const HTTP_StatusPair HTTP_Status::s504 = HTTP_Status::GATEWAY_TIMEOUT;
 const HTTP_StatusPair HTTP_Status::HTTP_VERSION_NOT_SUPPORTED = HTTP_Status::_table[28];
 const HTTP_StatusPair HTTP_Status::s505 = HTTP_Status::HTTP_VERSION_NOT_SUPPORTED;
 
-const HTTP_StatusPair *HTTP_Status::fromCode(int code)
+const HTTP_StatusPair &HTTP_Status::fromCode(int code)
 {
 	for (int i = 0; i < _count; ++i)
 	{
 		if (_table[i].code == code)
-			return &_table[i];
+			return _table[i];
 	}
-	return 0;
+	return _table[0];
 }
 
 const HTTP_StatusPair *HTTP_Status::all()
