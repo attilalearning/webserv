@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HTTP_Request.hpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: aistok <aistok@student.42london.com>       +#+  +:+       +#+        */
+/*   By: mosokina <mosokina@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/16 16:34:38 by aistok            #+#    #+#             */
-/*   Updated: 2026/04/07 20:15:56 by aistok           ###   ########.fr       */
+/*   Updated: 2026/04/07 22:18:34 by mosokina         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,7 +36,7 @@ public:
 		BAD_REQUEST = 400,
 		REQUEST_TIMEOUT = 408,
 		CONTENT_TOO_LARGE = 413,
-		REQUEST_HEADER_FIELDS_TOO_LARGE = 431
+		REQUEST_HEADER_FIELDS_TOO_LARGE = 431,
 	};
 
 	enum ParsingState
