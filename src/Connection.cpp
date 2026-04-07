@@ -6,7 +6,7 @@
 /*   By: mosokina <mosokina@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/11 12:49:10 by mosokina          #+#    #+#             */
-/*   Updated: 2026/03/25 13:56:37 by mosokina         ###   ########.fr       */
+/*   Updated: 2026/04/07 18:55:04 by mosokina         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -124,14 +124,13 @@ bool Connection::handleWrite() //bool is finised
 
 	ssize_t sent = send(_connectFd, dataPtr, remaining, 0);
 
-	if (sent == -1)
-	{
-		if (errno == EAGAIN || errno == EWOULDBLOCK)
-			return false;
-		_state = ERROR; //MO: check case
-		return true; 
-	}
-	
+	// RULE: No errno check. If sent is -1 (error) or 0 (failed to move any bytes/closed)
+    if (sent <= 0)
+    {
+        _state = ERROR;
+        return true; 
+    }
+
 	_bytesSent += sent;
 	this->resetTimeout(); //MO: find proper place for this line
 	if (_bytesSent >= _rawResponse.size()) {

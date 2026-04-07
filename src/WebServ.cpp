@@ -6,7 +6,7 @@
 /*   By: mosokina <mosokina@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/14 19:03:57 by aistok            #+#    #+#             */
-/*   Updated: 2026/03/25 14:01:15 by mosokina         ###   ########.fr       */
+/*   Updated: 2026/04/07 18:55:03 by mosokina         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -162,9 +162,7 @@ void WebServ::_acceptNewConnection(int listenFd)
 	int connFd = accept(listenFd, (sockaddr *)&clientAddr, &clientLen);
 	if (connFd < 0)
 	{
-		if (errno == EAGAIN || errno == EWOULDBLOCK || errno == EINTR)
-			return;
-		std::cerr << "Accept failed on fd " << listenFd << std::endl;
+		std::cout << "[WebServ] Notice: Could not complete accept on FD " << listenFd << std::endl;
 		return;
 	}
 	// 2. SET NON-BLOCKING
@@ -242,7 +240,10 @@ void WebServ::_readRequest(size_t *index)
             (*index)--;
             return;
         }
-        else if (errno != EAGAIN && errno != EWOULDBLOCK) {
+		else
+		{
+			// We do NOT check errno != EAGAIN && errno != EWOULDBLOCK. We assume the connection is broken.
+			//If poll() flags POLLIN, the kernel is promising you there is data to read (or the connection is closed).
 			std::cerr << "[WebServ] Fatal recv error on FD: " << fd << ". Closing." << std::endl;
 
 			_closeConnection(*index);
