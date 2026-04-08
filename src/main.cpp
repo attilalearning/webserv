@@ -6,7 +6,7 @@
 /*   By: aistok <aistok@student.42london.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/14 19:02:21 by aistok            #+#    #+#             */
-/*   Updated: 2026/03/12 16:55:55 by aistok           ###   ########.fr       */
+/*   Updated: 2026/04/07 21:20:01 by aistok           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,8 +14,7 @@
 #include <csignal>
 
 #include "WebServ.hpp"
-#include "Config.hpp"
-#include "Server.hpp"
+#include "Listener.hpp"
 #include "Config.hpp"
 
 //#include "MockTestFnctions.hpp"

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HTTP_Request.hpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: aistok <aistok@student.42london.com>       +#+  +:+       +#+        */
+/*   By: mosokina <mosokina@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/16 16:34:38 by aistok            #+#    #+#             */
-/*   Updated: 2026/04/02 09:35:05 by aistok           ###   ########.fr       */
+/*   Updated: 2026/04/07 22:18:34 by mosokina         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,17 +33,34 @@ public:
 	{
 		INCOMPLETE = 0,
 		COMPLETE = 1,
-		BAD_REQUEST = 400
+		BAD_REQUEST = 400,
+		REQUEST_TIMEOUT = 408,
+		CONTENT_TOO_LARGE = 413,
+		REQUEST_HEADER_FIELDS_TOO_LARGE = 431,
 	};
 
-	int parse(const char *raw, size_t len);
+	enum ParsingState
+	{
+		STATE_REQUEST_LINE, // Parsing: GET /index.html HTTP/1.1
+		STATE_HEADERS,      // Parsing: Host: localhost...
+		STATE_BODY,         // Parsing: Binary data or form data
+		STATE_COMPLETE,     // Entire request is ready
+		STATE_ERROR         // Something went wrong (e.g., 400 Bad Request)
+	};
+
+
+	int parseHeaders(const char *raw, size_t len);
+	void setBody(std::string data, size_t len);
 
 	int getParseStatus() const;
 	const std::string &getMethod() const;
 	const std::string &getURL() const;
+	const std::string &getVersion() const;
+	const std::map<std::string, std::string> getHeaders() const;
 
 	bool ready();
 	void reset();
+	void setParseStatus(ParseStatus status);
 
 protected:
 	// ...

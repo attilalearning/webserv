@@ -6,7 +6,7 @@
 /*   By: aistok <aistok@student.42london.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/16 16:34:38 by aistok            #+#    #+#             */
-/*   Updated: 2026/04/04 18:28:09 by aistok           ###   ########.fr       */
+/*   Updated: 2026/04/07 21:34:13 by aistok           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,7 +35,7 @@ public:
 	void setStatus(const HTTP_StatusPair &status); // will set status message too
 												   // add headers
 
-	std::string toString();
+	std::string serialize();
 	void setContent(std::string text);
 	size_t getBodyLen() const; // TO-DO: temporary only, to compile the project
 

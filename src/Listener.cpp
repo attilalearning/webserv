@@ -1,7 +1,7 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   Server.cpp                                         :+:      :+:    :+:   */
+/*   Listener.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: aistok <aistok@student.42london.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
@@ -10,14 +10,14 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "Server.hpp"
+#include "Listener.hpp"
 
-Server::Server(const ServerConfig &config) : _config(config), _listenFd(-1)
+Listener::Listener(const ServerConfig &config) : _config(config), _listenFd(-1)
 {
 	_address = sockaddr_in();
 }
 
-Server::~Server()
+Listener::~Listener()
 {
 	if (_listenFd != -1)
 	{
@@ -27,17 +27,17 @@ Server::~Server()
 	}
 }
 
-int Server::getListenFd() const
+int Listener::getListenFd() const
 {
 	return _listenFd;
 }
 
-const ServerConfig &Server::getConfig() const
+const ServerConfig &Listener::getConfig() const
 {
 	return _config;
 }
 
-void Server::initSocket()
+void Listener::initSocket()
 {
 	// 1. Create the socket (IPv4, TCP)
 	_listenFd = socket(AF_INET, SOCK_STREAM, 0);
@@ -45,7 +45,7 @@ void Server::initSocket()
 	{
 		throw std::runtime_error("Failed to open listen fd");
 	}
-	// 2. Set SO_REUSEADDR (Allows immediate restart of the server)
+	// 2. Set SO_REUSEADDR (Allows immediate restart of the listener)
 	int opt = 1;
 	if (setsockopt(_listenFd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt)) == -1)
 	{
@@ -76,11 +76,11 @@ void Server::initSocket()
 		_listenFd = -1;
 		throw std::runtime_error("Failed to listen on socket");
 	}
-	std::cout << "[Server] Listening on " << _config.host << ":" << _config.ports[0] << std::endl;
+	std::cout << "[Listener] Listening on " << _config.host << ":" << _config.ports[0] << std::endl;
 }
 
 // Helper function to resolve host/port to sockaddr_in
-sockaddr_in Server::_getSocketAddress(const std::string &host, int port) const
+sockaddr_in Listener::_getSocketAddress(const std::string &host, int port) const
 {
 	addrinfo hints;
 	addrinfo *result = NULL;

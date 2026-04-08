@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HTTP_ResponseBuilder.cpp                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: aistok <aistok@student.42london.com>       +#+  +:+       +#+        */
+/*   By: mosokina <mosokina@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/20 10:48:39 by aistok            #+#    #+#             */
-/*   Updated: 2026/04/04 18:29:42 by aistok           ###   ########.fr       */
+/*   Updated: 2026/04/07 22:39:52 by mosokina         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,9 +17,12 @@ void HTTP_ResponseBuilder::build(
 	HTTP_Request &request,
 	const ServerConfig &sc)
 {
-	if (request.getParseStatus() == HTTP_Request::BAD_REQUEST)
+	int parseStatus = request.getParseStatus();
+
+	// this will handle all errors including 400, 408, 413, 431, etc
+	if (parseStatus >= 400)
 	{
-		setResponse(response, HTTP_Status::BAD_REQUEST, sc);
+		setResponse(response, HTTP_Status::fromCode(parseStatus), sc);
 		return;
 	}
 
@@ -215,7 +218,11 @@ void HTTP_ResponseBuilder::build_response_for_POST(
 	const ServerConfig &sc)
 {
 	(void)request;
-	setResponse(response, HTTP_Status::NOT_IMPLEMENTED, sc);
+	// setResponse(response, HTTP_Status::NOT_IMPLEMENTED, sc);
+	//MO comment: this block for TESTS
+	(void)sc;
+	response.setStatus(HTTP_Status::OK);
+	response.setContent("POST test");
 }
 
 void HTTP_ResponseBuilder::build_response_for_DELETE(

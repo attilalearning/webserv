@@ -1,17 +1,17 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   Server.hpp                                         :+:      :+:    :+:   */
+/*   Listener.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: aistok <aistok@student.42london.com>       +#+  +:+       +#+        */
+/*   By: mosokina <mosokina@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/23 14:46:16 by mosokina          #+#    #+#             */
 /*   Updated: 2026/04/01 20:04:16 by aistok           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#ifndef SERVER_HPP
-#define SERVER_HPP
+#ifndef LISTENER_HPP
+#define LISTENER_HPP
 
 // TO-DO update based on func used in the code!!
 
@@ -29,11 +29,11 @@
 #include "Config.hpp"
 #include "Utils.hpp"
 
-class Server
+class Listener
 {
 public:
-	Server(const ServerConfig &config);
-	~Server();
+	Listener(const ServerConfig &config);
+	~Listener();
 
 	void initSocket(); // bind(), socket setup
 	int getListenFd() const;
@@ -41,8 +41,8 @@ public:
 
 private:
 	// Rule of Three: Private and Unimplemented to prevent copying
-	Server(const Server &other);
-	Server &operator=(const Server &other);
+	Listener(const Listener &other);
+	Listener &operator=(const Listener &other);
 
 	sockaddr_in _getSocketAddress(const std::string &host, int port) const;
 

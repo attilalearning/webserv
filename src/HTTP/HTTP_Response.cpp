@@ -6,7 +6,7 @@
 /*   By: aistok <aistok@student.42london.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/16 16:34:38 by aistok            #+#    #+#             */
-/*   Updated: 2026/04/04 18:28:25 by aistok           ###   ########.fr       */
+/*   Updated: 2026/04/07 21:34:47 by aistok           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,9 +42,11 @@ void HTTP_Response::setStatus(const HTTP_StatusPair &status)
 	_status = status;
 }
 
-std::string HTTP_Response::toString()
+std::string HTTP_Response::serialize()
 {
-	std::ostringstream oss;
+	
+	std::ostringstream oss(std::ios::binary); //MO: changes
+	// std::ostringstream oss;
 	oss << *this;
 	return (oss.str());
 }
