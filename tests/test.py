@@ -2,6 +2,7 @@ import socket
 import time
 import argparse
 import random
+import sys
 
 # --- CONFIGURATION ---
 SERVER_HOST = '127.0.0.1'
@@ -13,7 +14,12 @@ def get_socket():
 	"""Helper to create and connect a socket with standard timeouts."""
 	s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 	s.settimeout(TIMEOUT)
-	s.connect((SERVER_HOST, SERVER_PORT))
+	try:
+		s.connect((SERVER_HOST, SERVER_PORT))
+	except socket.error as e:
+		print(f"Error: Is {SERVER_HOST}:{SERVER_PORT} running?")
+		print(f"       {e}")
+		sys.exit(1)
 	return s
 
 def print_result(expected, actual, passed, error=None):
