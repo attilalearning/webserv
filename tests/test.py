@@ -2,6 +2,7 @@ import socket
 import time
 import argparse
 import random
+import sys
 
 # --- CONFIGURATION ---
 SERVER_HOST = '127.0.0.1'
@@ -13,7 +14,12 @@ def get_socket():
 	"""Helper to create and connect a socket with standard timeouts."""
 	s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 	s.settimeout(TIMEOUT)
-	s.connect((SERVER_HOST, SERVER_PORT))
+	try:
+		s.connect((SERVER_HOST, SERVER_PORT))
+	except socket.error as e:
+		print(f"Error: Is {SERVER_HOST}:{SERVER_PORT} running?")
+		print(f"       {e}")
+		sys.exit(1)
 	return s
 
 def print_result(expected, actual, passed, error=None):
@@ -376,6 +382,9 @@ if __name__ == "__main__":
 	run_test("PROTOCOL", "Missing Host Header", b"GET / HTTP/1.1\r\n\r\n", "400")
 	run_test("PROTOCOL", "HTTP 2.0 Not Supported", b"GET / HTTP/2.0\r\nHost: localhost\r\n\r\n", "505")
 	run_test("PROTOCOL", "Method Not Allowed", b"DELETE / HTTP/1.1\r\nHost: localhost\r\n\r\n", "405")
+	run_test("PROTOCOL", "HEAD Request for / root", b"HEAD / HTTP/1.1\r\nHOST: localhost\r\n\r\n", "200")
+	run_test("PROTOCOL", "HEAD Request for /nonexistent", b"HEAD /nonexistent HTTP/1.1\r\nHOST: localhost\r\n\r\n", "404")
+	run_test("PROTOCOL", "GET Request mixed-case headers", b"GET / HTTP/1.1\r\nhOSt: localhost\r\nCOnTEnt-leNGTH: 5\r\n\r\nHello", "200")
 
 	# 3. Limits & Security
 

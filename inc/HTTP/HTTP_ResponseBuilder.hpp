@@ -6,7 +6,7 @@
 /*   By: aistok <aistok@student.42london.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/20 10:48:39 by aistok            #+#    #+#             */
-/*   Updated: 2026/04/04 18:29:17 by aistok           ###   ########.fr       */
+/*   Updated: 2026/04/09 21:58:02 by aistok           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,7 +34,7 @@ public:
 		const ServerConfig &sc);
 
 private:
-	static void build_response_for_GET(
+	static void build_response_for_GET_or_HEAD(
 		HTTP_Response &response,
 		HTTP_Request &request,
 		const ServerConfig &sc);
@@ -67,11 +67,8 @@ private:
 
 	static void setResponseRedirect(
 		HTTP_Response &response,
-		const LocationConfig &loc);
-	static void setResponseRedirect(
-		HTTP_Response &response,
 		const int statusCode,
-		const std::string url);
+		const std::string &url);
 };
 
 #endif // HTTP_RESPONSEBUILDER_HPP

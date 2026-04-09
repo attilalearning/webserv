@@ -3,16 +3,17 @@
 /*                                                        :::      ::::::::   */
 /*   HTTP_Defines.hpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mosokina <mosokina@student.42.fr>          +#+  +:+       +#+        */
+/*   By: aistok <aistok@student.42london.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/21 00:32:21 by aistok            #+#    #+#             */
-/*   Updated: 2026/03/20 15:17:55 by mosokina         ###   ########.fr       */
+/*   Updated: 2026/04/09 13:27:22 by aistok           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef HTTP_DEFINES_HPP
 #define HTTP_DEFINES_HPP
 
+#define WEBSERV_NAME "miniMAA"
 #define CR "\r"
 #define LF "\n"
 #define CRLF CR LF
