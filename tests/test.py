@@ -376,6 +376,9 @@ if __name__ == "__main__":
 	run_test("PROTOCOL", "Missing Host Header", b"GET / HTTP/1.1\r\n\r\n", "400")
 	run_test("PROTOCOL", "HTTP 2.0 Not Supported", b"GET / HTTP/2.0\r\nHost: localhost\r\n\r\n", "505")
 	run_test("PROTOCOL", "Method Not Allowed", b"DELETE / HTTP/1.1\r\nHost: localhost\r\n\r\n", "405")
+	run_test("PROTOCOL", "HEAD Request for / root", b"HEAD / HTTP/1.1\r\nHOST: localhost\r\n\r\n", "200")
+	run_test("PROTOCOL", "HEAD Request for /nonexistent", b"HEAD /nonexistent HTTP/1.1\r\nHOST: localhost\r\n\r\n", "404")
+	run_test("PROTOCOL", "GET Request mixed-case headers", b"GET / HTTP/1.1\r\nhOSt: localhost\r\nCOnTEnt-leNGTH: 5\r\n\r\nHello", "200")
 
 	# 3. Limits & Security
 

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HTTP_Request.hpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mosokina <mosokina@student.42.fr>          +#+  +:+       +#+        */
+/*   By: aistok <aistok@student.42london.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/16 16:34:38 by aistok            #+#    #+#             */
-/*   Updated: 2026/04/07 22:18:34 by mosokina         ###   ########.fr       */
+/*   Updated: 2026/04/09 16:42:43 by aistok           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,6 +16,7 @@
 #include <iostream>
 #include <map>
 
+#include "HTTP_Version.hpp"
 #include "HTTP_Status.hpp"
 #include "HTTP_Method.hpp"
 #include "HTTP_FieldName.hpp"
@@ -37,6 +38,7 @@ public:
 		REQUEST_TIMEOUT = 408,
 		CONTENT_TOO_LARGE = 413,
 		REQUEST_HEADER_FIELDS_TOO_LARGE = 431,
+		HTTP_VERSION_NOT_SUPPORTED = 505,
 	};
 
 	enum ParsingState

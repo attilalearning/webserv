@@ -6,7 +6,7 @@
 /*   By: aistok <aistok@student.42london.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/16 16:46:32 by aistok            #+#    #+#             */
-/*   Updated: 2026/04/09 14:13:42 by aistok           ###   ########.fr       */
+/*   Updated: 2026/04/09 16:45:14 by aistok           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -200,7 +200,9 @@ int HTTP_Request::_parseRequestLine(std::string line)
 		subString = line.substr(start, line.size() - start);
 		if (!_parseVersion(subString))
 		{
-			_parseStatus = HTTP_Request::BAD_REQUEST;
+			_parseStatus = HTTP_Request::HTTP_VERSION_NOT_SUPPORTED;
+			// the correct way to handle/set this would be:
+			// _parseStatus = HTTP_Status::HTTP_VERSION_NOT_SUPPORTED.code;
 			return (FAILURE);
 		}
 	}
@@ -241,8 +243,8 @@ int HTTP_Request::_parseURL(std::string url)
 
 int HTTP_Request::_parseVersion(std::string version)
 {
-	if (version == "HTTP/1.1" ||
-		version == "HTTP/1.0")
+	if (version == HTTP_Version::v1_1 ||
+		version == HTTP_Version::v1_1)
 	{
 		this->_version = version;
 		return (SUCCESS);
