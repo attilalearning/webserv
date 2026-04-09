@@ -6,7 +6,7 @@
 /*   By: aistok <aistok@student.42london.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/16 16:46:32 by aistok            #+#    #+#             */
-/*   Updated: 2026/04/09 16:45:14 by aistok           ###   ########.fr       */
+/*   Updated: 2026/04/09 21:46:23 by aistok           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -243,7 +243,7 @@ int HTTP_Request::_parseURL(std::string url)
 
 int HTTP_Request::_parseVersion(std::string version)
 {
-	if (version == HTTP_Version::v1_1 ||
+	if (version == HTTP_Version::v1_0 ||
 		version == HTTP_Version::v1_1)
 	{
 		this->_version = version;
