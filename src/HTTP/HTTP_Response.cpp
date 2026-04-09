@@ -6,7 +6,7 @@
 /*   By: aistok <aistok@student.42london.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/16 16:34:38 by aistok            #+#    #+#             */
-/*   Updated: 2026/04/07 21:34:47 by aistok           ###   ########.fr       */
+/*   Updated: 2026/04/09 14:38:37 by aistok           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,20 +14,21 @@
 #include <sstream>
 
 HTTP_Response::HTTP_Response()
-	: _status(HTTP_Status::UNSET), _version(HTTP_Version::v1_1), _bodyLen(0), _body("")
+	: _status(HTTP_Status::UNSET), _version(HTTP_Version::v1_1), _isHEADresponse(false), _bodyLen(0), _body("")
 {
-	// done
+	_addServerNameHeader();
 }
 
 HTTP_Response::HTTP_Response(const HTTP_StatusPair &status)
-	: _status(status), _version(HTTP_Version::v1_1), _bodyLen(0), _body("")
+	: _status(status), _version(HTTP_Version::v1_1), _isHEADresponse(false), _bodyLen(0), _body("")
 {
-	// done
+	_addServerNameHeader();
 }
 
 HTTP_Response::HTTP_Response(const HTTP_StatusPair &status, std::string textContent)
-	: _status(status), _version(HTTP_Version::v1_1), _bodyLen(0)/*, _body("")*/
+	: _status(status), _version(HTTP_Version::v1_1), _isHEADresponse(false), _bodyLen(0)/*, _body("")*/
 {
+	_addServerNameHeader();
 	setContent(textContent);
 }
 
@@ -51,15 +52,33 @@ std::string HTTP_Response::serialize()
 	return (oss.str());
 }
 
-void HTTP_Response::setContent(std::string text)
+void HTTP_Response::setContent(const std::string &text)
 {
-	_body = text;
-	_headers[HTTP_FieldName::CONTENT_LENGTH] = ::toString(text.length());
+	if (!_isHEADresponse)
+	{
+		_body = text;
+		_headers[HTTP_FieldName::CONTENT_LENGTH] = ::toString(text.length());
+	}
 }
 
 size_t HTTP_Response::getBodyLen() const // TO-DO: temporary only, to compile the project
 {
 	return (_bodyLen);
+}
+
+void HTTP_Response::setHeadersOnly(const bool value)
+{
+	_isHEADresponse = value;
+}
+
+bool HTTP_Response::isHeadersOnly()
+{
+	return (_isHEADresponse);
+}
+
+void HTTP_Response::_addServerNameHeader()
+{
+	_headers[HTTP_FieldName::SERVER_NAME] = WEBSERV_NAME;
 }
 
 // figure out, what functions are needed to be able to add
