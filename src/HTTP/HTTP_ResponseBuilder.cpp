@@ -6,7 +6,7 @@
 /*   By: aistok <aistok@student.42london.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/20 10:48:39 by aistok            #+#    #+#             */
-/*   Updated: 2026/04/09 14:34:46 by aistok           ###   ########.fr       */
+/*   Updated: 2026/04/09 22:03:02 by aistok           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,7 +15,7 @@
 void HTTP_ResponseBuilder::build(
 	HTTP_Response &response,
 	HTTP_Request &request,
-	const ServerConfig &sc)
+	const ServerConfig &serverConfig)
 {
 	int parseStatus = request.getParseStatus();
 
@@ -31,22 +31,22 @@ void HTTP_ResponseBuilder::build(
 	// this will handle all errors including 400, 408, 413, 431, etc
 	if (parseStatus >= 400)
 	{
-		setResponse(response, HTTP_Status::fromCode(parseStatus), sc);
+		setResponse(response, HTTP_Status::fromCode(parseStatus), serverConfig);
 		return;
 	}
 
 	if (method == HTTP_Method::GET
 		|| method == HTTP_Method::HEAD)
-		build_response_for_GET_or_HEAD(response, request, sc);
+		build_response_for_GET_or_HEAD(response, request, serverConfig);
 
-	else if (request.getMethod() == HTTP_Method::POST)
-		build_response_for_POST(response, request, sc);
+	else if (method == HTTP_Method::POST)
+		build_response_for_POST(response, request, serverConfig);
 
-	else if (request.getMethod() == HTTP_Method::DELETE)
-		build_response_for_DELETE(response, request, sc);
+	else if (method == HTTP_Method::DELETE)
+		build_response_for_DELETE(response, request, serverConfig);
 
 	else
-		setResponse(response, HTTP_Status::NOT_IMPLEMENTED, sc);
+		setResponse(response, HTTP_Status::NOT_IMPLEMENTED, serverConfig);
 }
 
 void HTTP_ResponseBuilder::setResponse(
@@ -63,16 +63,8 @@ void HTTP_ResponseBuilder::setResponse(
 
 void HTTP_ResponseBuilder::setResponseRedirect(
 	HTTP_Response &response,
-	const LocationConfig &loc)
-{
-	response.setStatus(HTTP_Status::fromCode(loc.redirect_code));
-	response.getHeaders()[HTTP_FieldName::LOCATION] = loc.redirect_url;
-}
-
-void HTTP_ResponseBuilder::setResponseRedirect(
-	HTTP_Response &response,
 	const int statusCode,
-	const std::string url)
+	const std::string &url)
 {
 	response.setStatus(HTTP_Status::fromCode(statusCode));
 	response.getHeaders()[HTTP_FieldName::LOCATION] = url;
@@ -112,12 +104,15 @@ void HTTP_ResponseBuilder::build_response_for_GET_or_HEAD(
 
 	if (location.redirect_code > 0)
 	{
-		setResponseRedirect(response, location);
+		setResponseRedirect(
+			response,
+			location.redirect_code,
+			location.redirect_url);
 		return;
 	}
 
-	// if a GET request is allowed for a location, then a HEAD
-	// request is also allowed
+	// if a GET request is allowed for a location,
+	// then a HEAD request is also allowed
 	if (!locationHasMethod(location, HTTP_Method::GET))
 	{
 		setResponse(response, HTTP_Status::FORBIDDEN, sc);

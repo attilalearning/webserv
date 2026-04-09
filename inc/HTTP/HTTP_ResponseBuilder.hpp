@@ -6,7 +6,7 @@
 /*   By: aistok <aistok@student.42london.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/20 10:48:39 by aistok            #+#    #+#             */
-/*   Updated: 2026/04/09 03:08:11 by aistok           ###   ########.fr       */
+/*   Updated: 2026/04/09 21:58:02 by aistok           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -67,11 +67,8 @@ private:
 
 	static void setResponseRedirect(
 		HTTP_Response &response,
-		const LocationConfig &loc);
-	static void setResponseRedirect(
-		HTTP_Response &response,
 		const int statusCode,
-		const std::string url);
+		const std::string &url);
 };
 
 #endif // HTTP_RESPONSEBUILDER_HPP
