@@ -6,7 +6,7 @@
 /*   By: aistok <aistok@student.42london.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/16 16:46:32 by aistok            #+#    #+#             */
-/*   Updated: 2026/04/09 21:46:23 by aistok           ###   ########.fr       */
+/*   Updated: 2026/04/23 20:52:19 by aistok           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -124,7 +124,6 @@ int HTTP_Request::parseHeaders(const char *raw, size_t len) // MO:SPLIT TO parse
 	// and moved/changed/improved logic into Connection.cpp
 }
 
-
 int HTTP_Request::getParseStatus() const
 {
 	return (_parseStatus);
@@ -137,6 +136,14 @@ const std::string &HTTP_Request::getMethod() const
 
 const std::string &HTTP_Request::getURL() const
 {
+	return (_url);
+}
+std::string HTTP_Request::getURLWithoutParams() const
+{
+	size_t query_pos = _url.find('?');
+	if (query_pos != std::string::npos)
+		return (_url.substr(0, query_pos));
+
 	return (_url);
 }
 const std::string &HTTP_Request::getVersion() const
@@ -450,7 +457,6 @@ std::ostream &operator<<(std::ostream &os, const HTTP_Request &hr)
 	os.write(hr._body.c_str(), hr._body.size());
 	return (os);
 }
-
 
 void HTTP_Request::setBody(std::string data, size_t len)
 {

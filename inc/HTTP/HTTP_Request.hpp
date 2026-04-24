@@ -6,7 +6,7 @@
 /*   By: aistok <aistok@student.42london.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/16 16:34:38 by aistok            #+#    #+#             */
-/*   Updated: 2026/04/09 16:42:43 by aistok           ###   ########.fr       */
+/*   Updated: 2026/04/23 20:19:49 by aistok           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -57,6 +57,7 @@ public:
 	int getParseStatus() const;
 	const std::string &getMethod() const;
 	const std::string &getURL() const;
+	std::string getURLWithoutParams() const;
 	const std::string &getVersion() const;
 	const std::map<std::string, std::string> getHeaders() const;
 
