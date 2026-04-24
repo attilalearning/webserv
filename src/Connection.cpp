@@ -6,7 +6,7 @@
 /*   By: aistok <aistok@student.42london.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/11 12:49:10 by mosokina          #+#    #+#             */
-/*   Updated: 2026/04/07 21:35:16 by aistok           ###   ########.fr       */
+/*   Updated: 2026/04/24 13:43:09 by aistok           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,7 +16,8 @@ Connection::Connection(int fd, Listener *listener): _state(READING_HEADERS),
 												_connectFd(fd),
 												_listener(listener),
 												_expectedBodySize(0),
-												_isChunked(false) 
+												_isChunked(false),
+												_responseBuilder(listener->getConfig())
 {
 	_lastActive = std::time(NULL);
 }
@@ -36,6 +37,9 @@ Connection::~Connection()
 void Connection::resetForNextRequest()
 {
 	_request.reset();
+	_response.reset();
+	_responseBuilder.reset();
+	_bytesSent = 0;
 	_state = READING_HEADERS;
 	_chunkedAccumulator.clear();
 	_isChunked = false;
@@ -170,10 +174,9 @@ bool Connection::shouldClose() const
 	return true; // Default to safety
 }
 
-
 void Connection::prepareResponse()
 {
-	HTTP::ResponseBuilder::build(_response, _request, _listener->getConfig());
+	_responseBuilder.build(_response, _request);
 	_rawResponse = _response.serialize();
 	_bytesSent = 0;
 }

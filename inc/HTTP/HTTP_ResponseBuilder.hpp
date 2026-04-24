@@ -6,7 +6,7 @@
 /*   By: aistok <aistok@student.42london.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/20 10:48:39 by aistok            #+#    #+#             */
-/*   Updated: 2026/04/09 21:58:02 by aistok           ###   ########.fr       */
+/*   Updated: 2026/04/24 10:34:05 by aistok           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,55 +20,42 @@
 #include "ErrorPages.hpp"
 #include "DirectoriesToHTML.hpp"
 
-/*	this class should not be instantiable
- *	and should only contain static methods
- *
+/*
  *	TO-DO: orthodox canonical form
  */
 class HTTP_ResponseBuilder
 {
 public:
-	static void build(
-		HTTP_Response &response,
-		HTTP_Request &request,
-		const ServerConfig &sc);
+	HTTP_ResponseBuilder();
+	HTTP_ResponseBuilder(const ServerConfig &sc);
+	//HTTP_ResponseBuilder(const HTTP_ResponseBuilder &other);
+	//HTTP_ResponseBuilder &operator=(const HTTP_ResponseBuilder &other);
+	~HTTP_ResponseBuilder();
+
+	void build(HTTP_Response &response, HTTP_Request &request);
+	void reset();
 
 private:
-	static void build_response_for_GET_or_HEAD(
-		HTTP_Response &response,
-		HTTP_Request &request,
-		const ServerConfig &sc);
+	ServerConfig _serverConfig;
+	LocationConfig _location;
+	std::string _pathOnServer;
+	PathType _pathType;
 
-	static void build_response_for_POST(
-		HTTP_Response &response,
-		HTTP_Request &request,
-		const ServerConfig &sc);
+	HTTP_ResponseBuilder(const HTTP_ResponseBuilder &other);
+	HTTP_ResponseBuilder &operator=(const HTTP_ResponseBuilder &other);
 
-	static void build_response_for_DELETE(
-		HTTP_Response &response,
-		HTTP_Request &request,
-		const ServerConfig &sc);
+	void build_response_for_GET_or_HEAD(HTTP_Response &response, HTTP_Request &request);
+	void build_response_for_POST(HTTP_Response &response, HTTP_Request &request);
+	void build_response_for_DELETE(HTTP_Response &response, HTTP_Request &request);
+	void build_response_by_CGI(HTTP_Response &response, HTTP_Request &request);
 
-	static bool locationHasMethod(LocationConfig &loc, std::string method);
+	bool locationHasMethod(std::string method);
+	const LocationConfig &locationGetBestMatch(const HTTP_Request &request);
+	std::string translateUriToPath(const HTTP_Request &request, bool asAlias);
 
-	static const LocationConfig &locationGetBestMatch(
-		const ServerConfig &serverConfig, const HTTP_Request &request);
+	void setResponse(HTTP_Response &response, const HTTP_StatusPair &status);
 
-	static std::string translateUriToPath(
-		const HTTP_Request &request,
-		const LocationConfig &location,
-		const ServerConfig &sc,
-		bool asAlias);
-
-	static void setResponse(
-		HTTP_Response &response,
-		const HTTP_StatusPair &status,
-		const ServerConfig &sc);
-
-	static void setResponseRedirect(
-		HTTP_Response &response,
-		const int statusCode,
-		const std::string &url);
+	void setResponseRedirect(HTTP_Response &response, const int statusCode, const std::string &url);
 };
 
 #endif // HTTP_RESPONSEBUILDER_HPP
