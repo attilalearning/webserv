@@ -6,7 +6,7 @@
 /*   By: aistok <aistok@student.42london.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/16 16:34:38 by aistok            #+#    #+#             */
-/*   Updated: 2026/04/24 10:57:51 by aistok           ###   ########.fr       */
+/*   Updated: 2026/04/24 13:03:02 by aistok           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -92,7 +92,7 @@ bool HTTP_Response::isCGIGenerated()
 void HTTP_Response::reset()
 {
 	_status = HTTP_Status::UNSET;
-	_version = "";
+	_version = HTTP_Version::v1_1;
 
 	_headers.clear();
 
@@ -109,7 +109,7 @@ void HTTP_Response::_addServerNameHeader()
 
 void HTTP_Response::_addDegubHeaders()
 {
-	//return;
+	return; // enable/disable the below - debugging!
 	_headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0";
 	_headers["Pragma"] = "no-cache";
 	_headers["Expires"] = "0";
