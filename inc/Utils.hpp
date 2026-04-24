@@ -6,39 +6,40 @@
 /*   By: aistok <aistok@student.42london.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/26 23:56:58 by mosokina          #+#    #+#             */
-/*   Updated: 2026/04/04 18:25:11 by aistok           ###   ########.fr       */
+/*   Updated: 2026/04/23 20:58:27 by aistok           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef UTILS_HPP
 #define UTILS_HPP
 
+#include <fcntl.h>
+#include <dirent.h>
+#include <sys/stat.h> // used for stat
+#include <unistd.h>   // used for stat, getuid(), getgid()
+#include <cctype>
+#include <ctime>
 #include <fstream>
 #include <sstream>
 #include <string>
 #include <vector>
-
-#include <sys/stat.h> // used for stat
-#include <unistd.h> // used for stat
-
-#include <sys/stat.h> // used for stat
-#include <unistd.h> // used for stat
+#include <algorithm>
 
 template <typename T>
 std::string toString(const T &value)
 {
-	std::ostringstream oss;
-	oss << value;
-	return oss.str();
+    std::ostringstream oss;
+    oss << value;
+    return oss.str();
 }
 
 template <typename T>
 bool toNumber(const std::string &str, T &out)
 {
-	std::istringstream iss(str);
-	iss >> out;
+    std::istringstream iss(str);
+    iss >> out;
 
-	return !iss.fail() && iss.eof();
+    return !iss.fail() && iss.eof();
 }
 
 bool setNonBlocking(int fd);
@@ -48,11 +49,25 @@ std::string &capitaliseFirstLetter(std::string &str);
 std::string &trimString(std::string &str, std::string stripChars);
 bool replace(std::string &str, const std::string &from, const std::string &to);
 
-enum PathType {
+enum PathType
+{
     PATH_NONE,
     PATH_FILE,
     PATH_DIRECTORY
 };
+
+// file system item
+typedef struct fsItem
+{
+    //	std::string path;
+    std::string name;
+    size_t size;
+    bool isDir;
+    bool isReadable;
+    //	bool isWritable;
+
+    fsItem() : size(0), isDir(false), isReadable(false) {}
+} fsItem;
 
 bool removePortion(std::string &line, std::string portion);
 bool numberIsPositive(std::string value);
@@ -61,44 +76,45 @@ PathType getPathType(const std::string &pathStr);
 
 class Utils
 {
-    public:
-        /*String Manipulations*/
-        static std::string trim(const std::string& str);
-        static std::string toLowerCase(const std::string& str);
-        static std::string toUpperCase(const std::string& str);
-        static std::vector<std::string> split(const std::string& str, char delimiter);
-        static std::vector<std::string> split(const std::string& str, const std::string& delimiter);
-        static bool startsWith(const std::string& str, const std::string& prefix);
-        static bool endsWith(const std::string& str, const std::string& suffix);
-        static std::string replaceAll(const std::string &src,
-                                      const std::string &from,
-                                      const std::string &to);
+public:
+    /*String Manipulations*/
+    static std::string trim(const std::string &str);
+    static std::string toLowerCase(const std::string &str);
+    static std::string toUpperCase(const std::string &str);
+    static std::vector<std::string> split(const std::string &str, char delimiter);
+    static std::vector<std::string> split(const std::string &str, const std::string &delimiter);
+    static bool startsWith(const std::string &str, const std::string &prefix);
+    static bool endsWith(const std::string &str, const std::string &suffix);
+    static std::string replaceAll(const std::string &src,
+                                  const std::string &from,
+                                  const std::string &to);
 
-        /*File operations*/
-        static bool fileExists(const std::string& path);
-        static std::string readFile(const std::string& path);
-        static bool writeFile(const std::string& path, const std::string& content);
-        static bool deleteFile(const std::string& path);
-        static std::string getFileContent(const std::string& filename);
-        static std::vector<std::string> getDirectoryList(const std::string& path);
+    /*File operations*/
+    static bool fileExists(const std::string &path);
+    static std::string readFile(const std::string &path);
+    static bool writeFile(const std::string &path, const std::string &content);
+    static bool deleteFile(const std::string &path);
+    static std::string getFileContent(const std::string &filename);
+    static std::vector<fsItem> getDirectoryList(const std::string &path);
+    static bool isReadable(const std::string &pathOnServer);
 
-        /*Path operations*/
+    /*Path operations*/
 
-        /*MIME types*/
+    /*MIME types*/
 
-        /*URL operations*/
+    /*URL operations*/
 
-        /*Number conversions*/
-        static int toInt(const std::string& str);
-        static size_t toSizeT(const std::string& str);
+    /*Number conversions*/
+    static int toInt(const std::string &str);
+    static size_t toSizeT(const std::string &str);
 
-        /*Time*/
+    /*Time*/
 
-    private:
-        Utils();
-        ~Utils();
-        Utils(const Utils&);
-        Utils& operator=(const Utils&);
+private:
+    Utils();
+    ~Utils();
+    Utils(const Utils &);
+    Utils &operator=(const Utils &);
 };
 
 #endif
