@@ -6,7 +6,7 @@
 /*   By: aistok <aistok@student.42london.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/16 16:34:38 by aistok            #+#    #+#             */
-/*   Updated: 2026/04/09 14:38:37 by aistok           ###   ########.fr       */
+/*   Updated: 2026/04/24 10:57:51 by aistok           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,18 +17,21 @@ HTTP_Response::HTTP_Response()
 	: _status(HTTP_Status::UNSET), _version(HTTP_Version::v1_1), _isHEADresponse(false), _bodyLen(0), _body("")
 {
 	_addServerNameHeader();
+	_addDegubHeaders();
 }
 
 HTTP_Response::HTTP_Response(const HTTP_StatusPair &status)
 	: _status(status), _version(HTTP_Version::v1_1), _isHEADresponse(false), _bodyLen(0), _body("")
 {
 	_addServerNameHeader();
+	_addDegubHeaders();
 }
 
 HTTP_Response::HTTP_Response(const HTTP_StatusPair &status, std::string textContent)
 	: _status(status), _version(HTTP_Version::v1_1), _isHEADresponse(false), _bodyLen(0)/*, _body("")*/
 {
 	_addServerNameHeader();
+	_addDegubHeaders();
 	setContent(textContent);
 }
 
@@ -76,9 +79,40 @@ bool HTTP_Response::isHeadersOnly()
 	return (_isHEADresponse);
 }
 
+void HTTP_Response::setCGIGenerated(const bool value)
+{
+	_isCGIGenerated = value;
+}
+
+bool HTTP_Response::isCGIGenerated()
+{
+	return (_isCGIGenerated);
+}
+
+void HTTP_Response::reset()
+{
+	_status = HTTP_Status::UNSET;
+	_version = "";
+
+	_headers.clear();
+
+	_isHEADresponse = false;
+	_isCGIGenerated = false;
+	_bodyLen = 0;
+	_body = "";
+}
+
 void HTTP_Response::_addServerNameHeader()
 {
 	_headers[HTTP_FieldName::SERVER_NAME] = WEBSERV_NAME;
+}
+
+void HTTP_Response::_addDegubHeaders()
+{
+	//return;
+	_headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0";
+	_headers["Pragma"] = "no-cache";
+	_headers["Expires"] = "0";
 }
 
 // figure out, what functions are needed to be able to add

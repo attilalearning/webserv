@@ -6,7 +6,7 @@
 /*   By: aistok <aistok@student.42london.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/16 16:34:38 by aistok            #+#    #+#             */
-/*   Updated: 2026/04/09 14:38:22 by aistok           ###   ########.fr       */
+/*   Updated: 2026/04/23 11:32:27 by aistok           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,8 +38,13 @@ public:
 	std::string serialize();
 	void setContent(const std::string &text);
 	size_t getBodyLen() const; // TO-DO: temporary only, to compile the project
+	
 	void setHeadersOnly(const bool value);
 	bool isHeadersOnly();
+	
+	void setCGIGenerated(const bool value);
+	bool isCGIGenerated();
+	void reset();
 
 	// figure out, what functions are needed to be able to add
 	// a body into the response, encode it if needed and
@@ -60,10 +65,12 @@ private:
 	std::map<std::string, std::string> _headers;
 
 	bool _isHEADresponse;
+	bool _isCGIGenerated;
 	size_t _bodyLen;
 	std::string _body;
 
 	void _addServerNameHeader();
+	void _addDegubHeaders();
 };
 
 #endif // HTTP_RESPONSE_HPP
