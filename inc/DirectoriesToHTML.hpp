@@ -6,7 +6,7 @@
 /*   By: aistok <aistok@student.42london.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/25 08:52:13 by aistok            #+#    #+#             */
-/*   Updated: 2026/03/25 09:13:16 by aistok           ###   ########.fr       */
+/*   Updated: 2026/04/23 09:07:34 by aistok           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,7 +23,7 @@ public:
 	DirectoriesToHTML();
 	~DirectoriesToHTML();
 
-	static std::string generate(const std::vector<std::string> &dirList,
+	static std::string generate(const std::vector<fsItem> &itemsList,
 								const std::string &requestURL);
 
 private:
