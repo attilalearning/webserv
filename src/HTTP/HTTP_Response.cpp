@@ -6,29 +6,42 @@
 /*   By: aistok <aistok@student.42london.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/16 16:34:38 by aistok            #+#    #+#             */
-/*   Updated: 2026/04/24 13:03:02 by aistok           ###   ########.fr       */
+/*   Updated: 2026/04/25 05:02:18 by aistok           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "HTTP/HTTP_Response.hpp"
 #include <sstream>
 
-HTTP_Response::HTTP_Response()
-	: _status(HTTP_Status::UNSET), _version(HTTP_Version::v1_1), _isHEADresponse(false), _bodyLen(0), _body("")
+HTTP_Response::HTTP_Response() : _status(HTTP_Status::UNSET),
+								 _version(HTTP_Version::v1_1),
+								 _isHEADresponse(false),
+								 _isCGIGenerated(false),
+								 _bodyLen(0),
+								 _body("")
 {
 	_addServerNameHeader();
 	_addDegubHeaders();
 }
 
-HTTP_Response::HTTP_Response(const HTTP_StatusPair &status)
-	: _status(status), _version(HTTP_Version::v1_1), _isHEADresponse(false), _bodyLen(0), _body("")
+HTTP_Response::HTTP_Response(const HTTP_StatusPair &status) : _status(status),
+															  _version(HTTP_Version::v1_1),
+															  _isHEADresponse(false),
+															  _isCGIGenerated(false),
+															  _bodyLen(0),
+															  _body("")
 {
 	_addServerNameHeader();
 	_addDegubHeaders();
 }
 
-HTTP_Response::HTTP_Response(const HTTP_StatusPair &status, std::string textContent)
-	: _status(status), _version(HTTP_Version::v1_1), _isHEADresponse(false), _bodyLen(0)/*, _body("")*/
+HTTP_Response::HTTP_Response(
+	const HTTP_StatusPair &status, std::string textContent) : _status(status),
+															  _version(HTTP_Version::v1_1),
+															  _isHEADresponse(false),
+															  _isCGIGenerated(false),
+															  _bodyLen(0) /*,
+															  _body("")*/
 {
 	_addServerNameHeader();
 	_addDegubHeaders();
@@ -48,8 +61,8 @@ void HTTP_Response::setStatus(const HTTP_StatusPair &status)
 
 std::string HTTP_Response::serialize()
 {
-	
-	std::ostringstream oss(std::ios::binary); //MO: changes
+
+	std::ostringstream oss(std::ios::binary); // MO: changes
 	// std::ostringstream oss;
 	oss << *this;
 	return (oss.str());
