@@ -3,3 +3,4 @@ bin
 obj
 webserve
 
+tests/request_routing/output_*
