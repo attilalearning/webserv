@@ -1,0 +1,136 @@
+#!/bin/bash
+
+SERVER_BINARY="../../bin/webserv"
+TEST_BASE_DIR="./resources"
+SERVER_CONFIG_FILE="./resources/test_DELETE_requests/test.conf"
+
+create_next_dir() {
+	# Create empty array
+	local dirs=()
+
+	# Find all directories and sort then, add them to the array
+	while IFS= read -r entry; do
+		dirs+=("$entry")
+	done < <(find . -maxdepth 1 -type d -name 'output_*' | sort -V)
+
+	local last_dir="output_00"
+	if [ ! ${#dirs[@]} -eq 0 ]; then
+		# Get the last directory in sorted order
+		last_dir="${dirs[-1]}"
+	fi
+
+	local num=0
+
+	# Extract the number from the last directory
+	if [[ "$last_dir" =~ output_([0-9]+)$ ]]; then
+		num="${BASH_REMATCH[1]}"
+	fi
+
+	# Increment the number
+	local next_num=$((10#$num + 1))
+
+	# Create new directory with the incremented number
+	new_dir="output_$next_num"
+	mkdir "$new_dir"
+	echo "$new_dir"
+}
+
+is_process_running() {
+	if [ -z "$1" ]; then
+		return 1 # process is definitely not running
+	fi
+
+	if kill -0 "$1" 2>/dev/null; then
+		return 0 # set to success, yes, the process is running
+	else
+		return 1 # process is not running
+	fi
+}
+
+TEST_OUTPUT_DIR=$(create_next_dir)
+
+if [ ! -f $SERVER_BINARY ]; then
+	echo "ERROR: $SERVER_BINARY not found!"
+	exit 1
+fi
+
+export SERVER_BINARY
+export SERVER_CONFIG_FILE
+
+if [ "a" != "a" ]; then
+	echo "Starting the server..."
+	(
+		$SERVER_BINARY "$SERVER_CONFIG_FILE" >"${TEST_OUTPUT_DIR}/server_log" 2>&1
+	) &
+	SERVER_PID=$!
+
+	#echo "Server pid is $SERVER_PID"
+
+	sleep 1
+
+	if is_process_running "$SERVER_PID"; then
+		#echo "STOPPING the server!"
+		#kill -SIGINT "$SERVER_PID"
+		echo "OK: Server is now running (pid = $SERVER_PID)"
+	else
+		echo "ERROR: failed to start server, see ${TEST_OUTPUT_DIR}/server_log for details"
+		exit 1
+	fi
+fi
+
+# next steps! ...
+
+send_req_files_and_log_responses() {
+	local base_path="$1"
+	local base_len="${#base_path}"
+	local log_dir_base_path="$2"
+
+	echo "Base dir is $base_path"
+
+	while read -r dir; do
+		# Remove the base path prefix
+		rel_dir="${dir#$base_path/}"
+		log_dir="$log_dir_base_path/$rel_dir"
+
+		txt_files=("$dir"/*.req)
+		if [ -e "${txt_files[0]}" ]; then
+			echo "RELATIVE dir is $rel_dir"
+			echo "Sending requests from $rel_dir/"
+
+			mkdir -p "$log_dir"
+		fi
+
+		# List files in this directory
+		while read -r file; do
+			request_filename="$(basename "$file")"
+			response_filename="${request_filename%.*}.res"
+			echo "  Sending request   : $request_filename"
+			echo "  Stored response to: $log_dir/$response_filename"
+			touch "$log_dir/$response_filename"
+		done < <(find "$dir" -maxdepth 1 -type f -name "*.req")
+	done < <(find "$base_path" -type d)
+}
+
+TEST_GROUPS=()
+while IFS= read -r entry; do
+	TEST_GROUPS+=("$entry")
+done < <(find $TEST_BASE_DIR -maxdepth 1 -type d -name 'test_*_requests' | sort -V)
+
+for test_group in "${TEST_GROUPS[@]}"; do
+	echo
+	echo "Running tests from $test_group"
+	echo
+
+	requests_dir="$test_group/requests"
+	send_req_files_and_log_responses "$requests_dir" "${TEST_OUTPUT_DIR}/responses"
+
+	#./bin/cat_request "$test_group/requests/HTTP/1.1/"
+done
+
+if is_process_running "$SERVER_PID"; then
+	echo "STOPPING the server!"
+	kill -SIGINT "$SERVER_PID"
+else
+	echo "ERROR: server must have died, see ${TEST_OUTPUT_DIR}/server_log for details"
+	exit 1
+fi
