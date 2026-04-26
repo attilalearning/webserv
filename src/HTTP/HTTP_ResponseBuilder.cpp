@@ -6,7 +6,7 @@
 /*   By: aistok <aistok@student.42london.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/20 10:48:39 by aistok            #+#    #+#             */
-/*   Updated: 2026/04/24 10:38:07 by aistok           ###   ########.fr       */
+/*   Updated: 2026/04/25 22:32:40 by aistok           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -70,9 +70,7 @@ void HTTP_ResponseBuilder::build(HTTP_Response &response, HTTP_Request &request)
 	// the extensions in location.cgi_extensions
 	// if not, then the response won't need CGI
 	if (_location.cgi_extensions.size() > 0 /*...*/)
-	{
 		response.setCGIGenerated(true);
-	}
 
 	try
 	{
@@ -165,6 +163,7 @@ void HTTP_ResponseBuilder::build_response_for_GET_or_HEAD(HTTP_Response &respons
 				response,
 				HTTP_Status::MOVED_PERMANENTLY.code,
 				directoryURL + "/");
+			std::cout << "[DEBUG] +++ URL normalization" << std::endl;
 			return;
 		}
 
@@ -243,30 +242,20 @@ void HTTP_ResponseBuilder::build_response_for_DELETE(
 	HTTP_Response &response,
 	HTTP_Request &request)
 {
-	(void)request;
 	setResponse(response, HTTP_Status::NOT_IMPLEMENTED);
+	return;
+	(void)request;
+	if (std::remove(_pathOnServer.c_str()) == 0)
+		setResponse(response, HTTP_Status::NO_CONTENT);
 
-	/*
-	try
-	{
-		location = locationGetBestMatch(sc, request);
-	}
-	catch (std::exception &e)
-	{
-		std::cout << "HTTP_ResponseBuilder::build_response_for_GET - location"
-				  << std::endl
-				  << e.what() << std::endl;
-
-		setResponse(response, HTTP_Status::NOT_FOUND, sc);
-		return;
-	}
-	*/
+	else
+		setResponse(response, HTTP_Status::INTERNAL_SERVER_ERROR);
 }
 
 void HTTP_ResponseBuilder::build_response_by_CGI(HTTP_Response &response, HTTP_Request &request)
 {
 	(void)request;
-	setResponse(response, HTTP_Status::OK);
+	response.setStatus(HTTP_Status::OK);
 	response.setContent("<h1>CGI Not yet implemented...</h1>");
 }
 
