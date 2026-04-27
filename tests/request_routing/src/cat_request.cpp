@@ -6,7 +6,7 @@
 /*   By: aistok <aistok@student.42london.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/04/26 06:40:19 by aistok            #+#    #+#             */
-/*   Updated: 2026/04/26 06:40:22 by aistok           ###   ########.fr       */
+/*   Updated: 2026/04/26 13:14:19 by aistok           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -68,13 +68,16 @@ void showUsage(const char *programName)
 	std::cout << "Display content of text files to standard output, converting" << std::endl;
 	std::cout << "\\n \\r \\t into actual new line, carriage return and tab characters." << std::endl;
 	std::cout << std::endl;
+	std::cout << "Any line starting with a # is considered a comment and will be discarded." << std::endl;
+	std::cout << std::endl;
 	std::cout << "NOTE: if the \\n happens to be followed by an unescaped new line," << std::endl;
 	std::cout << "the \\n will be ignored, like it never existed. This is to ease the" << std::endl;
 	std::cout << "readability of a HTTP request stored in plain a text file." << std::endl;
 	std::cout << std::endl;
 	std::cout << "Options:" << std::endl
 			<< "  -v, --visual               Will display the exact content of the text file," << std::endl
-			<< "                             with zero replacements." << std::endl;
+			<< "                             with zero replacements, except, discarding comment" << std::endl
+			<< "                             lines." << std::endl;
 	std::cout << std::endl;
 
 }

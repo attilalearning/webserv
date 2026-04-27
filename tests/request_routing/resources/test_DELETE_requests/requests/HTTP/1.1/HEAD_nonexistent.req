@@ -1,3 +1,0 @@
-HEAD /nonexistent HTTP/1.1\r\n
-HOST: localhost\r\n
-\r\n

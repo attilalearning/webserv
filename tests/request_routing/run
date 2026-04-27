@@ -82,7 +82,8 @@ if [ "a" == "a" ]; then
 	if is_process_running "$SERVER_PID"; then
 		#echo "STOPPING the server!"
 		#kill -SIGINT "$SERVER_PID"
-		echo "OK: Server is now running (pid = $SERVER_PID)"
+
+		echo "OK: Server is now running (pid = $SERVER_PID) and listening on $SERVER_HOST:$SERVER_PORT"
 	else
 		echo "ERROR: failed to start server, see ${TEST_OUTPUT_DIR}/server_log for details"
 		exit 1
@@ -91,14 +92,19 @@ fi
 
 # next steps! ...
 
+extract_header_line() {
+	local file="$1"
+	local header_line=$(cat $file | grep -v "#" | head -1 | sed 's/\\r\\n$//')
+	echo "$header_line"
+}
+
 send_req_files_and_log_responses() {
 	local cat_request="$1"
 	local base_path="$2"
 	local base_len="${#base_path}"
 	local log_dir_base_path="$3"
 
-	echo "Server is running on $SERVER_HOST:$SERVER_PORT"
-	echo "Base dir is $base_path"
+	#echo "Base dir is $base_path"
 
 	while read -r dir; do
 		# Remove the base path prefix
@@ -107,8 +113,8 @@ send_req_files_and_log_responses() {
 
 		txt_files=("$dir"/*.req)
 		if [ -e "${txt_files[0]}" ]; then
-			echo "RELATIVE dir is $rel_dir"
-			echo "Sending requests from $rel_dir/"
+			#echo "  RELATIVE dir is $rel_dir"
+			#echo "  Sending requests from $rel_dir/"
 
 			mkdir -p "$log_dir"
 		fi
@@ -117,9 +123,9 @@ send_req_files_and_log_responses() {
 		while read -r request_file_with_path; do
 			request_filename="$(basename "$request_file_with_path")"
 			response_filename="${request_filename%.*}.res"
-			echo "  Sending request   : $request_filename"
-			echo "                      $request_file_with_path"
-			echo "                      $log_dir/$response_filename"
+			local request_header=$(extract_header_line "$request_file_with_path")
+			echo "    Sending request : $request_header  from $request_filename"
+			echo "                      "
 
 			#echo "  Stored response to: $log_dir/$response_filename"
 			#touch "$log_dir/$response_filename"
@@ -140,7 +146,6 @@ for test_group in "${TEST_GROUPS[@]}"; do
 
 	requests_dir="$test_group/requests"
 	send_req_files_and_log_responses "$CAT_REQUEST_BINARY" "$requests_dir" "${TEST_OUTPUT_DIR}/responses"
-	#./bin/cat_request "$test_group/requests/HTTP/1.1/"
 done
 
 if is_process_running "$SERVER_PID"; then

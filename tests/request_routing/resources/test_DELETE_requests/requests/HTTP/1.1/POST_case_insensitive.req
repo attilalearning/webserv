@@ -1,5 +1,0 @@
-POST / HTTP/1.1\r\n
-HOST: localhost\r\n
-CONTENT-LENGTH: 9\r\n
-\r\n
-msg=Hello
