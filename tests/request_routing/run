@@ -18,7 +18,7 @@ create_next_output_dir() {
 		dirs+=("$entry")
 	done < <(find . -maxdepth 1 -type d -name 'output_*' | sort -V)
 
-	local last_dir="output_00"
+	local last_dir="output_0"
 	if [ ! ${#dirs[@]} -eq 0 ]; then
 		# Get the last directory in sorted order
 		last_dir="${dirs[-1]}"
@@ -59,23 +59,30 @@ if [ ! -f $SERVER_BINARY ]; then
 	exit 1
 fi
 
-export SERVER_BINARY
-export SERVER_CONFIG_FILE
+# Requires 3 arguments: server_binary, server_config_file, test_output_dir
+# Sets 3 global variables: SERVER_PID, SERVER_HOST, SERVER_PORT for later use
+start_web_server() {
+	local server_binary="$1"
+	local server_config_file="$2"
+	local test_output_dir="$3"
 
-if [ "a" == "a" ]; then
+	export server_binary
+	export server_config_file
+	export test_output_dir
+
 	echo "Starting the server..."
 	(
-		$SERVER_BINARY "$SERVER_CONFIG_FILE" >"${TEST_OUTPUT_DIR}/server_log" 2>&1
+		$server_binary "$server_config_file" >"${test_output_dir}/server_log" 2>&1
 	) &
 	SERVER_PID=$!
 
 	#echo "Server pid is $SERVER_PID"
 
-	sleep 1
+	sleep 0.25
 
 	# get running server host and port from the logs for later use
 	# make the below local !
-	server_addr=$(cat "$TEST_OUTPUT_DIR/server_log" | head -1 | awk '{print $4}')
+	local server_addr=$(cat "$test_output_dir/server_log" | head -1 | awk '{print $4}')
 	SERVER_HOST=${server_addr%:*}
 	SERVER_PORT=${server_addr##*:}
 
@@ -84,13 +91,26 @@ if [ "a" == "a" ]; then
 		#kill -SIGINT "$SERVER_PID"
 
 		echo "OK: Server is now running (pid = $SERVER_PID) and listening on $SERVER_HOST:$SERVER_PORT"
+		return 0
 	else
-		echo "ERROR: failed to start server, see ${TEST_OUTPUT_DIR}/server_log for details"
-		exit 1
+		echo "ERROR: failed to start server, see ${test_output_dir}/server_log for details"
+		return 1
 	fi
-fi
+}
 
-# next steps! ...
+stop_web_server() {
+	local server_pid="$1"
+	local test_output_dir="$2"
+
+	if is_process_running "$server_pid"; then
+		echo "STOPPING the server!"
+		kill -SIGINT "$server_pid"
+		return 0
+	else
+		echo "ERROR: server must have died, see ${test_output_dir}/server_log for details"
+		return 1
+	fi
+}
 
 extract_header_line() {
 	local file="$1"
@@ -98,7 +118,7 @@ extract_header_line() {
 	echo "$header_line"
 }
 
-send_req_files_and_log_responses() {
+send_req_files_log_responses_compare() {
 	local cat_request="$1"
 	local base_path="$2"
 	local base_len="${#base_path}"
@@ -117,20 +137,20 @@ send_req_files_and_log_responses() {
 			#echo "  Sending requests from $rel_dir/"
 
 			mkdir -p "$log_dir"
+
+			# List files in this directory
+			while read -r request_file_with_path; do
+				request_filename="$(basename "$request_file_with_path")"
+				response_filename="${request_filename%.*}.res"
+				local request_header=$(extract_header_line "$request_file_with_path")
+				echo "    Sending request : $request_header  from $request_filename"
+				echo "                      "
+
+				#echo "  Stored response to: $log_dir/$response_filename"
+				#touch "$log_dir/$response_filename"
+				$CAT_REQUEST_BINARY "$request_file_with_path" | netcat -N "$SERVER_HOST" "$SERVER_PORT" >"$log_dir/$response_filename"
+			done < <(find "$dir" -maxdepth 1 -type f -name "*.req")
 		fi
-
-		# List files in this directory
-		while read -r request_file_with_path; do
-			request_filename="$(basename "$request_file_with_path")"
-			response_filename="${request_filename%.*}.res"
-			local request_header=$(extract_header_line "$request_file_with_path")
-			echo "    Sending request : $request_header  from $request_filename"
-			echo "                      "
-
-			#echo "  Stored response to: $log_dir/$response_filename"
-			#touch "$log_dir/$response_filename"
-			$CAT_REQUEST_BINARY "$request_file_with_path" | netcat -N "$SERVER_HOST" "$SERVER_PORT" >"$log_dir/$response_filename"
-		done < <(find "$dir" -maxdepth 1 -type f -name "*.req")
 	done < <(find "$base_path" -type d)
 }
 
@@ -140,18 +160,54 @@ while IFS= read -r entry; do
 done < <(find $TEST_BASE_DIR -maxdepth 1 -type d -name 'test_*_requests' | sort -V)
 
 for test_group in "${TEST_GROUPS[@]}"; do
+	www_data_archive="$test_group/archived_www.tar.gz"
+
+	if [ ! -f "$www_data_archive" ]; then
+		echo "ERROR: could not find file $www_data_archive"
+		break
+	fi
+
+	www_data_permissions_file="$test_group/permissions_data"
+
+	if [ ! -f "$www_data_permissions_file" ]; then
+		echo "ERROR: could not find file $www_data_permissions_file"
+		break
+	fi
+
+	www_data_dir="$test_group/www"
+
+	echo
+	echo "Entering $test_group"
+	echo
+
+	if [ -d "$www_data_dir" ]; then
+		./set_permissions.sh "$www_data_dir" 744
+		rm -r "$www_data_dir"
+	fi
+
+	tar -xzf "$www_data_archive" -C "$test_group"
+	if [ ! -d "$www_data_dir" ]; then
+		echo "ERROR: could not find $www_data_dir after extracting from archive!"
+		break
+	fi
+
+	./set_permissions.sh "$www_data_dir"
+	echo "Test data ready in $www_data_dir"
+
+	if ! start_web_server "$SERVER_BINARY" "$test_group/test.conf" "$TEST_OUTPUT_DIR"; then
+		echo "Halting tests..."
+		exit 1
+	fi
+
 	echo
 	echo "Running tests from $test_group"
 	echo
 
 	requests_dir="$test_group/requests"
-	send_req_files_and_log_responses "$CAT_REQUEST_BINARY" "$requests_dir" "${TEST_OUTPUT_DIR}/responses"
-done
+	send_req_files_log_responses_compare "$CAT_REQUEST_BINARY" "$requests_dir" "${TEST_OUTPUT_DIR}/responses"
 
-if is_process_running "$SERVER_PID"; then
-	echo "STOPPING the server!"
-	kill -SIGINT "$SERVER_PID"
-else
-	echo "ERROR: server must have died, see ${TEST_OUTPUT_DIR}/server_log for details"
-	exit 1
-fi
+	if ! stop_web_server "$SERVER_PID" "$TEST_OUTPUT_DIR"; then
+		echo "ERROR: stop_web_server resulted in error!"
+		exit 1
+	fi
+done
