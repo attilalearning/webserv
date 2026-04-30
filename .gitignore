@@ -4,3 +4,4 @@ obj
 webserve
 
 tests/request_routing/output_*
+tests/request_routing/**/www/**
