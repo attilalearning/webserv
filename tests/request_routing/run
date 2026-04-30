@@ -76,20 +76,14 @@ start_web_server() {
 	) &
 	SERVER_PID=$!
 
-	#echo "Server pid is $SERVER_PID"
-
 	sleep 0.25
 
 	# get running server host and port from the logs for later use
-	# make the below local !
 	local server_addr=$(cat "$test_output_dir/server_log" | head -1 | awk '{print $4}')
 	SERVER_HOST=${server_addr%:*}
 	SERVER_PORT=${server_addr##*:}
 
 	if is_process_running "$SERVER_PID"; then
-		#echo "STOPPING the server!"
-		#kill -SIGINT "$SERVER_PID"
-
 		echo "OK: Server is now running (pid = $SERVER_PID) and listening on $SERVER_HOST:$SERVER_PORT"
 		return 0
 	else
