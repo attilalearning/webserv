@@ -6,7 +6,7 @@
 /*   By: aistok <aistok@student.42london.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/20 10:48:39 by aistok            #+#    #+#             */
-/*   Updated: 2026/04/25 22:32:40 by aistok           ###   ########.fr       */
+/*   Updated: 2026/04/30 22:48:13 by aistok           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -88,6 +88,7 @@ void HTTP_ResponseBuilder::build(HTTP_Response &response, HTTP_Request &request)
 
 	if (_pathType == PATH_NONE && !response.isCGIGenerated())
 	{
+		std::cout << "[DEBUG] !!! NOT FOUND -> " << _pathOnServer << std::endl;
 		setResponse(response, HTTP_Status::NOT_FOUND);
 		return;
 	}
