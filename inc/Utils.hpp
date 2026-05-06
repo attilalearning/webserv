@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Utils.hpp                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: aistok <aistok@student.42london.com>       +#+  +:+       +#+        */
+/*   By: mosokina <mosokina@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/26 23:56:58 by mosokina          #+#    #+#             */
-/*   Updated: 2026/04/23 20:58:27 by aistok           ###   ########.fr       */
+/*   Updated: 2026/05/06 12:24:09 by mosokina         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -99,16 +99,27 @@ public:
     static bool isReadable(const std::string &pathOnServer);
 
     /*Path operations*/
+    static std::string joinPath(const std::string& base, const std::string& relative);
+    static std::string normalizePath(const std::string& path);
+    static std::string getExtension(const std::string& path);
+    static std::string getFileName(const std::string& path);
+    static std::string getDirectory(const std::string& path);
 
     /*MIME types*/
+    static std::string getMimeType(const std::string& extension);
 
     /*URL operations*/
+    static std::string urlDecode(const std::string& str);
+    static std::string urlEncode(const std::string& str);
 
     /*Number conversions*/
+    static std::string toString(int n);
+    static std::string toString(size_t n);
     static int toInt(const std::string &str);
     static size_t toSizeT(const std::string &str);
 
     /*Time*/
+    static std::string getHttpDate();
 
 private:
     Utils();

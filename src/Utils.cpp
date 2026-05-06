@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Utils.cpp                                          :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: aistok <aistok@student.42london.com>       +#+  +:+       +#+        */
+/*   By: mosokina <mosokina@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/25 11:32:29 by mosokina          #+#    #+#             */
-/*   Updated: 2026/04/23 20:59:42 by aistok           ###   ########.fr       */
+/*   Updated: 2026/05/06 12:24:07 by mosokina         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -331,3 +331,193 @@ bool Utils::isReadable(const std::string &pathOnServer)
 	else // checking others permissions
 		return (st.st_mode & S_IROTH) != 0;
 }
+
+
+std::string Utils::getExtension(const std::string& path) {
+    size_t dot = path.find_last_of('.');
+    if (dot == std::string::npos || dot == path.length() - 1) {
+        return "";
+    }
+    return (path.substr(dot));
+}
+
+
+
+/*Path operations*/
+std::string Utils::joinPath(const std::string& base, const std::string& relative) {
+    if (base.empty()) {
+        return (relative);
+    }
+
+    if (relative.empty()) {
+        return (base);
+    }
+
+    if (base[base.length() - 1] == '/') {
+        if (relative[0] == '/') {
+            return (base + relative.substr(1));
+        }
+        return (base + relative);
+    
+    } else {
+        if (relative[0] == '/') {
+            return (base + relative);
+        }
+        return (base + "/" + relative);
+    }
+}
+
+std::string Utils::normalizePath(const std::string& path) {
+    std::vector<std::string> parts = split(path, '/');
+    std::vector<std::string> result;
+
+
+    for (size_t i = 0; i < parts.size(); ++i) {
+        if (parts[i] == "..") {
+            if (!result.empty()) {
+                result.pop_back();
+            }
+        } else if (parts[i] != ".") {
+            result.push_back(parts[i]);
+        }
+    }
+
+    std::string normalized;
+    if (path[0] == '/') {
+        normalized = "/";
+    }
+    for (size_t i = 0; i < result.size(); ++i) {
+        if (i > 0) {
+            normalized += "/";
+        }
+        normalized += result[i];
+    }
+
+    return (normalized.empty() ? "/" : normalized);
+}
+
+std::string Utils::getExtension(const std::string& path) {
+    size_t dot = path.find_last_of('.');
+    if (dot == std::string::npos || dot == path.length() - 1) {
+        return "";
+    }
+    return (path.substr(dot));
+}
+
+std::string Utils::getFileName(const std::string& path) {
+    size_t slash = path.find_last_of('/');
+    if (slash == std::string::npos) {
+        return (path);
+    }
+    
+    return (path.substr(slash + 1));
+}
+
+std::string Utils::getDirectory(const std::string& path) {
+    size_t slash = path.find_last_of('/');
+    if(slash == std::string::npos) {
+        return (".");
+    }
+    if (slash == 0) {
+        return ("/");
+    }
+    
+    return (path.substr(0, slash)); 
+}
+
+/*Mime types*/
+std::string Utils::getMimeType(const std::string& extension) {
+    std::string ext = toLowerCase(extension);
+
+    if (ext == ".html" || ext == ".htm")
+        return ("text/html");
+    if (ext == ".css")
+        return ("text/css");
+    if (ext == ".js")
+        return ("application/javascript");
+    if (ext == ".json")
+        return ("application/json");
+    if (ext == ".xml")
+        return ("application/xml");
+    if (ext == ".jpg" || ext == ".jpeg")
+        return ("image/jpeg");
+    if (ext == ".png")
+        return ("image/png");
+    if (ext == ".gif")
+        return ("image/gif");
+    if (ext == ".svg")
+        return ("image/svg+xml");
+    if (ext == ".ico")
+        return ("image/x-ixon");
+    if (ext == ".pdf")
+        return ("application/pdf");
+    if (ext == ".txt")
+        return ("text/plain");
+    if (ext == ".zip")
+        return ("application/zip");
+    if (ext == ".tar")
+        return ("application/x-tar");
+    if (ext == ".gz")
+        return ("application/gzip");
+
+    return "application/octet-stream";
+}
+
+std::string Utils::urlDecode(const std::string& str) {
+    std::string res;
+
+    for (size_t i = 0; i < str.length(); ++i) {
+        if (str[i] == '%' && i + 2 < str.length()) {
+            int value;
+            std::stringstream ss;
+            ss << std::hex << str.substr(i + 1, 2);
+            ss >> value;
+            res += static_cast<char>(value);
+            i += 2;
+        } else if (str[i] == '+') {
+            res += ' ';
+        } else {
+            res += str[i];
+        }
+    }
+    return (res);
+}
+
+std::string Utils::urlEncode(const std::string& str) {
+    std::ostringstream oss;
+
+    for (size_t i = 0; i < str.length(); ++i) {
+        char c = str[i];
+        if (std::isalnum(c) || c == '-' || c == '_' || c == '.' || c == '~') {
+            oss << c;
+        } else {
+            oss << '%' << std::hex << (int)(unsigned char)c;
+        }
+    }
+    return (oss.str());
+}
+
+
+std::string Utils::toString(int n) {
+    std::ostringstream oss;
+    oss << n;
+    return (oss.str());
+}
+
+std::string Utils::toString(size_t n) {
+    std::ostringstream oss;
+    oss << n;
+    return (oss.str());
+}
+
+/*Time*/
+std::string Utils::getHttpDate() {
+    time_t now = time(NULL);
+    struct tm* gmt = gmtime(&now);
+
+    char buffer[100];
+    strftime(buffer, sizeof(buffer), "%a, %d %b %Y %H:%M:%S GMT", gmt);
+
+    return (std::string(buffer));
+}
+
