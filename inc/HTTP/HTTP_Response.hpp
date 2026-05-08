@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HTTP_Response.hpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: aistok <aistok@student.42london.com>       +#+  +:+       +#+        */
+/*   By: mosokina <mosokina@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/16 16:34:38 by aistok            #+#    #+#             */
-/*   Updated: 2026/04/23 11:32:27 by aistok           ###   ########.fr       */
+/*   Updated: 2026/05/07 14:05:47 by mosokina         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,6 +21,7 @@
 #include "HTTP_Method.hpp"
 #include "HTTP_FieldName.hpp"
 #include "Utils.hpp"
+#include "CGI.hpp"
 
 // TO-DO: orthodox canonical form!
 class HTTP_Response
@@ -45,6 +46,12 @@ public:
 	void setCGIGenerated(const bool value);
 	bool isCGIGenerated();
 	void reset();
+
+	void setCgiPath(const std::string &path);
+    std::string getCgiPath() const;
+
+    void setScriptPath(const std::string &path);
+    std::string getScriptPath() const;
 
 	// figure out, what functions are needed to be able to add
 	// a body into the response, encode it if needed and
@@ -71,6 +78,9 @@ private:
 
 	void _addServerNameHeader();
 	void _addDegubHeaders();
+
+	std::string _cgiPath;
+    std::string _scriptPath;
 };
 
 #endif // HTTP_RESPONSE_HPP

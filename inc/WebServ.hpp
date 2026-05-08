@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   WebServ.hpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: aistok <aistok@student.42london.com>       +#+  +:+       +#+        */
+/*   By: mosokina <mosokina@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/14 19:03:57 by aistok            #+#    #+#             */
-/*   Updated: 2026/04/07 20:51:42 by aistok           ###   ########.fr       */
+/*   Updated: 2026/05/06 14:52:26 by mosokina         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,6 +27,8 @@
 #include <csignal>
 #include <cerrno>
 #include <cstring>
+#include <sys/types.h>
+#include <ctime>
 
 #include "Config.hpp"
 #include "Listener.hpp"
@@ -44,6 +46,18 @@ extern volatile sig_atomic_t g_server_running;
  3. Efficiency: Avoids expensive "deep copies" of Listener objects
  during vector resizing.
  */
+
+
+//Structs to track CGIs
+struct CGIProcess {
+    pid_t   pid;
+    int     stdoutFd;
+    int     connFd;
+    std::string output;
+    time_t  startTime;
+
+    CGIProcess() : pid(-1), stdoutFd(-1), connFd(-1), startTime(0) {}
+};
 
 class WebServ
 {
@@ -72,15 +86,30 @@ private:
 	void _readRequest(size_t *index); // index -- if conn is closed 
 	void _sendResponse(size_t *index); //index -- if conn is closed
 
-	void _checkConnTimeouts(); 
+	void _checkConnTimeouts();
 
+	// --- CGI Handler Methods ---
+    bool _isCGISocket(int fd) const;
+    bool _executeCGI(int connFd, const std::string& cgiPath, const std::string& scriptPath);
+    void _handleCGIOutput(size_t *index);
+    void _checkCGITimeouts();
+    void _cleanupCGI(int cgiFd);
+    void _closeCGIPipe(size_t index);
+	void _terminateCGIProcess(int cgiFd); //MO: added
+    // ----------------------------------
+	
 	static const int CONNECTION_TIMEOUT = 60; //sec TO-DO change to 60 sec(most common default in ngenx) or parse from confif 
 	static const int POLL_TIMEOUT = 1000;	// Wait up to 1 sec for events
-	static const int BUFFER_SIZE = 4096;	
+	static const int CGI_TIMEOUT = 30;
+
+	static const int BUFFER_SIZE = 4096;
+	static const int CGI_BUFFER_SIZE = 8192;
 	std::vector<Listener *> _listeners;			// all server instances
 	std::vector<pollfd> _pollFds;			// poll array for the whole program
 	std::map<int, Listener *> _fdToListenerMap; // helps quickly find which server owns which FD
 	std::map<int, Connection *> _fdToConnMap;
+
+    std::map<int, CGIProcess> _cgiProcesses; //MO: change to fdToCGIProcesses???
 };
 
 #endif // WEBSERV_HPP

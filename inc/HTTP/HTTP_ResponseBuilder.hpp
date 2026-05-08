@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HTTP_ResponseBuilder.hpp                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: aistok <aistok@student.42london.com>       +#+  +:+       +#+        */
+/*   By: mosokina <mosokina@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/20 10:48:39 by aistok            #+#    #+#             */
-/*   Updated: 2026/04/24 10:34:05 by aistok           ###   ########.fr       */
+/*   Updated: 2026/05/06 00:44:03 by mosokina         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,6 +19,7 @@
 #include "HTTP/HTTP_Response.hpp"
 #include "ErrorPages.hpp"
 #include "DirectoriesToHTML.hpp"
+#include "CGI.hpp"
 
 /*
  *	TO-DO: orthodox canonical form

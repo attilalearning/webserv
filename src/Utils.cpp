@@ -6,11 +6,20 @@
 /*   By: mosokina <mosokina@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/25 11:32:29 by mosokina          #+#    #+#             */
-/*   Updated: 2026/05/06 12:24:07 by mosokina         ###   ########.fr       */
+/*   Updated: 2026/05/06 16:53:41 by mosokina         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "Utils.hpp"
+
+
+/* 
+ * FD_CLOEXEC: Prevents File Descriptor "leaks" across processes. 
+ * When a child process calls execve(), any FD with this flag is 
+ * automatically closed, ensuring CGI scripts don't accidentally 
+ * inherit open pipes or sockets belonging to other clients.
+ * the door shut on every single fd that doesn't explicitly belong to that specific child.
+ */
 
 bool setNonBlocking(int fd)
 {
@@ -23,10 +32,9 @@ bool setNonBlocking(int fd)
 	if (fcntl(fd, F_SETFL, flags | O_NONBLOCK) == -1)
 		return false;
 	// 2. Handle File Descriptor Flags (FD_CLOEXEC)
-	// Highly recommended for the CGI part of the project!
-	// int fd_flags = fcntl(fd, F_GETFD, 0);
-	// if (fd_flags != -1)
-	// 	fcntl(fd, F_SETFD, fd_flags | FD_CLOEXEC);
+	int fd_flags = fcntl(fd, F_GETFD, 0);
+	if (fd_flags != -1)
+		fcntl(fd, F_SETFD, fd_flags | FD_CLOEXEC);
 	return true;
 }
 
@@ -394,14 +402,6 @@ std::string Utils::normalizePath(const std::string& path) {
     }
 
     return (normalized.empty() ? "/" : normalized);
-}
-
-std::string Utils::getExtension(const std::string& path) {
-    size_t dot = path.find_last_of('.');
-    if (dot == std::string::npos || dot == path.length() - 1) {
-        return "";
-    }
-    return (path.substr(dot));
 }
 
 std::string Utils::getFileName(const std::string& path) {

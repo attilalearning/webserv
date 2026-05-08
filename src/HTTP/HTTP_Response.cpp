@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HTTP_Response.cpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: aistok <aistok@student.42london.com>       +#+  +:+       +#+        */
+/*   By: mosokina <mosokina@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/16 16:34:38 by aistok            #+#    #+#             */
-/*   Updated: 2026/04/25 05:02:18 by aistok           ###   ########.fr       */
+/*   Updated: 2026/05/07 14:05:43 by mosokina         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,7 +18,9 @@ HTTP_Response::HTTP_Response() : _status(HTTP_Status::UNSET),
 								 _isHEADresponse(false),
 								 _isCGIGenerated(false),
 								 _bodyLen(0),
-								 _body("")
+								 _body(""),
+								 _cgiPath(""),
+								 _scriptPath("")
 {
 	_addServerNameHeader();
 	_addDegubHeaders();
@@ -29,7 +31,9 @@ HTTP_Response::HTTP_Response(const HTTP_StatusPair &status) : _status(status),
 															  _isHEADresponse(false),
 															  _isCGIGenerated(false),
 															  _bodyLen(0),
-															  _body("")
+															  _body(""),
+															  _cgiPath(""),
+								 							  _scriptPath("")
 {
 	_addServerNameHeader();
 	_addDegubHeaders();
@@ -40,8 +44,11 @@ HTTP_Response::HTTP_Response(
 															  _version(HTTP_Version::v1_1),
 															  _isHEADresponse(false),
 															  _isCGIGenerated(false),
-															  _bodyLen(0) /*,
-															  _body("")*/
+															  _bodyLen(0),
+															  _cgiPath(""),
+								 							  _scriptPath("") 
+															  /*,
+															  _body("")*/ //MO:???
 {
 	_addServerNameHeader();
 	_addDegubHeaders();
@@ -113,6 +120,8 @@ void HTTP_Response::reset()
 	_isCGIGenerated = false;
 	_bodyLen = 0;
 	_body = "";
+	_cgiPath = "";
+	_scriptPath = "";
 }
 
 void HTTP_Response::_addServerNameHeader()
@@ -152,4 +161,20 @@ std::ostream &operator<<(std::ostream &os, const HTTP_Response &hResp)
 		os.write(hResp._body.c_str(), hResp._body.size());
 
 	return (os);
+}
+
+void HTTP_Response::setCgiPath(const std::string &path) {
+    _cgiPath = path;
+}
+
+std::string HTTP_Response::getCgiPath() const {
+    return _cgiPath;
+}
+
+void HTTP_Response::setScriptPath(const std::string &path) {
+    _scriptPath = path;
+}
+
+std::string HTTP_Response::getScriptPath() const {
+    return _scriptPath;
 }

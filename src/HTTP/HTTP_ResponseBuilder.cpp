@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HTTP_ResponseBuilder.cpp                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: aistok <aistok@student.42london.com>       +#+  +:+       +#+        */
+/*   By: mosokina <mosokina@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/20 10:48:39 by aistok            #+#    #+#             */
-/*   Updated: 2026/04/25 22:32:40 by aistok           ###   ########.fr       */
+/*   Updated: 2026/05/08 02:19:52 by mosokina         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -65,13 +65,6 @@ void HTTP_ResponseBuilder::build(HTTP_Response &response, HTTP_Request &request)
 		setResponse(response, HTTP_Status::FORBIDDEN);
 		return;
 	}
-
-	// to also check in the if, if the request.getURL() has any of
-	// the extensions in location.cgi_extensions
-	// if not, then the response won't need CGI
-	if (_location.cgi_extensions.size() > 0 /*...*/)
-		response.setCGIGenerated(true);
-
 	try
 	{
 		_pathOnServer = translateUriToPath(request, false);
@@ -86,15 +79,37 @@ void HTTP_ResponseBuilder::build(HTTP_Response &response, HTTP_Request &request)
 
 	_pathType = getPathType(_pathOnServer);
 
+	// 3. MO: NEW CGI Logic Integration
+	if (_pathType == PATH_FILE && (method == "GET" || method == "POST")) {
+// --- MOVE DEBUG HERE (Outside the if block) ---
+        std::string ext = Utils::getExtension(_pathOnServer);
+        std::cout << "[DEBUG] Checking CGI for Path: " << _pathOnServer << std::endl;
+        std::cout << "[DEBUG] Ext extracted: [" << ext << "]" << std::endl;
+        std::cout << "[DEBUG] Is ext in map? " << (CGI::forCGIResponse(_pathOnServer, _location.cgi_extensions) ? "YES" : "NO") << std::endl;
+
+		if (CGI::forCGIResponse(_pathOnServer, _location.cgi_extensions)) {
+			
+			// We get the executable path (e.g., /usr/bin/python3)
+			std::string cgi_path = CGI::getCGIPath(_pathOnServer, _location.cgi_extensions);
+			
+			// Flag the response as CGI
+			response.setCGIGenerated(true);
+			
+			// NOTE: add these two setters to  HTTP_Response class!
+			response.setCgiPath(cgi_path);
+			response.setScriptPath(_pathOnServer);
+		}
+	}
 	if (_pathType == PATH_NONE && !response.isCGIGenerated())
 	{
 		setResponse(response, HTTP_Status::NOT_FOUND);
 		return;
 	}
 
-	if (response.isCGIGenerated())
-		build_response_by_CGI(response, request);
-	
+	if (response.isCGIGenerated()){
+		build_response_by_CGI(response, request); //MO: not active, change to just return?
+		return ;
+	}
 	else if (method == HTTP_Method::GET || method == HTTP_Method::HEAD)
 		build_response_for_GET_or_HEAD(response, request);
 
@@ -255,40 +270,59 @@ void HTTP_ResponseBuilder::build_response_for_DELETE(
 void HTTP_ResponseBuilder::build_response_by_CGI(HTTP_Response &response, HTTP_Request &request)
 {
 	(void)request;
-	response.setStatus(HTTP_Status::OK);
-	response.setContent("<h1>CGI Not yet implemented...</h1>");
+	// response.setStatus(HTTP_Status::OK);
+	// response.setContent("<h1>CGI Not yet implemented...</h1>");
+	(void)response;
+	// Do NOTHING here. 
+	// The response body and headers will be populated later 
+	// by WebServ::_handleCGIOutput when the script finishes.
 }
 
 const LocationConfig &HTTP_ResponseBuilder::locationGetBestMatch(const HTTP_Request &hRequest)
 {
-	std::vector<LocationConfig>::const_iterator selectedLocation_it = _serverConfig.locations.end();
-	std::string reqURL = hRequest.getURL();
+    std::vector<LocationConfig>::const_iterator selectedLocation_it = _serverConfig.locations.end();
+    
+    // 1. Strip the query string so we only match against the actual path
+    std::string reqURL = hRequest.getURLWithoutParams(); 
 
-	// now, go through the locations and match the best one
-	std::vector<LocationConfig>::const_iterator loc_it = _serverConfig.locations.begin();
-	for (; loc_it != _serverConfig.locations.end(); ++loc_it)
-	{
-		std::vector<LocationConfig>::const_iterator location_it = loc_it;
-		std::string locPath = location_it->path;
+    std::vector<LocationConfig>::const_iterator loc_it = _serverConfig.locations.begin();
+    for (; loc_it != _serverConfig.locations.end(); ++loc_it)
+    {
+        std::string locPath = loc_it->path;
 
-		if (reqURL.find(locPath) == 0)
-		{
-			std::string overlap = locPath;
-			if (*overlap.rbegin() == '/' || overlap.length() == reqURL.length())
-			{
-				if (selectedLocation_it == _serverConfig.locations.end())
-					selectedLocation_it = loc_it;
-				else if (location_it->path.length() > selectedLocation_it->path.length())
-					selectedLocation_it = loc_it;
-			}
-		}
-	}
+        // 2. Check if the URL starts with the location path
+        if (reqURL.find(locPath) == 0)
+        {
+            bool isValidMatch = false;
+            
+            // 3. Prevent partial word matches (e.g., location "/app" matching URL "/apple")
+            if (locPath[locPath.length() - 1] == '/') {
+                isValidMatch = true; // Location ends in '/', so it's a directory match
+            } 
+            else if (reqURL.length() == locPath.length()) {
+                isValidMatch = true; // Exact match
+            } 
+            else if (reqURL[locPath.length()] == '/') {
+                isValidMatch = true; // Next character is '/', so it's a clean directory boundary
+            }
 
-	if (selectedLocation_it == _serverConfig.locations.end())
-		throw std::runtime_error("No suitable server/location found for " + reqURL);
+            // 4. If it's a valid match, check if it's the longest one we've seen
+            if (isValidMatch)
+            {
+                if (selectedLocation_it == _serverConfig.locations.end() || 
+                    locPath.length() > selectedLocation_it->path.length())
+                {
+                    selectedLocation_it = loc_it;
+                }
+            }
+        }
+    }
 
-	std::cout << "[DEBUG] Best location match is: " << selectedLocation_it->path << std::endl;
-	return (*selectedLocation_it);
+    if (selectedLocation_it == _serverConfig.locations.end())
+        throw std::runtime_error("No suitable server/location found for " + reqURL);
+
+    std::cout << "[DEBUG] Best location match is: " << selectedLocation_it->path << std::endl;
+    return (*selectedLocation_it);
 }
 
 // According to the PDF:
