@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HTTP_ResponseBuilder.hpp                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mosokina <mosokina@student.42.fr>          +#+  +:+       +#+        */
+/*   By: aistok <aistok@student.42london.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/20 10:48:39 by aistok            #+#    #+#             */
-/*   Updated: 2026/05/06 00:44:03 by mosokina         ###   ########.fr       */
+/*   Updated: 2026/05/10 15:00:23 by aistok           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,16 +21,11 @@
 #include "DirectoriesToHTML.hpp"
 #include "CGI.hpp"
 
-/*
- *	TO-DO: orthodox canonical form
- */
 class HTTP_ResponseBuilder
 {
 public:
 	HTTP_ResponseBuilder();
 	HTTP_ResponseBuilder(const ServerConfig &sc);
-	//HTTP_ResponseBuilder(const HTTP_ResponseBuilder &other);
-	//HTTP_ResponseBuilder &operator=(const HTTP_ResponseBuilder &other);
 	~HTTP_ResponseBuilder();
 
 	void build(HTTP_Response &response, HTTP_Request &request);
@@ -48,7 +43,6 @@ private:
 	void build_response_for_GET_or_HEAD(HTTP_Response &response, HTTP_Request &request);
 	void build_response_for_POST(HTTP_Response &response, HTTP_Request &request);
 	void build_response_for_DELETE(HTTP_Response &response, HTTP_Request &request);
-	void build_response_by_CGI(HTTP_Response &response, HTTP_Request &request);
 
 	bool locationHasMethod(std::string method);
 	const LocationConfig &locationGetBestMatch(const HTTP_Request &request);

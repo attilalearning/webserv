@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HTTP_ResponseBuilder.cpp                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mosokina <mosokina@student.42.fr>          +#+  +:+       +#+        */
+/*   By: aistok <aistok@student.42london.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/20 10:48:39 by aistok            #+#    #+#             */
-/*   Updated: 2026/05/08 02:19:52 by mosokina         ###   ########.fr       */
+/*   Updated: 2026/05/09 17:12:08 by aistok           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -106,10 +106,9 @@ void HTTP_ResponseBuilder::build(HTTP_Response &response, HTTP_Request &request)
 		return;
 	}
 
-	if (response.isCGIGenerated()){
-		build_response_by_CGI(response, request); //MO: not active, change to just return?
-		return ;
-	}
+	if (response.isCGIGenerated())
+		return;
+	
 	else if (method == HTTP_Method::GET || method == HTTP_Method::HEAD)
 		build_response_for_GET_or_HEAD(response, request);
 
@@ -136,6 +135,7 @@ void HTTP_ResponseBuilder::setResponseRedirect(HTTP_Response &response, const in
 {
 	response.setStatus(HTTP_Status::fromCode(statusCode));
 	response.getHeaders()[HTTP_FieldName::LOCATION] = url;
+	response.setContent("");
 }
 
 // If the location has the GET in allowed_methods, then this
@@ -189,7 +189,7 @@ void HTTP_ResponseBuilder::build_response_for_GET_or_HEAD(HTTP_Response &respons
 		else if (!_serverConfig.index.empty())
 			theIndexFile = _serverConfig.index;
 
-		if (theIndexFile.empty())
+		if (!theIndexFile.empty())
 		{
 			std::string indexOnServer = _pathOnServer + theIndexFile;
 			PathType indexType = getPathType(indexOnServer);
@@ -204,6 +204,7 @@ void HTTP_ResponseBuilder::build_response_for_GET_or_HEAD(HTTP_Response &respons
 				}
 				catch (std::exception &e)
 				{
+					std::cout << "[DEBUG] Unable to open file " << indexOnServer << std::endl;
 					setResponse(response, HTTP_Status::FORBIDDEN);
 				}
 				return;
@@ -228,7 +229,9 @@ void HTTP_ResponseBuilder::build_response_for_GET_or_HEAD(HTTP_Response &respons
 			std::string htmlDirectories =
 				DirectoriesToHTML::generate(
 					Utils::getDirectoryList(_pathOnServer),
-					request.getURLWithoutParams());
+					request.getURLWithoutParams(),
+					locationHasMethod(HTTP_Method::DELETE)
+				);
 
 			response.setContent(htmlDirectories);
 		}
@@ -257,25 +260,12 @@ void HTTP_ResponseBuilder::build_response_for_DELETE(
 	HTTP_Response &response,
 	HTTP_Request &request)
 {
-	setResponse(response, HTTP_Status::NOT_IMPLEMENTED);
-	return;
 	(void)request;
 	if (std::remove(_pathOnServer.c_str()) == 0)
-		setResponse(response, HTTP_Status::NO_CONTENT);
+		setResponse(response, HTTP_Status::OK);
 
 	else
 		setResponse(response, HTTP_Status::INTERNAL_SERVER_ERROR);
-}
-
-void HTTP_ResponseBuilder::build_response_by_CGI(HTTP_Response &response, HTTP_Request &request)
-{
-	(void)request;
-	// response.setStatus(HTTP_Status::OK);
-	// response.setContent("<h1>CGI Not yet implemented...</h1>");
-	(void)response;
-	// Do NOTHING here. 
-	// The response body and headers will be populated later 
-	// by WebServ::_handleCGIOutput when the script finishes.
 }
 
 const LocationConfig &HTTP_ResponseBuilder::locationGetBestMatch(const HTTP_Request &hRequest)

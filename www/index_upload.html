@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <title>File Upload with Preview</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 30px;
+      background-color: #f0f0f0;
+    }
+
+    #uploadBtn {
+      padding: 10px 20px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    #fileInfo {
+      margin-top: 20px;
+    }
+
+    #progress {
+      margin-top: 20px;
+    }
+  </style>
+</head>
+
+<body>
+
+  <h2>Select a file to upload</h2>
+
+  <!-- Hidden file input -->
+  <input type="file" id="fileInput" style="display: none;" />
+
+  <button id="uploadBtn">Upload File</button>
+
+  <!-- to display selected file info -->
+  <div id="fileInfo"></div>
+
+  <!-- a way to show some progress/message -->
+  <div id="progress"></div>
+
+  <script>
+    const uploadBtn = document.getElementById('uploadBtn');
+    const fileInput = document.getElementById('fileInput');
+    const fileInfoDiv = document.getElementById('fileInfo');
+    const progressDiv = document.getElementById('progress');
+
+    uploadBtn.addEventListener('click', () => {
+      fileInput.value = '';
+      fileInput.click();
+    });
+
+    fileInput.addEventListener('change', () => {
+      const file = fileInput.files[0];
+      if (file) {
+        fileInfoDiv.innerHTML = `
+        <strong>Selected File:</strong> ${file.name}<br/>
+        <strong>Size:</strong> ${(file.size / 1024).toFixed(2)} KB
+      `;
+
+        uploadFile(file);
+      }
+    });
+
+    function uploadFile(file) {
+      const url = 'http://localhost:8080/upload';
+      const formData = new FormData();
+      formData.append('file', file);
+
+      progressDiv.innerHTML = 'Uploading...';
+
+      fetch(url, {
+        method: 'POST',
+        body: formData
+      })
+        .then(response => {
+          if (response.ok) {
+            return response.text(); // or response.json() if JSON
+          } else {
+            throw new Error('Upload failed');
+          }
+        })
+        .then(data => {
+          progressDiv.innerHTML = 'Upload successful!';
+          console.log('Server response:', data);
+        })
+        .catch(error => {
+          progressDiv.innerHTML = 'Error during upload.';
+          console.error(error);
+        });
+    }
+  </script>
+
+</body>
+
+</html>

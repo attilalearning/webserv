@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>readme.md</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        padding: 20px;
+        line-height: 1.6;
+      }
+      #content {
+        max-width: 800px;
+        margin: auto;
+      }
+    </style>
+  </head>
+
+  <body>
+
+	<div id="content">Loading...</div>
+
+	<!-- Include marked.js from CDN -->
+	<!-- script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script -->
+	<script src="http://localhost:8080/marked.min.js"></script>
+
+	<script>
+	
+	  fetch('http://localhost:8080/readme.md')
+	    .then(res => res.text())
+	    .then(md => {
+	      document.getElementById('content').innerHTML = marked.parse(md);
+	    })
+	    .catch(error => {
+	      document.getElementById('content').innerText = 'Error loading markdown.';
+	      console.error(error);
+	    });
+	
+	</script>
+
+  </body>
+
+</html>
