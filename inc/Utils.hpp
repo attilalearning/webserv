@@ -6,7 +6,7 @@
 /*   By: aistok <aistok@student.42london.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/26 23:56:58 by mosokina          #+#    #+#             */
-/*   Updated: 2026/05/09 09:20:13 by aistok           ###   ########.fr       */
+/*   Updated: 2026/05/10 22:21:48 by aistok           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,7 +23,6 @@
 #include <sstream>
 #include <string>
 #include <vector>
-#include <algorithm>
 
 template <typename T>
 std::string toString(const T &value)

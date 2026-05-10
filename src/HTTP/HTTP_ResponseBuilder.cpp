@@ -6,7 +6,7 @@
 /*   By: aistok <aistok@student.42london.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/20 10:48:39 by aistok            #+#    #+#             */
-/*   Updated: 2026/05/09 17:12:08 by aistok           ###   ########.fr       */
+/*   Updated: 2026/05/10 23:19:48 by aistok           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,6 +21,29 @@ HTTP_ResponseBuilder::HTTP_ResponseBuilder(const ServerConfig &sc)
 
 HTTP_ResponseBuilder::~HTTP_ResponseBuilder()
 {
+}
+
+HTTP_ResponseBuilder::HTTP_ResponseBuilder(const HTTP_ResponseBuilder &other)
+{
+	if (this != &other)
+	{
+		_serverConfig = other._serverConfig;
+		_location = other._location;
+		_pathOnServer = other._pathOnServer;
+		_pathType = other._pathType;
+	}
+}
+
+HTTP_ResponseBuilder &HTTP_ResponseBuilder::operator=(const HTTP_ResponseBuilder &other)
+{
+	if (this != &other)
+	{
+		_serverConfig = other._serverConfig;
+		_location = other._location;
+		_pathOnServer = other._pathOnServer;
+		_pathType = other._pathType;
+	}
+	return (*this);
 }
 
 void HTTP_ResponseBuilder::build(HTTP_Response &response, HTTP_Request &request)

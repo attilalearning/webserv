@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   HTTP_Request.hpp                                   :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mosokina <mosokina@student.42.fr>          +#+  +:+       +#+        */
+/*   By: aistok <aistok@student.42london.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/16 16:34:38 by aistok            #+#    #+#             */
-/*   Updated: 2026/05/08 02:12:56 by mosokina         ###   ########.fr       */
+/*   Updated: 2026/05/10 22:56:55 by aistok           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,6 +16,8 @@
 #include <iostream>
 #include <map>
 #include <strings.h> // For strcasecmp
+#include <sstream> // stringbuf
+#include <istream> // istream
 
 #include "HTTP_Version.hpp"
 #include "HTTP_Status.hpp"
@@ -37,7 +39,7 @@ public:
 	HTTP_Request();
 	HTTP_Request(const char *raw, size_t len);
 
-	// ~HTTP_Request();
+	~HTTP_Request();
 
 	enum ParseStatus
 	{
@@ -80,8 +82,8 @@ protected:
 
 private:
 	// Rule of three
-	// HTTP_Request(const HTTP_Request &other);			// TO-DO:
-	// HTTP_Request &operator=(const HTTP_Request &other);	// TO-DO:
+	HTTP_Request(const HTTP_Request &other);
+	HTTP_Request &operator=(const HTTP_Request &other);
 
 	std::string _method;
 	std::string _url;
@@ -99,7 +101,6 @@ private:
 	bool _headers_completed;
 	int _headersRequiredCount;
 
-	size_t _bodyLen; ////MO: do we need _bodyLen attribute in class, as we do not use it
 	std::string _body;
 	bool _body_completed;
 

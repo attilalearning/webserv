@@ -3,21 +3,19 @@
 /*                                                        :::      ::::::::   */
 /*   HTTP_Response.cpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mosokina <mosokina@student.42.fr>          +#+  +:+       +#+        */
+/*   By: aistok <aistok@student.42london.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/16 16:34:38 by aistok            #+#    #+#             */
-/*   Updated: 2026/05/07 14:05:43 by mosokina         ###   ########.fr       */
+/*   Updated: 2026/05/10 23:31:17 by aistok           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "HTTP/HTTP_Response.hpp"
-#include <sstream>
 
 HTTP_Response::HTTP_Response() : _status(HTTP_Status::UNSET),
 								 _version(HTTP_Version::v1_1),
 								 _isHEADresponse(false),
 								 _isCGIGenerated(false),
-								 _bodyLen(0),
 								 _body(""),
 								 _cgiPath(""),
 								 _scriptPath("")
@@ -30,7 +28,6 @@ HTTP_Response::HTTP_Response(const HTTP_StatusPair &status) : _status(status),
 															  _version(HTTP_Version::v1_1),
 															  _isHEADresponse(false),
 															  _isCGIGenerated(false),
-															  _bodyLen(0),
 															  _body(""),
 															  _cgiPath(""),
 								 							  _scriptPath("")
@@ -44,23 +41,41 @@ HTTP_Response::HTTP_Response(
 															  _version(HTTP_Version::v1_1),
 															  _isHEADresponse(false),
 															  _isCGIGenerated(false),
-															  _bodyLen(0),
+															  _body(""),
 															  _cgiPath(""),
 								 							  _scriptPath("") 
-															  /*,
-															  _body("")*/ //MO:???
 {
 	_addServerNameHeader();
 	_addDegubHeaders();
 	setContent(textContent);
 }
 
+HTTP_Response &HTTP_Response::operator=(const HTTP_Response &other)
+{
+	if (this != &other)
+	{
+		_status = other._status;
+		_version = other._version;
+
+		_headers = other._headers;
+
+		_isHEADresponse = other._isHEADresponse;
+		_isCGIGenerated = other._isCGIGenerated;
+		_body = other._body;
+
+		_cgiPath = other._cgiPath;
+		_scriptPath = other._scriptPath;
+	}
+	return (*this);
+}
+
+HTTP_Response::~HTTP_Response() {}
+
 std::map<std::string, std::string> &HTTP_Response::getHeaders()
 {
 	return (_headers);
 }
 
-// will set status message too add headers
 void HTTP_Response::setStatus(const HTTP_StatusPair &status)
 {
 	_status = status;
@@ -69,8 +84,7 @@ void HTTP_Response::setStatus(const HTTP_StatusPair &status)
 std::string HTTP_Response::serialize()
 {
 
-	std::ostringstream oss(std::ios::binary); // MO: changes
-	// std::ostringstream oss;
+	std::ostringstream oss(std::ios::binary);
 	oss << *this;
 	return (oss.str());
 }
@@ -82,11 +96,6 @@ void HTTP_Response::setContent(const std::string &text)
 		_body = text;
 		_headers[HTTP_FieldName::CONTENT_LENGTH] = ::toString(text.length());
 	}
-}
-
-size_t HTTP_Response::getBodyLen() const // TO-DO: temporary only, to compile the project
-{
-	return (_bodyLen);
 }
 
 void HTTP_Response::setHeadersOnly(const bool value)
@@ -118,7 +127,6 @@ void HTTP_Response::reset()
 
 	_isHEADresponse = false;
 	_isCGIGenerated = false;
-	_bodyLen = 0;
 	_body = "";
 	_cgiPath = "";
 	_scriptPath = "";
@@ -136,11 +144,6 @@ void HTTP_Response::_addDegubHeaders()
 	_headers["Pragma"] = "no-cache";
 	_headers["Expires"] = "0";
 }
-
-// figure out, what functions are needed to be able to add
-// a body into the response, encode it if needed and
-// add the appropriate headers for it
-// (ex content length, transfer encoding, range? mime type?)
 
 std::ostream &operator<<(std::ostream &os, const HTTP_Response &hResp)
 {
