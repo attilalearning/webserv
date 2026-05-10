@@ -6,7 +6,7 @@
 /*   By: aistok <aistok@student.42london.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/16 16:34:38 by aistok            #+#    #+#             */
-/*   Updated: 2026/04/09 16:42:43 by aistok           ###   ########.fr       */
+/*   Updated: 2026/05/10 22:56:55 by aistok           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,9 @@
 
 #include <iostream>
 #include <map>
+#include <strings.h> // For strcasecmp
+#include <sstream> // stringbuf
+#include <istream> // istream
 
 #include "HTTP_Version.hpp"
 #include "HTTP_Status.hpp"
@@ -22,13 +25,21 @@
 #include "HTTP_FieldName.hpp"
 #include "Utils.hpp"
 
+struct CaseInsensitiveCompare {
+	bool operator()(const std::string& a, const std::string& b) const {
+		// strcasecmp returns 0 if strings are equal (ignoring case)
+		// std::map needs a "less than" comparison, so we return true if a < b
+		return strcasecmp(a.c_str(), b.c_str()) < 0;
+	}
+};
+
 class HTTP_Request
 {
 public:
 	HTTP_Request();
 	HTTP_Request(const char *raw, size_t len);
 
-	// ~HTTP_Request();
+	~HTTP_Request();
 
 	enum ParseStatus
 	{
@@ -57,8 +68,10 @@ public:
 	int getParseStatus() const;
 	const std::string &getMethod() const;
 	const std::string &getURL() const;
+	std::string getURLWithoutParams() const;
 	const std::string &getVersion() const;
-	const std::map<std::string, std::string> getHeaders() const;
+	const std::map<std::string, std::string, CaseInsensitiveCompare> getHeaders() const;
+	const std::string &getBody() const;
 
 	bool ready();
 	void reset();
@@ -69,19 +82,25 @@ protected:
 
 private:
 	// Rule of three
-	// HTTP_Request(const HTTP_Request &other);			// TO-DO:
-	// HTTP_Request &operator=(const HTTP_Request &other);	// TO-DO:
+	HTTP_Request(const HTTP_Request &other);
+	HTTP_Request &operator=(const HTTP_Request &other);
 
 	std::string _method;
 	std::string _url;
 	std::string _version;
 	bool _requestLine_completed;
 
-	std::map<std::string, std::string> _headers;
+	// std::map<std::string, std::string> _headers;
+	//
+
+	/* * RFC 9110 Compliance: HTTP header names are case-insensitive. 
+	* Using CaseInsensitiveCompare ensures that "Content-Type" and "content-type" 
+	* are treated as the same key, preventing duplicate entries and lookup failures.
+	*/
+	std::map<std::string, std::string, CaseInsensitiveCompare> _headers; // MO: added
 	bool _headers_completed;
 	int _headersRequiredCount;
 
-	size_t _bodyLen;
 	std::string _body;
 	bool _body_completed;
 

@@ -1,0 +1,8 @@
+This is a sample text file for testing the webserver.
+
+You can download this file or view it in your browser.
+
+Features being tested:
+- Static file serving
+- MIME type detection
+- GET requests

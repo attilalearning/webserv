@@ -1,8 +1,86 @@
-<html>
-	<head>
-		<title>THIS IS THE INDEX OF /www/</title>
-	</head>
-	<body>
-		<h1>/www/index.html ...</h1>
-	</body>
+<!DOCTYPE html>
+<!-- get style from: https://picocss.com/ -->
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8" />
+	<title>miniMAA Web Server v0.1</title>
+	<style>
+		body {
+			font-family: Arial, sans-serif;
+			padding: 20px;
+			line-height: 1.6;
+		}
+
+		#content {
+			max-width: 800px;
+			margin: auto;
+		}
+
+		iframe {
+			height: 500px;
+		}
+	</style>
+</head>
+
+<body>
+
+	<h1>miniMAA web server v0.1</h1>
+
+	<div>
+		<button id="btn_readme">readme.md</button>
+		<button id="btn_upload_file">Upload a file</button>
+		<button id="btn_list_files">List /files</button>
+		<button id="btn_list_files_delete_allowed">List /delete_test</button>
+		<button id="btn_list_files_delete_allowed_reset">Reset /delete_test</button>
+		<button id="btn_list_files_delete_allowed_cleanup">Cleanup /delete_test</button>
+		<button id="btn_test_cgi">Test CGI (Ade)</button>
+		<button id="btn_test_cgi_mo">Test CGI (MO)</button>
+	</div>
+
+	<iframe id="iframe" src="index_readme.html" frameborder="0" width="90%"></iframe>
+
+	<script>
+
+		var iframe = document.getElementById('iframe');
+
+		//iframe.onload = function () {
+		//	var iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+		//	var height = iframeDoc.body.scrollHeight;
+		//	iframe.style.height = height;
+		//};
+
+		document.getElementById('btn_readme').addEventListener('click', function () {
+			iframe.src = 'index_readme.html'
+		});
+		document.getElementById('btn_upload_file').addEventListener('click', function () {
+			iframe.onload = function () {
+				var iframeDoc = iframe.contentDocument || iframe.contentWindow.document;
+				iframeDoc.getElementById('fileInput').click();
+			}
+			iframe.src = 'index_upload.html';
+		});
+		document.getElementById('btn_list_files').addEventListener('click', function () {
+			iframe.src = '/files'
+		});
+		document.getElementById('btn_list_files_delete_allowed').addEventListener('click', function () {
+			iframe.src = '/delete_test'
+		});
+		document.getElementById('btn_list_files_delete_allowed_reset').addEventListener('click', function () {
+			iframe.src = '/cgi-bin/prep_www_delete.sh'
+		});
+		document.getElementById('btn_list_files_delete_allowed_cleanup').addEventListener('click', function () {
+			iframe.src = '/cgi-bin/cleanup_www_delete.sh'
+		});
+		document.getElementById('btn_test_cgi').addEventListener('click', function () {
+			iframe.src = '/cgi-bin/test.php'
+		});
+		document.getElementById('btn_test_cgi_mo').addEventListener('click', function () {
+			iframe.src = 'index-mo.html'
+		});
+
+	</script>
+
+</body>
+
 </html>

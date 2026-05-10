@@ -6,23 +6,20 @@
 /*   By: aistok <aistok@student.42london.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/25 11:32:29 by mosokina          #+#    #+#             */
-/*   Updated: 2026/04/04 18:26:00 by aistok           ###   ########.fr       */
+/*   Updated: 2026/05/09 14:54:19 by aistok           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include <fcntl.h>
-#include <unistd.h>
-
-#include <algorithm>
-#include <cctype>
-#include <ctime>
-#include <sstream>
-#include <fstream>
-#include <sys/stat.h>
-#include <dirent.h>
-//#include <unistd.h>
-
 #include "Utils.hpp"
+
+
+/* 
+ * FD_CLOEXEC: Prevents File Descriptor "leaks" across processes. 
+ * When a child process calls execve(), any FD with this flag is 
+ * automatically closed, ensuring CGI scripts don't accidentally 
+ * inherit open pipes or sockets belonging to other clients.
+ * the door shut on every single fd that doesn't explicitly belong to that specific child.
+ */
 
 bool setNonBlocking(int fd)
 {
@@ -35,10 +32,9 @@ bool setNonBlocking(int fd)
 	if (fcntl(fd, F_SETFL, flags | O_NONBLOCK) == -1)
 		return false;
 	// 2. Handle File Descriptor Flags (FD_CLOEXEC)
-	// Highly recommended for the CGI part of the project!
-	// int fd_flags = fcntl(fd, F_GETFD, 0);
-	// if (fd_flags != -1)
-	// 	fcntl(fd, F_SETFD, fd_flags | FD_CLOEXEC);
+	int fd_flags = fcntl(fd, F_GETFD, 0);
+	if (fd_flags != -1)
+		fcntl(fd, F_SETFD, fd_flags | FD_CLOEXEC);
 	return true;
 }
 
@@ -102,12 +98,12 @@ std::string &trimString(std::string &str, std::string stripChars)
 	return (str);
 }
 
-bool replace(std::string &str, const std::string &from, const std::string &to)
+bool replace(std::string &str, const std::string &what, const std::string &with)
 {
-	size_t start_pos = str.find(from);
+	size_t start_pos = str.find(what);
 	if (start_pos == std::string::npos)
 		return false;
-	str.replace(start_pos, from.length(), to);
+	str.replace(start_pos, what.length(), with);
 	return true;
 }
 
@@ -132,173 +128,421 @@ bool numberIsPositive(std::string value)
 
 PathType getPathType(const std::string &pathStr)
 {
-    struct stat st;
+	struct stat st;
 
-    if (stat(pathStr.c_str(), &st) != 0)
-        return PATH_NONE;
+	if (stat(pathStr.c_str(), &st) != 0)
+		return PATH_NONE;
 
-    if (S_ISREG(st.st_mode))
-        return PATH_FILE;
+	if (S_ISREG(st.st_mode))
+		return PATH_FILE;
 
-    if (S_ISDIR(st.st_mode))
-        return PATH_DIRECTORY;
+	if (S_ISDIR(st.st_mode))
+		return PATH_DIRECTORY;
 
-    return PATH_NONE;
+	return PATH_NONE;
 }
 
 /*private constructors to prevent instantiation*/
 Utils::Utils() {}
 Utils::~Utils() {}
 
-std::string Utils::trim(const std::string& str)
+std::string Utils::trim(const std::string &str)
 {
-    size_t start = 0;
-    size_t end = str.length();
+	size_t start = 0;
+	size_t end = str.length();
 
-    while (start < end && std::isspace(str[start]))
-        ++start;
-    while (end > start && std::isspace(str[end - 1]))
-        --end;
-    return (str.substr(start, end - start));
+	while (start < end && std::isspace(str[start]))
+		++start;
+	while (end > start && std::isspace(str[end - 1]))
+		--end;
+	return (str.substr(start, end - start));
 }
 
-std::string Utils::toLowerCase(const std::string& str)
+std::string Utils::toLowerCase(const std::string &str)
 {
-    std::string res = str;
-    
-    for (size_t i = 0; i < str.length(); ++i)
-        res[i] = std::tolower(res[i]);
+	std::string res = str;
 
-    return (res);
+	for (size_t i = 0; i < str.length(); ++i)
+		res[i] = std::tolower(res[i]);
+
+	return (res);
 }
 
-std::string Utils::toUpperCase(const std::string& str)
+std::string Utils::toUpperCase(const std::string &str)
 {
-    std::string res = str;
+	std::string res = str;
 
-    for (size_t i = 0; i < str.length(); ++i)
-        res[i] = std::toupper(res[i]);
+	for (size_t i = 0; i < str.length(); ++i)
+		res[i] = std::toupper(res[i]);
 
-    return (res);
+	return (res);
 }
 
-std::vector<std::string> Utils::split(const std::string& str, char delimiter)
+std::vector<std::string> Utils::split(const std::string &str, char delimiter)
 {
-    std::vector<std::string> res;
-    std::stringstream ss(str);
-    std::string item;
+	std::vector<std::string> res;
+	std::stringstream ss(str);
+	std::string item;
 
-    while (std::getline(ss, item, delimiter))
-    {
-        if (!item.empty())
-            res.push_back(item);
-    }
-    
-    return (res);
+	while (std::getline(ss, item, delimiter))
+	{
+		if (!item.empty())
+			res.push_back(item);
+	}
+
+	return (res);
 }
 
-std::vector<std::string> Utils::split(const std::string& str, const std::string& delimiter)
+std::vector<std::string> Utils::split(const std::string &str, const std::string &delimiter)
 {
-    std::vector<std::string> res;
-    size_t start = 0;
-    size_t end = str.find(delimiter);
+	std::vector<std::string> res;
+	size_t start = 0;
+	size_t end = str.find(delimiter);
 
-    while (end != std::string::npos)
-    {
-        res.push_back(str.substr(start, end - start));
-        start = end + delimiter.length();
-        end = str.find(delimiter, start);
-    }
-    res.push_back(str.substr(start));
-    
-    return (res);
+	while (end != std::string::npos)
+	{
+		res.push_back(str.substr(start, end - start));
+		start = end + delimiter.length();
+		end = str.find(delimiter, start);
+	}
+	res.push_back(str.substr(start));
+
+	return (res);
 }
 
-bool Utils::startsWith(const std::string& str, const std::string& prefix)
+bool Utils::startsWith(const std::string &str, const std::string &prefix)
 {
-    if (prefix.length() > str.length())
-        return (false);
-    return (str.substr(0, prefix.length()) == prefix);
+	if (prefix.length() > str.length())
+		return (false);
+	return (str.substr(0, prefix.length()) == prefix);
 }
 
-bool Utils::endsWith(const std::string& str, const std::string& suffix)
+bool Utils::endsWith(const std::string &str, const std::string &suffix)
 {
-    if (suffix.length() > str.length())
-        return (false);
-    return (str.substr(str.length() - suffix.length()) == suffix);
+	if (suffix.length() > str.length())
+		return (false);
+	return (str.substr(str.length() - suffix.length()) == suffix);
 }
 
 std::string Utils::replaceAll(const std::string &src,
-							  const std::string &from,
-							  const std::string &to)
+							  const std::string &what,
+							  const std::string &with)
 {
-	if (from.empty())
+	if (what.empty())
 		return src;
 
 	std::string result = src;
 	std::string::size_type pos = 0;
 
-	while ((pos = result.find(from, pos)) != std::string::npos)
+	while ((pos = result.find(what, pos)) != std::string::npos)
 	{
-		result.replace(pos, from.length(), to);
-		pos += to.length();
+		result.replace(pos, what.length(), with);
+		pos += with.length();
 	}
 	return result;
 }
 
-bool Utils::fileExists(const std::string& path)
+bool Utils::fileExists(const std::string &path)
 {
-    struct stat st;
-    return (stat(path.c_str(), &st) == 0);
+	struct stat st;
+	return (stat(path.c_str(), &st) == 0);
+}
+
+bool Utils::deleteFile(const std::string &path)
+{
+	return (unlink(path.c_str()) == 0);
 }
 
 /*Number conversions*/
-int Utils::toInt(const std::string& str) {
-    std::stringstream ss(str);
-    int res;
-    ss >> res;
-    return (res);
+int Utils::toInt(const std::string &str)
+{
+	std::stringstream ss(str);
+	int res;
+	ss >> res;
+	return (res);
 }
 
-size_t Utils::toSizeT(const std::string& str) {
-    std::stringstream ss(str);
-    int res;
-    ss >> res;
-    return (res);
+size_t Utils::toSizeT(const std::string &str)
+{
+	std::stringstream ss(str);
+	int res;
+	ss >> res;
+	return (res);
 }
 
-std::string Utils::getFileContent(const std::string& filename)
+std::string Utils::getFileContent(const std::string &filename)
 {
 	std::ifstream file(filename.c_str(), std::ios_base::binary);
 
-	if (!file.is_open()) {
+	if (!file.is_open())
+	{
 		throw std::runtime_error(filename + " can not be opened!");
 	}
 
-	std::string content((std::istreambuf_iterator<char>(file)), 
+	std::string content((std::istreambuf_iterator<char>(file)),
 						std::istreambuf_iterator<char>());
 
 	return content;
 }
 
-std::vector<std::string> Utils::getDirectoryList(const std::string& path) {
-	std::vector<std::string> result;
+std::vector<fsItem> Utils::getDirectoryList(const std::string &path)
+{
+	std::vector<fsItem> result;
 
-	DIR* dir = opendir(path.c_str());
-	if (!dir) {
+	DIR *dir = opendir(path.c_str());
+	if (!dir)
 		throw std::runtime_error(path + " is not a directory!");
-	}
 
-	struct dirent* entry;
-	while ((entry = readdir(dir)) != NULL) {
-		std::string name = entry->d_name;
-		if (name != "." && name != "..") {
-			result.push_back(name);
+	struct dirent *entry;
+	struct stat st;
+
+	while ((entry = readdir(dir)) != NULL)
+	{
+		fsItem item;
+
+		item.name = entry->d_name;
+		if (item.name != "." && item.name != "..")
+		{
+			std::string itemPath = path + "/" + item.name;
+			if (stat(itemPath.c_str(), &st) == 0)
+			{
+				item.isReadable = Utils::isReadable(itemPath);
+				item.isDir = (st.st_mode & S_IFDIR) != 0;
+				if (!item.isDir)
+					item.size = st.st_size;
+			}
+			else
+			{
+				// ... this should not happen - the way this function is called
+			}
+			result.push_back(item);
 		}
 	}
 
 	closedir(dir);
-	std::sort(result.begin(), result.end());
+	// std::sort(result.begin(), result.end());
 
 	return (result);
 }
+
+bool Utils::isReadable(const std::string &pathOnServer)
+{
+	struct stat st;
+
+	if (stat(pathOnServer.c_str(), &st) != 0)
+		return false; // error accessing file
+
+	uid_t uid = getuid();
+	gid_t gid = getgid();
+
+	if (st.st_uid == uid) // checing owner permissions
+		return (st.st_mode & S_IRUSR) != 0;
+
+	else if (st.st_gid == gid) // checking group permissions
+		return (st.st_mode & S_IRGRP) != 0;
+
+	else // checking others permissions
+		return (st.st_mode & S_IROTH) != 0;
+}
+
+bool Utils::isWritable(const std::string &pathOnServer)
+{
+	struct stat st;
+
+	if (stat(pathOnServer.c_str(), &st) != 0)
+		return false; // error accessing file
+
+	uid_t uid = getuid();
+	gid_t gid = getgid();
+
+	if (st.st_uid == uid) // checing owner permissions
+		return (st.st_mode & S_IWUSR) != 0;
+
+	else if (st.st_gid == gid) // checking group permissions
+		return (st.st_mode & S_IWGRP) != 0;
+
+	else // checking others permissions
+		return (st.st_mode & S_IWOTH) != 0;
+}
+
+
+std::string Utils::getExtension(const std::string& path) {
+    size_t dot = path.find_last_of('.');
+    if (dot == std::string::npos || dot == path.length() - 1) {
+        return "";
+    }
+    return (path.substr(dot));
+}
+
+
+
+/*Path operations*/
+std::string Utils::joinPath(const std::string& base, const std::string& relative) {
+    if (base.empty()) {
+        return (relative);
+    }
+
+    if (relative.empty()) {
+        return (base);
+    }
+
+    if (base[base.length() - 1] == '/') {
+        if (relative[0] == '/') {
+            return (base + relative.substr(1));
+        }
+        return (base + relative);
+    
+    } else {
+        if (relative[0] == '/') {
+            return (base + relative);
+        }
+        return (base + "/" + relative);
+    }
+}
+
+std::string Utils::normalizePath(const std::string& path) {
+    std::vector<std::string> parts = split(path, '/');
+    std::vector<std::string> result;
+
+
+    for (size_t i = 0; i < parts.size(); ++i) {
+        if (parts[i] == "..") {
+            if (!result.empty()) {
+                result.pop_back();
+            }
+        } else if (parts[i] != ".") {
+            result.push_back(parts[i]);
+        }
+    }
+
+    std::string normalized;
+    if (path[0] == '/') {
+        normalized = "/";
+    }
+    for (size_t i = 0; i < result.size(); ++i) {
+        if (i > 0) {
+            normalized += "/";
+        }
+        normalized += result[i];
+    }
+
+    return (normalized.empty() ? "/" : normalized);
+}
+
+std::string Utils::getFileName(const std::string& path) {
+    size_t slash = path.find_last_of('/');
+    if (slash == std::string::npos) {
+        return (path);
+    }
+    
+    return (path.substr(slash + 1));
+}
+
+std::string Utils::getDirectory(const std::string& path) {
+    size_t slash = path.find_last_of('/');
+    if(slash == std::string::npos) {
+        return (".");
+    }
+    if (slash == 0) {
+        return ("/");
+    }
+    
+    return (path.substr(0, slash)); 
+}
+
+/*Mime types*/
+std::string Utils::getMimeType(const std::string& extension) {
+    std::string ext = toLowerCase(extension);
+
+    if (ext == ".html" || ext == ".htm")
+        return ("text/html");
+    if (ext == ".css")
+        return ("text/css");
+    if (ext == ".js")
+        return ("application/javascript");
+    if (ext == ".json")
+        return ("application/json");
+    if (ext == ".xml")
+        return ("application/xml");
+    if (ext == ".jpg" || ext == ".jpeg")
+        return ("image/jpeg");
+    if (ext == ".png")
+        return ("image/png");
+    if (ext == ".gif")
+        return ("image/gif");
+    if (ext == ".svg")
+        return ("image/svg+xml");
+    if (ext == ".ico")
+        return ("image/x-ixon");
+    if (ext == ".pdf")
+        return ("application/pdf");
+    if (ext == ".txt")
+        return ("text/plain");
+    if (ext == ".zip")
+        return ("application/zip");
+    if (ext == ".tar")
+        return ("application/x-tar");
+    if (ext == ".gz")
+        return ("application/gzip");
+
+    return "application/octet-stream";
+}
+
+std::string Utils::urlDecode(const std::string& str) {
+    std::string res;
+
+    for (size_t i = 0; i < str.length(); ++i) {
+        if (str[i] == '%' && i + 2 < str.length()) {
+            int value;
+            std::stringstream ss;
+            ss << std::hex << str.substr(i + 1, 2);
+            ss >> value;
+            res += static_cast<char>(value);
+            i += 2;
+        } else if (str[i] == '+') {
+            res += ' ';
+        } else {
+            res += str[i];
+        }
+    }
+    return (res);
+}
+
+std::string Utils::urlEncode(const std::string& str) {
+    std::ostringstream oss;
+
+    for (size_t i = 0; i < str.length(); ++i) {
+        char c = str[i];
+        if (std::isalnum(c) || c == '-' || c == '_' || c == '.' || c == '~') {
+            oss << c;
+        } else {
+            oss << '%' << std::hex << (int)(unsigned char)c;
+        }
+    }
+    return (oss.str());
+}
+
+
+std::string Utils::toString(int n) {
+    std::ostringstream oss;
+    oss << n;
+    return (oss.str());
+}
+
+std::string Utils::toString(size_t n) {
+    std::ostringstream oss;
+    oss << n;
+    return (oss.str());
+}
+
+/*Time*/
+std::string Utils::getHttpDate() {
+    time_t now = time(NULL);
+    struct tm* gmt = gmtime(&now);
+
+    char buffer[100];
+    strftime(buffer, sizeof(buffer), "%a, %d %b %Y %H:%M:%S GMT", gmt);
+
+    return (std::string(buffer));
+}
+

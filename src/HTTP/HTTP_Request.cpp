@@ -6,12 +6,9 @@
 /*   By: aistok <aistok@student.42london.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/16 16:46:32 by aistok            #+#    #+#             */
-/*   Updated: 2026/04/09 21:46:23 by aistok           ###   ########.fr       */
+/*   Updated: 2026/05/10 23:10:14 by aistok           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
-
-#include <sstream> // stringbuf
-#include <istream> // istream
 
 #include "HTTP/HTTP_Request.hpp"
 
@@ -21,7 +18,6 @@ HTTP_Request::HTTP_Request() : _method(""),
 							   _requestLine_completed(false),
 							   _headers_completed(false),
 							   _headersRequiredCount(0),
-							   _bodyLen(0),
 							   _body_completed(false),
 							   _parseStatus(INCOMPLETE)
 {
@@ -34,27 +30,54 @@ HTTP_Request::HTTP_Request(const char *raw, size_t len) : _method(""),
 														  _requestLine_completed(false),
 														  _headers_completed(false),
 														  _headersRequiredCount(0),
-														  _bodyLen(0),
 														  _body_completed(false),
 														  _parseStatus(INCOMPLETE)
 {
 	parseHeaders(raw, len);
 }
 
-// HTTP_Request::~HTTP_Request()
-// {
-// std::cout << "HTTP Request destructor called!" << std::endl;
-// }
+HTTP_Request::~HTTP_Request() {}
 
-// HTTP_Request::HTTP_Request(const HTTP_Request &other)
-// {
-// TO-DO
-// }
+HTTP_Request::HTTP_Request(const HTTP_Request &other)
+{
+	if (this != &other)
+	{
+		_method = other._method;
+		_url = other._url;
+		_version = other._version;
+		_requestLine_completed = other._requestLine_completed;
 
-// HTTP_Request &HTTP_Request::operator=(const HTTP_Request &other)
-// {
-// TO-DO
-// }
+		_headers = other._headers;
+		_headers_completed = other._headers_completed;
+		_headersRequiredCount = other._headersRequiredCount;
+
+		_body = other._body;
+		_body_completed = other._body_completed;
+
+		_parseStatus = other._parseStatus;
+	}
+}
+
+HTTP_Request &HTTP_Request::operator=(const HTTP_Request &other)
+{
+	if (this != &other)
+	{
+		_method = other._method;
+		_url = other._url;
+		_version = other._version;
+		_requestLine_completed = other._requestLine_completed;
+
+		_headers = other._headers;
+		_headers_completed = other._headers_completed;
+		_headersRequiredCount = other._headersRequiredCount;
+
+		_body = other._body;
+		_body_completed = other._body_completed;
+
+		_parseStatus = other._parseStatus;
+	}
+	return (*this);
+}
 
 /* getline removes the '\n' from each line it reads! */
 int HTTP_Request::parseHeaders(const char *raw, size_t len) // MO:SPLIT TO parseHeaders and setBody()
@@ -119,11 +142,7 @@ int HTTP_Request::parseHeaders(const char *raw, size_t len) // MO:SPLIT TO parse
 	// 3. Fallback: If we ran out of string before finding the empty line
 	_parseStatus = HTTP_Request::INCOMPLETE;
 	return (FAILURE);
-
-	// code dealing with request body has been taken over by Maria
-	// and moved/changed/improved logic into Connection.cpp
 }
-
 
 int HTTP_Request::getParseStatus() const
 {
@@ -139,14 +158,27 @@ const std::string &HTTP_Request::getURL() const
 {
 	return (_url);
 }
+std::string HTTP_Request::getURLWithoutParams() const
+{
+	size_t query_pos = _url.find('?');
+	if (query_pos != std::string::npos)
+		return (_url.substr(0, query_pos));
+
+	return (_url);
+}
 const std::string &HTTP_Request::getVersion() const
 {
 	return (_version);
 }
 
-const std::map<std::string, std::string> HTTP_Request::getHeaders() const
+const std::map<std::string, std::string, CaseInsensitiveCompare> HTTP_Request::getHeaders() const
 {
 	return (_headers);
+}
+
+const std::string &HTTP_Request::getBody() const
+{
+	return (_body);
 }
 
 void HTTP_Request::setParseStatus(ParseStatus status)
@@ -201,8 +233,6 @@ int HTTP_Request::_parseRequestLine(std::string line)
 		if (!_parseVersion(subString))
 		{
 			_parseStatus = HTTP_Request::HTTP_VERSION_NOT_SUPPORTED;
-			// the correct way to handle/set this would be:
-			// _parseStatus = HTTP_Status::HTTP_VERSION_NOT_SUPPORTED.code;
 			return (FAILURE);
 		}
 	}
@@ -261,60 +291,66 @@ int HTTP_Request::_URLIsValid(std::string url)
 	return (SUCCESS);
 }
 
-// TO-DO: should be protected
 int HTTP_Request::_parseHeaderLine(std::string line)
 {
-	/*
-	 *	getline removes '\n' (LF), so,
-	 *	only check and remove '\r' (CR).
-	 */
-	if (!removePortion(line, CR))
-	{
-		_parseStatus = HTTP_Request::BAD_REQUEST;
-		return (FAILURE);
-	}
+    if (!removePortion(line, CR))
+    {
+        _parseStatus = HTTP_Request::BAD_REQUEST;
+        return (FAILURE);
+    }
 
-	std::string::size_type pos = line.find(":", 0);
-	if (pos == std::string::npos)
-	{
-		_parseStatus = HTTP_Request::BAD_REQUEST;
-		return (FAILURE);
-	}
+    std::string::size_type pos = line.find(":", 0);
+    if (pos == std::string::npos)
+    {
+        _parseStatus = HTTP_Request::BAD_REQUEST;
+        return (FAILURE);
+    }
 
-	std::string fieldName = line.substr(0, pos);
-	fieldName = capitaliseFirstLetter(fieldName);
-	std::string value = line.substr(pos + 1, line.size());
-	if (!_fieldNameIsValid(fieldName) ||
-		!_headerValueIsValid(value) ||
-		_fieldNameAlreadyProcessed(fieldName) ||
-		_fieldNameIsSecurityRisk(fieldName))
-	{
-		_parseStatus = HTTP_Request::BAD_REQUEST;
-		return (FAILURE);
-	}
+    // 1. Extract and store in variables (Fixes compilation error)
+    std::string fieldName = line.substr(0, pos);
+    std::string value = line.substr(pos + 1);
 
-	if (fieldName == HTTP_FieldName::CONTENT_LENGTH)
-	{
-		size_t value_size_t;
+    // 2. Trim both (Ensure " \t" is included for the key)
+    trimString(fieldName, " \t");
+	std::string charsToTrim = " \t";
+	charsToTrim += DISALLOWED_CHARS_IN_FIELD_VALUE;
+	trimString(value, charsToTrim);
+    if (!_fieldNameIsValid(fieldName) || !_headerValueIsValid(value) || 
+        _fieldNameAlreadyProcessed(fieldName) || _fieldNameIsSecurityRisk(fieldName))
+    {
+        _parseStatus = HTTP_Request::BAD_REQUEST;
+        return (FAILURE);
+    }
 
-		if (numberIsPositive(value) && toNumber(value, value_size_t))
-			_headers[HTTP_FieldName::CONTENT_LENGTH] = toString(value_size_t);
-		else
-		{
-			/* not possible to parse value as a number */
-			_parseStatus = HTTP_Request::BAD_REQUEST;
-			return (FAILURE);
-		}
-	}
-	else
-	{
-		value = trimString(value, DISALLOWED_CHARS_IN_FIELD_VALUE);
-		_headers[fieldName] = value;
-	}
+    // 3. Normalize for display/storage
+    std::string displayKey = capitaliseFirstLetter(fieldName);
+    
+    // 4. Robust check for Content-Length (Fixes the Hyphen bug)
+    // Using a lowercase check is safer than relying on capitalization
+    std::string lowerKey = fieldName;
+    for (size_t i = 0; i < lowerKey.length(); ++i) lowerKey[i] = tolower(lowerKey[i]);
 
-	_countHeaderIfRequired(fieldName);
+    if (lowerKey == "content-length")
+    {
+        size_t value_size_t;
+        // Now 'value' is strictly "15", so numeric parsing will succeed
+        if (numberIsPositive(value) && toNumber(value, value_size_t))
+        {
+            _headers[HTTP_FieldName::CONTENT_LENGTH] = toString(value_size_t);
+        }
+        else
+        {
+            _parseStatus = HTTP_Request::BAD_REQUEST;
+            return (FAILURE);
+        }
+    }
+    else
+    {
+        _headers[displayKey] = value;
+    }
 
-	return (SUCCESS);
+    _countHeaderIfRequired(displayKey);
+    return (SUCCESS);
 }
 
 /* this function can include other headers
@@ -405,7 +441,6 @@ void HTTP_Request::reset()
 	_headers_completed = false;
 	_headersRequiredCount = 0;
 
-	_bodyLen = 0;
 	_body = "";
 	_body_completed = false;
 
@@ -430,7 +465,7 @@ std::ostream &operator<<(std::ostream &os, const HTTP_Request &hr)
 		return (os);
 	}
 
-	std::map<std::string, std::string>::const_iterator it;
+	std::map<std::string, std::string, CaseInsensitiveCompare>::const_iterator it;
 	for (it = hr._headers.begin(); it != hr._headers.end(); ++it)
 	{
 		std::string fieldName = it->first;
@@ -454,8 +489,13 @@ std::ostream &operator<<(std::ostream &os, const HTTP_Request &hr)
 
 void HTTP_Request::setBody(std::string data, size_t len)
 {
-	_body.assign(data, len);
-	_body_completed = true;
-	if (this->_parseStatus == HTTP_Request::INCOMPLETE)
-		this->_parseStatus = HTTP_Request::COMPLETE;
+    // Use append so chunked/split data isn't overwritten
+    _body.append(data);
+	(void)len;    
+    
+    // CRITICAL for CGI: Keep the length variable in sync!
+    // _bodyLen = _body.length(); 
+    
+    _body_completed = true;
+    this->_parseStatus = HTTP_Request::COMPLETE;
 }

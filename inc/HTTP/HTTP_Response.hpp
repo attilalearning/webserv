@@ -6,7 +6,7 @@
 /*   By: aistok <aistok@student.42london.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/16 16:34:38 by aistok            #+#    #+#             */
-/*   Updated: 2026/04/09 14:38:22 by aistok           ###   ########.fr       */
+/*   Updated: 2026/05/10 23:31:26 by aistok           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,7 @@
 #define HTTP_RESPONSE_HPP
 
 #include <iostream>
+#include <sstream>
 #include <map>
 
 #include "HTTP_Version.hpp"
@@ -21,30 +22,36 @@
 #include "HTTP_Method.hpp"
 #include "HTTP_FieldName.hpp"
 #include "Utils.hpp"
+#include "CGI.hpp"
 
-// TO-DO: orthodox canonical form!
 class HTTP_Response
 {
 public:
 	HTTP_Response();
 	HTTP_Response(const HTTP_StatusPair &status);
 	HTTP_Response(const HTTP_StatusPair &status, std::string textContent);
+	HTTP_Response &operator=(const HTTP_Response &other);
+	~HTTP_Response();
 
 	std::map<std::string, std::string> &getHeaders();
 
-	void setStatus(const HTTP_StatusPair &status); // will set status message too
-												   // add headers
+	void setStatus(const HTTP_StatusPair &status);
 
 	std::string serialize();
 	void setContent(const std::string &text);
-	size_t getBodyLen() const; // TO-DO: temporary only, to compile the project
+	
 	void setHeadersOnly(const bool value);
 	bool isHeadersOnly();
+	
+	void setCGIGenerated(const bool value);
+	bool isCGIGenerated();
+	void reset();
 
-	// figure out, what functions are needed to be able to add
-	// a body into the response, encode it if needed and
-	// add the appropriate headers for it
-	// (ex content length, transfer encoding, range? mime type?)
+	void setCgiPath(const std::string &path);
+    std::string getCgiPath() const;
+
+    void setScriptPath(const std::string &path);
+    std::string getScriptPath() const;
 
 	// friend is needed for the operator<< to be able to access
 	// the status and version private variables
@@ -60,10 +67,14 @@ private:
 	std::map<std::string, std::string> _headers;
 
 	bool _isHEADresponse;
-	size_t _bodyLen;
+	bool _isCGIGenerated;
 	std::string _body;
 
 	void _addServerNameHeader();
+	void _addDegubHeaders();
+
+	std::string _cgiPath;
+    std::string _scriptPath;
 };
 
 #endif // HTTP_RESPONSE_HPP

@@ -163,13 +163,13 @@ def test_keep_alive():
 	print("[ADVANCED] Keep-Alive (Multiple Requests on One Socket)")
 	try:
 		with get_socket() as s:
-			s.sendall(b"GET / HTTP/1.1\r\nHost: localhost\r\nConnection: keep-alive\r\n\r\n")
+			s.sendall(b"GET /index-mo.html HTTP/1.1\r\nHost: localhost\r\nConnection: keep-alive\r\n\r\n")
 			resp1 = s.recv(4096).decode('utf-8', errors='ignore')
 			if "200" not in resp1:
 				print_result("200", "First Fail", False)
 				return
 			time.sleep(0.2)
-			s.sendall(b"GET / HTTP/1.1\r\nHost: localhost\r\nConnection: close\r\n\r\n")
+			s.sendall(b"GET /index-mo.html HTTP/1.1\r\nHost: localhost\r\nConnection: close\r\n\r\n")
 			resp2 = s.recv(4096).decode('utf-8', errors='ignore')
 			print_result("200", resp2.split('\r\n')[0], "200" in resp2)
 	except Exception as e:
@@ -373,18 +373,19 @@ if __name__ == "__main__":
 	print(f"Starting WebServ Test Suite on {SERVER_HOST}:{SERVER_PORT}\n")
 
 	# # 1. Request Line & Headers
-	run_test("REQ_LINE", "Valid Request", b"GET / HTTP/1.1\r\nHost: localhost\r\n\r\n", "200")
+	run_test("REQ_LINE", "Valid Request", b"GET /index-mo.html HTTP/1.1\r\nHost: localhost\r\n\r\n", "200")
+	run_test("REQ_LINE", "Valid Request", b"GET /index-mo.html HTTP/1.1\r\nHost: localhost\r\n\r\n", "200")
 	run_test("REQ_LINE", "Missing Version", b"GET /\r\nHost: localhost\r\n\r\n", "400")
-	run_test("HEADERS", "Duplicate Host (Illegal)", b"GET / HTTP/1.1\r\nHost: a.com\r\nHost: b.com\r\n\r\n", "400")
+	run_test("HEADERS", "Duplicate Host (Illegal)", b"GET /index-mo.html HTTP/1.1\r\nHost: a.com\r\nHost: b.com\r\n\r\n", "400")
 	run_test("HEADERS", "Duplicate Content-Length", b"POST / HTTP/1.1\r\nHost: localhost\r\nContent-Length: 5\r\nContent-Length: 10\r\n\r\nHello", "400")
 
 	# 2. Protocol Strictness
 	run_test("PROTOCOL", "Missing Host Header", b"GET / HTTP/1.1\r\n\r\n", "400")
 	run_test("PROTOCOL", "HTTP 2.0 Not Supported", b"GET / HTTP/2.0\r\nHost: localhost\r\n\r\n", "505")
-	run_test("PROTOCOL", "Method Not Allowed", b"DELETE / HTTP/1.1\r\nHost: localhost\r\n\r\n", "405")
+	run_test("PROTOCOL", "Method Not Allowed", b"DELETE /index-mo.html HTTP/1.1\r\nHost: localhost\r\n\r\n", "405")
 	run_test("PROTOCOL", "HEAD Request for / root", b"HEAD / HTTP/1.1\r\nHOST: localhost\r\n\r\n", "200")
 	run_test("PROTOCOL", "HEAD Request for /nonexistent", b"HEAD /nonexistent HTTP/1.1\r\nHOST: localhost\r\n\r\n", "404")
-	run_test("PROTOCOL", "GET Request mixed-case headers", b"GET / HTTP/1.1\r\nhOSt: localhost\r\nCOnTEnt-leNGTH: 5\r\n\r\nHello", "200")
+	run_test("PROTOCOL", "GET Request mixed-case headers", b"GET /index-mo.html HTTP/1.1\r\nhOSt: localhost\r\nCOnTEnt-leNGTH: 5\r\n\r\nHello", "200")
 
 	# 3. Limits & Security
 
@@ -453,3 +454,4 @@ if __name__ == "__main__":
 
 	test_408_timeout()
 	print("All tests complete!")
+	

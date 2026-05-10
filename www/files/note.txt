@@ -1,0 +1,11 @@
+#URI -> Uniform resource identifier
+"Its is "social security number" for a digital or physical resorces. It is a unique string of characters used to identify
+a specific resource (like a webpage, a file, an email address, or even a book) so that diffferent systems can talk about it
+without confusion
+
+Many people use URI, URL, and URN interchangeably, but there are subtle hierarchy that is important to note:
+
+URI -> Uniform resorce identifier : Its the overarching category for both URL's and URN's e.g a person's identity.
+URL -> Uniform resource locator : Tells you where a resource is and how to get it. e.g . someone's home address.
+URN -> Uniform resource name : Gives a resource a unique name regardless of where it lives. e.g someone's name.
+"
