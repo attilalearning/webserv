@@ -1,29 +1,19 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   HTTP_Defines.hpp                                   :+:      :+:    :+:   */
+/*   WebServMacros.hpp                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: aistok <aistok@student.42london.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2026/02/21 00:32:21 by aistok            #+#    #+#             */
-/*   Updated: 2026/05/12 03:03:42 by aistok           ###   ########.fr       */
+/*   Created: 2026/05/11 17:05:57 by aistok            #+#    #+#             */
+/*   Updated: 2026/05/13 08:09:07 by aistok           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#ifndef HTTP_DEFINES_HPP
-#define HTTP_DEFINES_HPP
+#ifndef WEBSERV_MACROS_HPP
+#define WEBSERV_MACROS_HPP
 
-#define WEBSERV_NAME "miniMAA"
-#define CR "\r"
-#define LF "\n"
-#define CRLF CR LF
-#define VISIBLE_CRLF "\\r\\n"
-#define DBL_CRLF "\r\n\r\n"
-#define DISALLOWED_CHARS_IN_FIELD_VALUE " \t"
-#define ALLOWED_CHARS_IN_FIELD_NAME "!#$%&'*+-.^_`|~"
-#define SUCCESS 1
-#define FAILURE 0
+#define DEBUG_MODE 0
+#define DEFAULT_UPLOAD_FILENAME "uploaded_file"
 
-#include "WebServMacros.hpp"
-
-#endif // HTTP_DEFINES_HPP
+#endif // WEBSERV_MACROS_HPP
