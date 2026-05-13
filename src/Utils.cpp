@@ -6,7 +6,7 @@
 /*   By: aistok <aistok@student.42london.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/25 11:32:29 by mosokina          #+#    #+#             */
-/*   Updated: 2026/05/09 14:54:19 by aistok           ###   ########.fr       */
+/*   Updated: 2026/05/13 09:22:16 by aistok           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -49,7 +49,7 @@ std::string toUpperCase(std::string &original)
 	return (upperCaseCopy);
 }
 
-std::string &capitaliseFirstLetter(std::string &str)
+std::string &capitaliseFirstLetters(std::string &str)
 {
 	unsigned char previousChar;
 	unsigned char firstChar;
@@ -73,27 +73,6 @@ std::string &capitaliseFirstLetter(std::string &str)
 				str[i] = static_cast<char>(std::tolower(currentChar));
 			}
 		}
-	}
-	return (str);
-}
-
-std::string &trimString(std::string &str, std::string stripChars)
-{
-	std::string::size_type start = 0;
-	std::string::size_type end = str.size();
-
-	if (end > 0)
-	{
-		while (start < end &&
-			   (stripChars.find(str[start]) != std::string::npos))
-			++start;
-
-		while (end > start &&
-			   (stripChars.find(str[end - 1]) != std::string::npos))
-			--end;
-
-		if (start != 0 || end != str.size())
-			str = str.substr(start, end - start);
 	}
 	return (str);
 }
@@ -156,6 +135,28 @@ std::string Utils::trim(const std::string &str)
 	while (end > start && std::isspace(str[end - 1]))
 		--end;
 	return (str.substr(start, end - start));
+}
+
+/* this function will modify the string itself! */
+std::string &Utils::trim(std::string &str, std::string stripChars)
+{
+	std::string::size_type start = 0;
+	std::string::size_type end = str.size();
+
+	if (end > 0)
+	{
+		while (start < end &&
+			   (stripChars.find(str[start]) != std::string::npos))
+			++start;
+
+		while (end > start &&
+			   (stripChars.find(str[end - 1]) != std::string::npos))
+			--end;
+
+		if (start != 0 || end != str.size())
+			str = str.substr(start, end - start);
+	}
+	return (str);
 }
 
 std::string Utils::toLowerCase(const std::string &str)
@@ -240,6 +241,26 @@ std::string Utils::replaceAll(const std::string &src,
 		pos += with.length();
 	}
 	return result;
+}
+
+std::string Utils::removeQuote(const std::string &value, const char quote)
+{
+	if (value[0] != quote || value.find_last_of(quote) != value.size() - 1)
+		return (value);
+
+	return (value.substr(1, value.size() - 2));
+}
+
+std::size_t Utils::countOccurrence(const std::string &haystack, const std::string &needle) {
+	size_t occurrence = 0;
+	size_t pos = haystack.find(needle);
+
+	while (pos != std::string::npos) {
+		++occurrence;
+		pos = haystack.find(needle, pos + needle.size());
+	}
+
+	return occurrence;
 }
 
 bool Utils::fileExists(const std::string &path)
@@ -365,7 +386,56 @@ bool Utils::isWritable(const std::string &pathOnServer)
 		return (st.st_mode & S_IWOTH) != 0;
 }
 
+std::string Utils::getNextAvailableFilename(const std::string &file_name_with_extension)
+{
+	std::stringstream ss;
+	int counter = 1;
 
+	std::string file_dir = Utils::getDirectory(file_name_with_extension);
+	std::string file_name = Utils::getFileName(file_name_with_extension);
+	std::string file_ext = Utils::getExtension(file_name);
+
+	file_name = file_name.substr(0, file_name.length() - file_ext.length());
+
+	std::string filename = file_dir + '/' + file_name + file_ext;
+	std::ifstream infile;
+
+	while (true) {
+		if (!fileExists(filename))
+			break;
+
+		ss.str("");
+		ss << file_dir << '/' << file_name << counter << file_ext;
+		filename = ss.str();
+
+		++counter;
+    }
+
+	return (filename);
+}
+
+bool Utils::writeStringToFile(const std::string &filename_with_extension, const std::string &data)
+{
+    std::ofstream outfile(filename_with_extension.c_str(), std::ios::binary);
+    if (!outfile)
+        return (false);
+
+    outfile.write(data.data(), data.size());
+    outfile.close();
+	return (true);
+}
+
+std::string Utils::getcwd()
+{
+	char buffer[1024];
+
+	if (::getcwd(buffer, sizeof(buffer)) != NULL)
+		return std::string(buffer);
+	else
+		return "";
+}
+
+// returns extension with the dot, ex: .txt
 std::string Utils::getExtension(const std::string& path) {
     size_t dot = path.find_last_of('.');
     if (dot == std::string::npos || dot == path.length() - 1) {
@@ -373,8 +443,6 @@ std::string Utils::getExtension(const std::string& path) {
     }
     return (path.substr(dot));
 }
-
-
 
 /*Path operations*/
 std::string Utils::joinPath(const std::string& base, const std::string& relative) {
@@ -429,6 +497,7 @@ std::string Utils::normalizePath(const std::string& path) {
     return (normalized.empty() ? "/" : normalized);
 }
 
+// returns filename with extension, ex: test.jpg
 std::string Utils::getFileName(const std::string& path) {
     size_t slash = path.find_last_of('/');
     if (slash == std::string::npos) {
@@ -438,6 +507,10 @@ std::string Utils::getFileName(const std::string& path) {
     return (path.substr(slash + 1));
 }
 
+// returns path, cutting off everything from the last '/'
+// example:
+// /path/to/file -> /path/to
+// /path/to/dir -> /path/to
 std::string Utils::getDirectory(const std::string& path) {
     size_t slash = path.find_last_of('/');
     if(slash == std::string::npos) {

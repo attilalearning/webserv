@@ -6,7 +6,7 @@
 /*   By: aistok <aistok@student.42london.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/26 23:56:58 by mosokina          #+#    #+#             */
-/*   Updated: 2026/05/10 22:21:48 by aistok           ###   ########.fr       */
+/*   Updated: 2026/05/13 02:58:44 by aistok           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,8 +15,9 @@
 
 #include <fcntl.h>
 #include <dirent.h>
-#include <sys/stat.h> // used for stat
-#include <unistd.h>   // used for stat, getuid(), getgid()
+#include <sys/stat.h>	// used for stat
+#include <unistd.h>		// getuid(), getgid(), getcwd
+#include <cstdlib>		// for NULL
 #include <cctype>
 #include <ctime>
 #include <fstream>
@@ -44,8 +45,7 @@ bool toNumber(const std::string &str, T &out)
 bool setNonBlocking(int fd);
 
 std::string toUpperCase(std::string &str);
-std::string &capitaliseFirstLetter(std::string &str);
-std::string &trimString(std::string &str, std::string stripChars);
+std::string &capitaliseFirstLetters(std::string &str);
 bool replace(std::string &str, const std::string &from, const std::string &to);
 
 enum PathType
@@ -78,6 +78,7 @@ class Utils
 public:
     /*String Manipulations*/
     static std::string trim(const std::string &str);
+    static std::string &trim(std::string &str, std::string stripChars);
     static std::string toLowerCase(const std::string &str);
     static std::string toUpperCase(const std::string &str);
     static std::vector<std::string> split(const std::string &str, char delimiter);
@@ -87,16 +88,21 @@ public:
     static std::string replaceAll(const std::string &src,
                                   const std::string &from,
                                   const std::string &to);
+    static std::string removeQuote(const std::string &value, const char quote);
+	static std::size_t countOccurrence(const std::string &haystack, const std::string &needle);
 
     /*File operations*/
     static bool fileExists(const std::string &path);
-    static std::string readFile(const std::string &path);
-    static bool writeFile(const std::string &path, const std::string &content);
+    //static std::string readFile(const std::string &path);
+    //static bool writeFile(const std::string &path, const std::string &content);
     static bool deleteFile(const std::string &path);
     static std::string getFileContent(const std::string &filename);
     static std::vector<fsItem> getDirectoryList(const std::string &path);
     static bool isReadable(const std::string &pathOnServer);
     static bool isWritable(const std::string &pathOnServer);
+    static std::string getNextAvailableFilename(const std::string &file_name_with_extension);
+    static bool writeStringToFile(const std::string &filename_with_extension, const std::string &data);
+	static std::string getcwd();
 
     /*Path operations*/
     static std::string joinPath(const std::string& base, const std::string& relative);
