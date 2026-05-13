@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Connection.cpp                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mosokina <mosokina@student.42.fr>          +#+  +:+       +#+        */
+/*   By: aistok <aistok@student.42london.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/11 12:49:10 by mosokina          #+#    #+#             */
-/*   Updated: 2026/05/08 02:15:29 by mosokina         ###   ########.fr       */
+/*   Updated: 2026/05/12 09:35:40 by aistok           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -280,7 +280,8 @@ void Connection::_handleStandardBody()
 
     if (toMove > 0) {
         // Move data from the raw buffer to the Request object
-        _request.setBody(_rawRequest.substr(0, toMove), toMove);
+		//_request.setBody(_rawRequest.substr(0, toMove), toMove);
+        _request.appendToBody(_rawRequest.substr(0, toMove), toMove, _request.getBody().length() >= _expectedBodySize); // AI: updated with _request.getBody().length() >= _expectedBodySize
         _rawRequest.erase(0, toMove); // Remove it from the socket buffer
         
         std::cout << "[DEBUG] Moved " << toMove << " bytes to Request body." << std::endl;
@@ -319,7 +320,8 @@ void Connection::_handleChunkedBody() {
 			size_t endPos = _rawRequest.find(DBL_CRLF, pos);
 			if (endPos == std::string::npos) return; // Wait for the final CRLF
 
-			_request.setBody(_chunkedAccumulator.c_str(), _chunkedAccumulator.size());
+			//_request.setBody(_chunkedAccumulator.c_str(), _chunkedAccumulator.size()); // AI: changed setBody(...) to appendToBody(...)
+			_request.appendToBody(_chunkedAccumulator.c_str(), _chunkedAccumulator.size(), true);
 			_state = REQUEST_READY;
 			_rawRequest.erase(0, endPos + 4); 
 			return;
