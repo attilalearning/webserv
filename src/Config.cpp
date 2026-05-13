@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Config.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: aaladeok <aaladeok@student.42london.com>   +#+  +:+       +#+        */
+/*   By: aistok <aistok@student.42london.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/11 17:53:52 by aaladeok          #+#    #+#             */
-/*   Updated: 2026/05/11 17:53:52 by aaladeok         ###   ########.fr       */
+/*   Updated: 2026/05/13 15:04:18 by aistok           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -228,6 +228,11 @@ void Config::validateLocationBlock(const LocationConfig& location) {
     if (!location.redirect_url.empty() && !location.root.empty()) {
         throw ConfigException("Location with 'return' should not have 'root'");
     }
+
+    //If root and alias are exclusive of each other
+    if (!location.root.empty() && !location.alias.empty()) {
+        throw ConfigException("Location should have either 'root' or 'alias'");
+    }
 }
 
 /*Parsing methods*/
@@ -443,6 +448,12 @@ void Config::parseLocationBlock(std::ifstream& file, LocationConfig& location) {
             seen_directives.insert(key);
             validatePath(value);
             location.root = value;
+
+        } else if (key == "alias") {
+            checkDupDirective(seen_directives, key);
+            seen_directives.insert(key);
+            validatePath(value);
+            location.alias = value;
 
         } else if (key == "autoindex") {
             checkDupDirective(seen_directives, key);

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Config.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: aaladeok <aaladeok@student.42london.com>   +#+  +:+       +#+        */
+/*   By: aistok <aistok@student.42london.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/05/11 17:53:52 by aaladeok          #+#    #+#             */
-/*   Updated: 2026/05/11 17:53:52 by aaladeok         ###   ########.fr       */
+/*   Updated: 2026/05/13 14:57:01 by aistok           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,6 +24,7 @@ struct LocationConfig
     std::string path;
     std::vector<std::string> allowed_methods;
     std::string root;
+    std::string alias; // AI: added this so that we can run the 42 tester
     bool autoindex;
     std::string index;
     int redirect_code;
