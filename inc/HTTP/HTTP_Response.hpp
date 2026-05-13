@@ -6,7 +6,7 @@
 /*   By: aistok <aistok@student.42london.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/16 16:34:38 by aistok            #+#    #+#             */
-/*   Updated: 2026/05/10 23:31:26 by aistok           ###   ########.fr       */
+/*   Updated: 2026/05/13 04:23:57 by aistok           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,6 +30,7 @@ public:
 	HTTP_Response();
 	HTTP_Response(const HTTP_StatusPair &status);
 	HTTP_Response(const HTTP_StatusPair &status, std::string textContent);
+	HTTP_Response(const HTTP_Response &other);
 	HTTP_Response &operator=(const HTTP_Response &other);
 	~HTTP_Response();
 
@@ -53,6 +54,9 @@ public:
     void setScriptPath(const std::string &path);
     std::string getScriptPath() const;
 
+	//void setBody(std::string &data, size_t len);
+	//void appendToBody(std::string &data, size_t len, bool isFinalAppend = false);
+
 	// friend is needed for the operator<< to be able to access
 	// the status and version private variables
 	friend std::ostream &operator<<(std::ostream &os, const HTTP_Response &hResp);
@@ -61,6 +65,7 @@ protected:
 	// ...
 
 private:
+
 	HTTP_StatusPair _status;
 	std::string _version;
 
@@ -70,11 +75,16 @@ private:
 	bool _isCGIGenerated;
 	std::string _body;
 
-	void _addServerNameHeader();
-	void _addDegubHeaders();
-
 	std::string _cgiPath;
     std::string _scriptPath;
+
+	void _init_class_vars();
+	void _set_class_vars(const HTTP_Response &other);
+
+	void _addDefaultHeaders(bool addDebugHeaders = false);
+	void _addServerNameHeader();
+	void _addServerDate();
+	void _addDegubHeaders();
 };
 
 #endif // HTTP_RESPONSE_HPP

@@ -6,66 +6,82 @@
 /*   By: aistok <aistok@student.42london.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/16 16:34:38 by aistok            #+#    #+#             */
-/*   Updated: 2026/05/10 23:31:17 by aistok           ###   ########.fr       */
+/*   Updated: 2026/05/13 03:25:34 by aistok           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "HTTP/HTTP_Response.hpp"
 
-HTTP_Response::HTTP_Response() : _status(HTTP_Status::UNSET),
-								 _version(HTTP_Version::v1_1),
-								 _isHEADresponse(false),
-								 _isCGIGenerated(false),
-								 _body(""),
-								 _cgiPath(""),
-								 _scriptPath("")
+void HTTP_Response::_init_class_vars()
 {
-	_addServerNameHeader();
-	_addDegubHeaders();
+	_status = HTTP_Status::UNSET;
+	_version = HTTP_Version::v1_1;
+
+	_headers.clear();
+	_addDefaultHeaders();
+
+	_isHEADresponse = false;
+	_isCGIGenerated = false;
+	
+	_body = "";
+	
+	_cgiPath = "";
+	_scriptPath = "";
 }
 
-HTTP_Response::HTTP_Response(const HTTP_StatusPair &status) : _status(status),
-															  _version(HTTP_Version::v1_1),
-															  _isHEADresponse(false),
-															  _isCGIGenerated(false),
-															  _body(""),
-															  _cgiPath(""),
-								 							  _scriptPath("")
+void HTTP_Response::_set_class_vars(const HTTP_Response &other)
 {
-	_addServerNameHeader();
-	_addDegubHeaders();
+	_status = other._status;
+	_version = other._version;
+
+	_headers = other._headers;
+
+	_isHEADresponse = other._isHEADresponse;
+	_isCGIGenerated = other._isCGIGenerated;
+	
+	_body = other._body;
+	
+	_cgiPath = other._cgiPath;
+	_scriptPath = other._scriptPath;
+}
+
+HTTP_Response::HTTP_Response()
+{
+	_init_class_vars();
+	_addDefaultHeaders();
+}
+
+HTTP_Response::HTTP_Response(const HTTP_StatusPair &status)
+{
+	_init_class_vars();
+
+	setStatus(status);
+
+	_addDefaultHeaders();
 }
 
 HTTP_Response::HTTP_Response(
-	const HTTP_StatusPair &status, std::string textContent) : _status(status),
-															  _version(HTTP_Version::v1_1),
-															  _isHEADresponse(false),
-															  _isCGIGenerated(false),
-															  _body(""),
-															  _cgiPath(""),
-								 							  _scriptPath("") 
+	const HTTP_StatusPair &status, std::string textContent)
 {
-	_addServerNameHeader();
-	_addDegubHeaders();
+	_init_class_vars();
+
+	setStatus(status);
 	setContent(textContent);
+
+	_addDefaultHeaders();
+}
+
+HTTP_Response::HTTP_Response(const HTTP_Response &other)
+{
+	if (this != &other)
+		_set_class_vars(other);
 }
 
 HTTP_Response &HTTP_Response::operator=(const HTTP_Response &other)
 {
 	if (this != &other)
-	{
-		_status = other._status;
-		_version = other._version;
+		_set_class_vars(other);
 
-		_headers = other._headers;
-
-		_isHEADresponse = other._isHEADresponse;
-		_isCGIGenerated = other._isCGIGenerated;
-		_body = other._body;
-
-		_cgiPath = other._cgiPath;
-		_scriptPath = other._scriptPath;
-	}
 	return (*this);
 }
 
@@ -83,7 +99,6 @@ void HTTP_Response::setStatus(const HTTP_StatusPair &status)
 
 std::string HTTP_Response::serialize()
 {
-
 	std::ostringstream oss(std::ios::binary);
 	oss << *this;
 	return (oss.str());
@@ -120,16 +135,15 @@ bool HTTP_Response::isCGIGenerated()
 
 void HTTP_Response::reset()
 {
-	_status = HTTP_Status::UNSET;
-	_version = HTTP_Version::v1_1;
+	_init_class_vars();
+}
 
-	_headers.clear();
-
-	_isHEADresponse = false;
-	_isCGIGenerated = false;
-	_body = "";
-	_cgiPath = "";
-	_scriptPath = "";
+void HTTP_Response::_addDefaultHeaders(bool addDebugHeaders)
+{
+	_addServerDate();
+	_addServerNameHeader();
+	if (addDebugHeaders)
+		_addDegubHeaders();
 }
 
 void HTTP_Response::_addServerNameHeader()
@@ -137,9 +151,16 @@ void HTTP_Response::_addServerNameHeader()
 	_headers[HTTP_FieldName::SERVER_NAME] = WEBSERV_NAME;
 }
 
+void HTTP_Response::_addServerDate()
+{
+	_headers[HTTP_FieldName::DATE] = Utils::getHttpDate();
+}
+
 void HTTP_Response::_addDegubHeaders()
 {
-	return; // enable/disable the below - debugging!
+	// tell the browsers to not cache the responses
+	// this way the browser will initiate a request every time,
+	// even when the files were already sent (ex static files that do not change)
 	_headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0";
 	_headers["Pragma"] = "no-cache";
 	_headers["Expires"] = "0";
@@ -181,3 +202,18 @@ void HTTP_Response::setScriptPath(const std::string &path) {
 std::string HTTP_Response::getScriptPath() const {
     return _scriptPath;
 }
+
+/*
+void HTTP_Response::setBody(std::string &data, size_t len)
+{
+	(void)data;
+	(void)len;
+}
+
+void HTTP_Response::appendToBody(std::string &data, size_t len, bool isFinalAppend)
+{
+	(void)data;
+	(void)len;
+	(void)isFinalAppend;
+}
+*/
