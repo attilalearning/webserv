@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   WebServ.cpp                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mosokina <mosokina@student.42.fr>          +#+  +:+       +#+        */
+/*   By: aistok <aistok@student.42london.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/01/14 19:03:57 by aistok            #+#    #+#             */
-/*   Updated: 2026/05/08 01:45:09 by mosokina         ###   ########.fr       */
+/*   Updated: 2026/05/14 17:09:15 by aistok           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -337,7 +337,8 @@ void WebServ::_sendResponse(size_t *index)
 	while (requestsProcessed < 10) // Limit to 10 requests per poll trigger
 	{
 		bool finished = conn->handleWrite();
-		std::cout << "[DEBUG] Sending Response Body: " << conn->getRawResponse().substr(0, 15) << "..." << std::endl;	
+		//std::cout << "[DEBUG] Sending Response Body: " << conn->getRawResponse().substr(0, 15) << "..." << std::endl;	
+        std::cout << "[DEBUG] Sending Response Body: " << conn->getRawResponseHeaderLine() << std::endl;
 		if (finished)
 		{
 			requestsProcessed++;
@@ -525,9 +526,14 @@ void WebServ::_handleCGIOutput(size_t *index) {
             
             // Check if CGI produced any output
             if (cgi.output.empty()) {
-                std::cout << "[WebServ] CGI produced no output - likely execution failed" << std::endl;
-                conn->getResponse().setStatus(HTTP_Status::INTERNAL_SERVER_ERROR);
-                conn->setState(Connection::ERROR);
+                //std::cout << "[WebServ] CGI produced no output - likely execution failed" << std::endl;
+                //conn->getResponse().setStatus(HTTP_Status::INTERNAL_SERVER_ERROR);
+                //conn->setState(Connection::ERROR);
+                conn->getResponse().setStatus(HTTP_Status::NO_CONTENT);
+                conn->getRequest().dumpToFile("request_cgi");
+                conn->getResponse().dumpToFile("response_cgi");
+                //conn->getResponse().setContent("");
+                conn->setState(Connection::REQUEST_READY);
             } else {                
                 // Parse CGI output into response
                 conn->getResponse() = CGI::parseCGIOutput(cgi.output);
