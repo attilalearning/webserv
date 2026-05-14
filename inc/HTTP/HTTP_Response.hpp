@@ -6,7 +6,7 @@
 /*   By: aistok <aistok@student.42london.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/16 16:34:38 by aistok            #+#    #+#             */
-/*   Updated: 2026/05/13 04:23:57 by aistok           ###   ########.fr       */
+/*   Updated: 2026/05/14 17:02:07 by aistok           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,7 +38,8 @@ public:
 
 	void setStatus(const HTTP_StatusPair &status);
 
-	std::string serialize();
+	std::string serialize() const;
+	void dumpToFile(const std::string &filename) const;
 	void setContent(const std::string &text);
 	
 	void setHeadersOnly(const bool value);

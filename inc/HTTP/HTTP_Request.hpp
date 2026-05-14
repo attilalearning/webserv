@@ -6,7 +6,7 @@
 /*   By: aistok <aistok@student.42london.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/16 16:34:38 by aistok            #+#    #+#             */
-/*   Updated: 2026/05/13 14:35:11 by aistok           ###   ########.fr       */
+/*   Updated: 2026/05/14 17:01:34 by aistok           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -88,6 +88,8 @@ public:
 	void setParseStatus(ParseStatus status);
 	HTTP_Request getDisplayFriendlyRequest();
 	bool hasHeader(const std::string &fieldName) const;
+	std::string serialize() const;
+	void dumpToFile(const std::string &filename) const;
 
 protected:
 	// ...

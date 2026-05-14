@@ -6,7 +6,7 @@
 /*   By: aistok <aistok@student.42london.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/16 16:46:32 by aistok            #+#    #+#             */
-/*   Updated: 2026/05/13 14:34:40 by aistok           ###   ########.fr       */
+/*   Updated: 2026/05/14 17:01:12 by aistok           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -237,6 +237,20 @@ bool HTTP_Request::hasHeader(const std::string &fieldName) const
 	if (_headers.count(fieldName) > 0)
 		return (true);
 	return (false);
+}
+
+std::string HTTP_Request::serialize() const
+{
+	std::ostringstream oss(std::ios::binary);
+	oss << *this;
+	return (oss.str());
+}
+
+void HTTP_Request::dumpToFile(const std::string &filename) const
+{
+	std::string filename_ok = Utils::getNextAvailableFilename(filename);
+	Utils::writeStringToFile(filename_ok, serialize());
+	std::cout << "[DEBUG] Request saved/dumped to " << filename_ok << std::endl;
 }
 
 int HTTP_Request::_parseRequestLine(std::string line)
