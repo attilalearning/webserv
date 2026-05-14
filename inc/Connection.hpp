@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   Connection.hpp                                     :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: mosokina <mosokina@student.42.fr>          +#+  +:+       +#+        */
+/*   By: aistok <aistok@student.42london.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/11 12:49:22 by mosokina          #+#    #+#             */
-/*   Updated: 2026/05/08 01:16:30 by mosokina         ###   ########.fr       */
+/*   Updated: 2026/05/14 12:25:41 by aistok           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -49,6 +49,7 @@ public:
 	void setState(ConnectionState state); // <MO: new for CGI
     std::string getRawRequest() const;
 	std::string getRawResponse() const;
+	std::string getRawResponseHeaderLine() const;
 	bool hasBufferedData() const ;
 
 	void handleRead(const char *buffer, ssize_t bytesRead);

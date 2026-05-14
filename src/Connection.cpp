@@ -6,7 +6,7 @@
 /*   By: aistok <aistok@student.42london.com>       +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/02/11 12:49:10 by mosokina          #+#    #+#             */
-/*   Updated: 2026/05/12 09:35:40 by aistok           ###   ########.fr       */
+/*   Updated: 2026/05/14 13:06:56 by aistok           ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -272,6 +272,15 @@ std::string Connection::getRawResponse() const
 	return _rawResponse;
 }
 
+std::string Connection::getRawResponseHeaderLine() const
+{
+	size_t CRLF_pos = _rawResponse.find(CRLF);
+	if (CRLF_pos == std::string::npos)
+		return ("Header not found in request!");
+
+	return (_rawResponse.substr(0, CRLF_pos));
+}
+
 void Connection::_handleStandardBody()
 {
     size_t available = _rawRequest.size();
@@ -328,7 +337,7 @@ void Connection::_handleChunkedBody() {
 		}
 
 		// 3. Overflow and Limit Check for Payload Size
-		size_t maxBodySize = _listener->getConfig().client_max_body_size;
+/*		size_t maxBodySize = _listener->getConfig().client_max_body_size;
 		if (chunkSize > maxBodySize || _chunkedAccumulator.size() + chunkSize > maxBodySize)
 		{
 			std::cout << "[WebServ] Payload too large (Chunked stream exceeded limit)" << std::endl;
@@ -336,7 +345,7 @@ void Connection::_handleChunkedBody() {
 			_state = ERROR;
 			return;
 		}
-
+*/
 		// 4. Safe Bounds Check (Prevents integer overflow)
 		if (_rawRequest.size() - (pos + 2) < chunkSize + 2) return;
 
